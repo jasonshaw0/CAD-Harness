@@ -10,6 +10,7 @@ from typing import Any, Iterable
 
 from build123d import Compound, export_step, export_stl
 
+from .inspector import render_inspector
 from .model import shape_metrics
 from .policy import ComparisonPolicy
 from .preview import VIEW_NAMES, write_svg_previews
@@ -33,6 +34,71 @@ def inspect_project(
         "available_variants": sorted(loaded.manifest.variants),
     }
     return report
+
+
+def inspector_project(
+    path: str | Path,
+    *,
+    output_file: str | Path = "artifacts/inspector/index.html",
+    views: Iterable[str] = ("iso", "top"),
+    component_ids: Iterable[str] | None = None,
+    variant: str | None = None,
+    overwrite: bool = False,
+) -> dict[str, Any]:
+    """Build a linked, read-only HTML evidence artifact inside a project."""
+    loaded = load_project(path, variant=variant)
+    target = _project_artifact_path(loaded, output_file)
+    if target.suffix.lower() not in {".html", ".htm"}:
+        raise ValueError("inspector output_file must use an .html or .htm extension")
+    if target.exists() and not overwrite:
+        raise FileExistsError(f"refusing to overwrite existing inspector: {target}")
+
+    normalized_views = [view.lower() for view in views]
+    invalid = sorted(set(normalized_views) - set(VIEW_NAMES))
+    if invalid:
+        raise ValueError(f"unknown inspector preview views: {', '.join(invalid)}")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    preview_dir = target.parent / "previews"
+    preview_outputs = write_svg_previews(
+        loaded.document,
+        preview_dir,
+        views=normalized_views,
+        component_ids=component_ids,
+        artifact_id=(
+            f"{loaded.document.id}-{loaded.variant}"
+            if loaded.variant
+            else loaded.document.id
+        ),
+        overwrite=overwrite,
+    )
+
+    inspection = loaded.document.inspect()
+    inspection["manifest"] = {
+        "path": str(loaded.manifest_path),
+        "description": loaded.manifest.description,
+        "variant": loaded.variant,
+        "default_variant": loaded.manifest.default_variant,
+        "available_variants": sorted(loaded.manifest.variants),
+    }
+    validation = loaded.document.validate().to_dict()
+    previews = [
+        {
+            "view": output["view"],
+            "href": Path(output["path"]).relative_to(target.parent).as_posix(),
+        }
+        for output in preview_outputs
+    ]
+    content = render_inspector(inspection, validation, previews=previews)
+    target.write_text(content, encoding="utf-8")
+    return {
+        "project_id": loaded.document.id,
+        "revision": loaded.document.revision,
+        "variant": loaded.variant,
+        "path": str(target),
+        "sha256": sha256(content.encode("utf-8")).hexdigest(),
+        "validation_passed": validation["passed"],
+        "previews": preview_outputs,
+    }
 
 
 def validate_project(
@@ -229,6 +295,7 @@ __all__ = [
     "discover_projects",
     "export_project",
     "inspect_project",
+    "inspector_project",
     "preview_project",
     "snapshot_project",
     "validate_project",

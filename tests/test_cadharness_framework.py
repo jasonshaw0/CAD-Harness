@@ -29,7 +29,12 @@ from cadharness import (
     wall_thickness_check,
 )
 from cadharness.cli import main as cli_main
-from cadharness.operations import compare_project, preview_project, snapshot_project
+from cadharness.operations import (
+    compare_project,
+    inspector_project,
+    preview_project,
+    snapshot_project,
+)
 from cadharness.project import _typed_parameters
 
 
@@ -355,6 +360,11 @@ class ProjectWorkflowTests(unittest.TestCase):
                 output_dir=temporary_path / "previews",
                 views=("iso", "top"),
             )
+            inspector = inspector_project(
+                BOX_ROOT,
+                output_file=temporary_path / "inspector" / "index.html",
+                views=("iso", "top"),
+            )
             self.assertTrue(snapshot["validation_passed"])
             self.assertEqual(comparison["severity"], "accepted")
             self.assertEqual(comparison["summary"]["significant_changes"], 0)
@@ -365,6 +375,19 @@ class ProjectWorkflowTests(unittest.TestCase):
                 svg = Path(output["path"]).read_text(encoding="utf-8")
                 self.assertIn("<svg", svg)
                 self.assertGreater(output["visible_edges"], 0)
+            self.assertTrue(inspector["validation_passed"])
+            inspector_html = Path(inspector["path"]).read_text(encoding="utf-8")
+            self.assertIn("Parametric Project Box", inspector_html)
+            self.assertIn('href="#component-base"', inspector_html)
+            self.assertIn('src="previews/project-box-standard-iso.svg"', inspector_html)
+
+    def test_inspector_refuses_unsafe_or_accidental_output(self):
+        with TemporaryDirectory(dir=BOX_ROOT) as temporary:
+            with self.assertRaisesRegex(ValueError, "html"):
+                inspector_project(
+                    BOX_ROOT,
+                    output_file=Path(temporary) / "report.json",
+                )
 
     def test_artifacts_cannot_escape_project_root(self):
         with self.assertRaises(ValueError):

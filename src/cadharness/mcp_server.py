@@ -13,6 +13,7 @@ from .operations import (
     discover_projects,
     export_project,
     inspect_project,
+    inspector_project,
     preview_project,
     snapshot_project,
     validate_project,
@@ -67,6 +68,26 @@ def inspect_cad_project(
 ) -> dict[str, Any]:
     """Build a trusted project and return parameters, components, and OCCT metrics."""
     return inspect_project(_resolve_in_roots(project_path, ROOTS), variant=variant)
+
+
+@mcp.tool()
+def build_cad_inspector(
+    project_path: str,
+    output_file: str = "artifacts/inspector/index.html",
+    views: list[str] | None = None,
+    component_ids: list[str] | None = None,
+    variant: str | None = None,
+    overwrite: bool = False,
+) -> dict[str, Any]:
+    """Generate a linked, read-only HTML evidence report inside the project."""
+    return inspector_project(
+        _resolve_in_roots(project_path, ROOTS),
+        output_file=output_file,
+        views=views or ["iso", "top"],
+        component_ids=component_ids,
+        variant=variant,
+        overwrite=overwrite,
+    )
 
 
 @mcp.tool()

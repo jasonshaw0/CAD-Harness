@@ -13,6 +13,7 @@ from .operations import (
     discover_projects,
     export_project,
     inspect_project,
+    inspector_project,
     preview_project,
     snapshot_project,
     validate_project,
@@ -34,6 +35,20 @@ def _parser() -> argparse.ArgumentParser:
     inspect_parser = subparsers.add_parser("inspect", help="build and inspect a project")
     inspect_parser.add_argument("project")
     inspect_parser.add_argument("--variant")
+
+    inspector_parser = subparsers.add_parser(
+        "inspector", help="generate a linked read-only HTML evidence report"
+    )
+    inspector_parser.add_argument("project")
+    inspector_parser.add_argument("--variant")
+    inspector_parser.add_argument(
+        "--output", default="artifacts/inspector/index.html"
+    )
+    inspector_parser.add_argument(
+        "--view", action="append", choices=VIEW_NAMES, dest="views"
+    )
+    inspector_parser.add_argument("--component", action="append", dest="components")
+    inspector_parser.add_argument("--overwrite", action="store_true")
 
     validate_parser = subparsers.add_parser("validate", help="run project checks")
     validate_parser.add_argument("project")
@@ -89,6 +104,15 @@ def main(argv: Sequence[str] | None = None) -> int:
             result = {"projects": discover_projects(Path(args.root))}
         elif args.command == "inspect":
             result = inspect_project(args.project, variant=args.variant)
+        elif args.command == "inspector":
+            result = inspector_project(
+                args.project,
+                output_file=args.output,
+                views=args.views or ("iso", "top"),
+                component_ids=args.components,
+                variant=args.variant,
+                overwrite=args.overwrite,
+            )
         elif args.command == "validate":
             result = validate_project(args.project, variant=args.variant)
         elif args.command == "snapshot":
