@@ -1,0 +1,509 @@
+{
+  "baseline_path": "artifacts/baseline.json",
+  "baseline_revision": "example-v1",
+  "baseline_variant": "standard",
+  "changed": true,
+  "components": {
+    "added": [],
+    "changed": {
+      "lid": {
+        "geometry": {
+          "bounding_box_center_mm": {},
+          "bounding_box_size_mm": {},
+          "center_of_mass_mm": {
+            "x": {
+              "assessment": {
+                "disposition": "tolerated",
+                "policy_path": "components.lid.center_of_mass_mm.*",
+                "tolerance": {
+                  "absolute": 0.05,
+                  "percent": 0.0
+                }
+              },
+              "baseline": 4.14096835460928e-16,
+              "current": 9.066017368522486e-16,
+              "delta": 4.925049013913206e-16,
+              "percent": 118.93471749020182
+            },
+            "y": {
+              "assessment": {
+                "disposition": "tolerated",
+                "policy_path": "components.lid.center_of_mass_mm.*",
+                "tolerance": {
+                  "absolute": 0.05,
+                  "percent": 0.0
+                }
+              },
+              "baseline": 7.909853587050548e-17,
+              "current": 1.6632653191448095e-16,
+              "delta": 8.722799604397547e-17,
+              "percent": 110.27763672740917
+            },
+            "z": {
+              "assessment": {
+                "disposition": "tolerated",
+                "policy_path": "components.lid.center_of_mass_mm.*",
+                "tolerance": {
+                  "absolute": 0.05,
+                  "percent": 0.0
+                }
+              },
+              "baseline": 23.22102906687513,
+              "current": 23.221304018195614,
+              "delta": 0.0002749513204847176,
+              "percent": 0.0011840617385770235
+            }
+          },
+          "fingerprint": {
+            "assessment": {
+              "disposition": "accepted",
+              "policy_path": "components.lid.fingerprint",
+              "reason": "The clearance-fit variant intentionally changes the locating skirt geometry."
+            },
+            "baseline": "sha256:fb578c19a4d597a0c90b5d5184075d355258338e98614528207c4ec1ab54fcb0",
+            "changed": true,
+            "current": "sha256:ad17fdc1aecb375fd2ddfad1e7098cef7c6b32175725d377d32f135c61a4fecb"
+          },
+          "geometry_types": {
+            "curves": {
+              "line": {
+                "length_mm": {
+                  "assessment": {
+                    "disposition": "tolerated",
+                    "policy_path": "components.lid.geometry_types.curves.*.length_mm",
+                    "tolerance": {
+                      "absolute": 20.0,
+                      "percent": 1.0
+                    }
+                  },
+                  "baseline": 1230.4,
+                  "current": 1229.7599999999998,
+                  "delta": {
+                    "baseline": 1230.4,
+                    "current": 1229.7599999999998,
+                    "delta": -0.6400000000003274,
+                    "percent": -0.05201560468143103
+                  }
+                }
+              }
+            },
+            "surfaces": {
+              "plane": {
+                "area_mm2": {
+                  "assessment": {
+                    "disposition": "tolerated",
+                    "policy_path": "components.lid.geometry_types.surfaces.*.area_mm2",
+                    "tolerance": {
+                      "absolute": 20.0,
+                      "percent": 1.0
+                    }
+                  },
+                  "baseline": 7469.7599999999975,
+                  "current": 7468.799999999999,
+                  "delta": {
+                    "baseline": 7469.7599999999975,
+                    "current": 7468.799999999999,
+                    "delta": -0.9599999999982174,
+                    "percent": -0.012851818532298463
+                  }
+                }
+              }
+            }
+          },
+          "geometry_types_changed": true,
+          "scalars": {
+            "area_mm2": {
+              "assessment": {
+                "disposition": "tolerated",
+                "policy_path": "components.lid.area_mm2",
+                "tolerance": {
+                  "absolute": 20.0,
+                  "percent": 1.0
+                }
+              },
+              "baseline": 7469.7599999999975,
+              "current": 7468.799999999999,
+              "delta": -0.9599999999982174,
+              "percent": -0.012851818532298463
+            },
+            "volume_mm3": {
+              "assessment": {
+                "disposition": "tolerated",
+                "policy_path": "components.lid.volume_mm3",
+                "tolerance": {
+                  "absolute": 20.0,
+                  "percent": 1.0
+                }
+              },
+              "baseline": 8104.895999999999,
+              "current": 8103.935999999993,
+              "delta": -0.9600000000054933,
+              "percent": -0.011844692393406325
+            }
+          },
+          "topology": {}
+        },
+        "metadata": {}
+      }
+    },
+    "removed": [],
+    "unchanged": [
+      "base"
+    ]
+  },
+  "current_revision": "example-v1",
+  "current_variant": "clearance-fit",
+  "decisions": [
+    {
+      "disposition": "accepted",
+      "kind": "project-variant",
+      "path": "project.variant",
+      "policy_path": "project.variant",
+      "reason": "This report intentionally compares two named project variants."
+    },
+    {
+      "delta": {
+        "baseline": 0.3,
+        "current": 0.32,
+        "delta": 0.020000000000000018,
+        "percent": 6.666666666666673
+      },
+      "disposition": "tolerated",
+      "kind": "parameter",
+      "path": "parameters.lid_clearance_per_side",
+      "policy_path": "parameters.lid_clearance_per_side",
+      "tolerance": {
+        "absolute": 0.05,
+        "percent": 0.0
+      }
+    },
+    {
+      "disposition": "accepted",
+      "kind": "geometry-fingerprint",
+      "path": "components.lid.fingerprint",
+      "policy_path": "components.lid.fingerprint",
+      "reason": "The clearance-fit variant intentionally changes the locating skirt geometry."
+    },
+    {
+      "delta": {
+        "baseline": 8104.895999999999,
+        "current": 8103.935999999993,
+        "delta": -0.9600000000054933,
+        "percent": -0.011844692393406325
+      },
+      "disposition": "tolerated",
+      "kind": "geometry-metric",
+      "path": "components.lid.volume_mm3",
+      "policy_path": "components.lid.volume_mm3",
+      "tolerance": {
+        "absolute": 20.0,
+        "percent": 1.0
+      }
+    },
+    {
+      "delta": {
+        "baseline": 7469.7599999999975,
+        "current": 7468.799999999999,
+        "delta": -0.9599999999982174,
+        "percent": -0.012851818532298463
+      },
+      "disposition": "tolerated",
+      "kind": "geometry-metric",
+      "path": "components.lid.area_mm2",
+      "policy_path": "components.lid.area_mm2",
+      "tolerance": {
+        "absolute": 20.0,
+        "percent": 1.0
+      }
+    },
+    {
+      "delta": {
+        "baseline": 4.14096835460928e-16,
+        "current": 9.066017368522486e-16,
+        "delta": 4.925049013913206e-16,
+        "percent": 118.93471749020182
+      },
+      "disposition": "tolerated",
+      "kind": "geometry-metric",
+      "path": "components.lid.center_of_mass_mm.x",
+      "policy_path": "components.lid.center_of_mass_mm.*",
+      "tolerance": {
+        "absolute": 0.05,
+        "percent": 0.0
+      }
+    },
+    {
+      "delta": {
+        "baseline": 7.909853587050548e-17,
+        "current": 1.6632653191448095e-16,
+        "delta": 8.722799604397547e-17,
+        "percent": 110.27763672740917
+      },
+      "disposition": "tolerated",
+      "kind": "geometry-metric",
+      "path": "components.lid.center_of_mass_mm.y",
+      "policy_path": "components.lid.center_of_mass_mm.*",
+      "tolerance": {
+        "absolute": 0.05,
+        "percent": 0.0
+      }
+    },
+    {
+      "delta": {
+        "baseline": 23.22102906687513,
+        "current": 23.221304018195614,
+        "delta": 0.0002749513204847176,
+        "percent": 0.0011840617385770235
+      },
+      "disposition": "tolerated",
+      "kind": "geometry-metric",
+      "path": "components.lid.center_of_mass_mm.z",
+      "policy_path": "components.lid.center_of_mass_mm.*",
+      "tolerance": {
+        "absolute": 0.05,
+        "percent": 0.0
+      }
+    },
+    {
+      "delta": {
+        "baseline": 1230.4,
+        "current": 1229.7599999999998,
+        "delta": -0.6400000000003274,
+        "percent": -0.05201560468143103
+      },
+      "disposition": "tolerated",
+      "kind": "geometry-type-metric",
+      "path": "components.lid.geometry_types.curves.line.length_mm",
+      "policy_path": "components.lid.geometry_types.curves.*.length_mm",
+      "tolerance": {
+        "absolute": 20.0,
+        "percent": 1.0
+      }
+    },
+    {
+      "delta": {
+        "baseline": 7469.7599999999975,
+        "current": 7468.799999999999,
+        "delta": -0.9599999999982174,
+        "percent": -0.012851818532298463
+      },
+      "disposition": "tolerated",
+      "kind": "geometry-type-metric",
+      "path": "components.lid.geometry_types.surfaces.plane.area_mm2",
+      "policy_path": "components.lid.geometry_types.surfaces.*.area_mm2",
+      "tolerance": {
+        "absolute": 20.0,
+        "percent": 1.0
+      }
+    },
+    {
+      "delta": {
+        "baseline": 0.3,
+        "current": 0.32,
+        "delta": 0.020000000000000018,
+        "percent": 6.666666666666673
+      },
+      "disposition": "tolerated",
+      "kind": "validation-evidence",
+      "path": "validation.fit.lid-clearance.actual",
+      "policy_path": "validation.fit.lid-clearance.actual",
+      "tolerance": {
+        "absolute": 0.05,
+        "percent": 0.0
+      }
+    },
+    {
+      "delta": {
+        "baseline": 8104.895999999999,
+        "current": 8103.935999999993,
+        "delta": -0.9600000000054933,
+        "percent": -0.011844692393406325
+      },
+      "disposition": "tolerated",
+      "kind": "validation-evidence",
+      "path": "validation.geometry.lid.actual.volume_mm3",
+      "policy_path": "validation.geometry.lid.actual.volume_mm3",
+      "tolerance": {
+        "absolute": 20.0,
+        "percent": 1.0
+      }
+    }
+  ],
+  "parameters": {
+    "added": [],
+    "changed": {
+      "lid_clearance_per_side": {
+        "assessment": {
+          "disposition": "tolerated",
+          "policy_path": "parameters.lid_clearance_per_side",
+          "tolerance": {
+            "absolute": 0.05,
+            "percent": 0.0
+          }
+        },
+        "baseline": {
+          "description": "Example value; tune for the intended contents, process, and material.",
+          "source": "configurable-default",
+          "unit": "mm",
+          "value": 0.3
+        },
+        "current": {
+          "description": "Example value; tune for the intended contents, process, and material.",
+          "source": "configurable-default",
+          "unit": "mm",
+          "value": 0.32
+        },
+        "delta": {
+          "baseline": 0.3,
+          "current": 0.32,
+          "delta": 0.020000000000000018,
+          "percent": 6.666666666666673
+        }
+      }
+    },
+    "removed": [],
+    "unchanged": [
+      "floor",
+      "inside_x",
+      "inside_y",
+      "inside_z",
+      "lid_thickness",
+      "locating_skirt_depth",
+      "locating_skirt_wall",
+      "wall"
+    ]
+  },
+  "policy": {
+    "accepted_changes": [
+      {
+        "path": "components.lid.fingerprint",
+        "reason": "The clearance-fit variant intentionally changes the locating skirt geometry."
+      },
+      {
+        "path": "project.variant",
+        "reason": "This report intentionally compares two named project variants."
+      }
+    ],
+    "numeric_tolerances": {
+      "components.lid.area_mm2": {
+        "absolute": 20.0,
+        "percent": 1.0
+      },
+      "components.lid.center_of_mass_mm.*": {
+        "absolute": 0.05,
+        "percent": 0.0
+      },
+      "components.lid.geometry_types.curves.*.length_mm": {
+        "absolute": 20.0,
+        "percent": 1.0
+      },
+      "components.lid.geometry_types.surfaces.*.area_mm2": {
+        "absolute": 20.0,
+        "percent": 1.0
+      },
+      "components.lid.volume_mm3": {
+        "absolute": 20.0,
+        "percent": 1.0
+      },
+      "parameters.lid_clearance_per_side": {
+        "absolute": 0.05,
+        "percent": 0.0
+      },
+      "validation.fit.lid-clearance.actual": {
+        "absolute": 0.05,
+        "percent": 0.0
+      },
+      "validation.geometry.lid.actual.volume_mm3": {
+        "absolute": 20.0,
+        "percent": 1.0
+      }
+    },
+    "source": "comparison-policy.json"
+  },
+  "project_id": "project-box",
+  "schema": "cadharness.diff",
+  "schema_version": "1",
+  "severity": "accepted",
+  "summary": {
+    "accepted_changes": 2,
+    "components_added": 0,
+    "components_changed": 1,
+    "components_removed": 0,
+    "parameters_added": 0,
+    "parameters_changed": 1,
+    "parameters_removed": 0,
+    "significant_changes": 0,
+    "tolerated_changes": 10,
+    "validation_regressions": 0,
+    "validation_resolutions": 0
+  },
+  "validation": {
+    "added": [],
+    "baseline_passed": true,
+    "changed": {
+      "fit.lid-clearance": {
+        "actual_assessments": [
+          {
+            "assessment": {
+              "disposition": "tolerated",
+              "policy_path": "validation.fit.lid-clearance.actual",
+              "tolerance": {
+                "absolute": 0.05,
+                "percent": 0.0
+              }
+            },
+            "delta": {
+              "baseline": 0.3,
+              "current": 0.32,
+              "delta": 0.020000000000000018,
+              "percent": 6.666666666666673
+            }
+          }
+        ],
+        "baseline_actual": 0.3,
+        "baseline_status": "pass",
+        "current_actual": 0.32,
+        "current_status": "pass",
+        "status_assessment": null
+      },
+      "geometry.lid": {
+        "actual_assessments": [
+          {
+            "assessment": {
+              "disposition": "tolerated",
+              "policy_path": "validation.geometry.lid.actual.volume_mm3",
+              "tolerance": {
+                "absolute": 20.0,
+                "percent": 1.0
+              }
+            },
+            "delta": {
+              "baseline": 8104.895999999999,
+              "current": 8103.935999999993,
+              "delta": -0.9600000000054933,
+              "percent": -0.011844692393406325
+            },
+            "field": "volume_mm3"
+          }
+        ],
+        "baseline_actual": {
+          "solid_count": 1,
+          "valid": true,
+          "volume_mm3": 8104.895999999999
+        },
+        "baseline_status": "pass",
+        "current_actual": {
+          "solid_count": 1,
+          "valid": true,
+          "volume_mm3": 8103.935999999993
+        },
+        "current_status": "pass",
+        "status_assessment": null
+      }
+    },
+    "current_passed": true,
+    "regressions": [],
+    "removed": [],
+    "resolutions": []
+  }
+}

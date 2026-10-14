@@ -9,11 +9,14 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field, is_dataclass
 from enum import Enum
+from hashlib import sha256
+from io import BytesIO
 from pathlib import Path
 import re
+from collections import Counter, defaultdict
 from typing import Any, Callable, Mapping
 
-from build123d import Shape
+from build123d import Shape, export_brep
 
 
 _IDENTIFIER = re.compile(r"^[a-z][a-z0-9]*(?:[-_.][a-z0-9]+)*$")
@@ -63,7 +66,6 @@ class Parameter:
             "source": self.source,
             "description": self.description,
         }
-
 
 @dataclass
 class Component:
@@ -132,14 +134,50 @@ class Check:
         _require_identifier(self.id, "check id")
 
 
+def geometry_fingerprint(shape: Shape) -> str:
+    """Return a deterministic SHA-256 fingerprint of the OCCT BREP geometry."""
+    buffer = BytesIO()
+    export_brep(shape, buffer)
+    return f"sha256:{sha256(buffer.getvalue()).hexdigest()}"
+
+
+def _geometry_type_summary(shape: Shape) -> dict[str, Any]:
+    face_counts: Counter[str] = Counter()
+    face_areas: defaultdict[str, float] = defaultdict(float)
+    for face in shape.faces():
+        name = face.geom_type.name.lower()
+        face_counts[name] += 1
+        face_areas[name] += float(face.area)
+
+    edge_counts: Counter[str] = Counter()
+    edge_lengths: defaultdict[str, float] = defaultdict(float)
+    for edge in shape.edges():
+        name = edge.geom_type.name.lower()
+        edge_counts[name] += 1
+        edge_lengths[name] += float(edge.length)
+
+    return {
+        "surfaces": {
+            name: {"count": face_counts[name], "area_mm2": face_areas[name]}
+            for name in sorted(face_counts)
+        },
+        "curves": {
+            name: {"count": edge_counts[name], "length_mm": edge_lengths[name]}
+            for name in sorted(edge_counts)
+        },
+    }
+
+
 def shape_metrics(shape: Shape) -> dict[str, Any]:
-    """Return cheap OCCT-derived facts without assuming a particular part type."""
+    """Return reproducible OCCT facts without assuming a particular part type."""
     bbox = shape.bounding_box()
     size = bbox.size
     center = bbox.center()
     metrics: dict[str, Any] = {
         "type": type(shape).__name__,
         "valid": bool(shape.is_valid),
+        "manifold": bool(shape.is_manifold),
+        "fingerprint": geometry_fingerprint(shape),
         "volume_mm3": float(shape.volume),
         "area_mm2": float(shape.area),
         "bounding_box": {
@@ -155,6 +193,7 @@ def shape_metrics(shape: Shape) -> dict[str, Any]:
             "edges": len(shape.edges()),
             "vertices": len(shape.vertices()),
         },
+        "geometry_types": _geometry_type_summary(shape),
     }
     try:
         mass_center = shape.center()
@@ -325,4 +364,3 @@ class ValidationReport:
             "summary": counts,
             "results": [result.to_dict() for result in self.results],
         }
-

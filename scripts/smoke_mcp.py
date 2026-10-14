@@ -32,14 +32,31 @@ async def smoke() -> dict:
                 "validate_cad_project",
                 {"project_path": "examples/project-box"},
             )
-            structured = validation.structuredContent or {}
+            structured = validation.structured_content or {}
+            tool_names = [tool.name for tool in tools.tools]
+            expected_tools = {
+                "list_cad_projects",
+                "inspect_cad_project",
+                "validate_cad_project",
+                "snapshot_cad_project",
+                "compare_cad_project",
+                "preview_cad_project",
+                "export_cad_project",
+            }
+            if initialization.server_info.name != "cadHarness":
+                raise RuntimeError(f"unexpected server name: {initialization.server_info.name}")
+            if set(tool_names) != expected_tools:
+                raise RuntimeError(f"unexpected tool surface: {tool_names}")
+            if validation.is_error or not structured.get("passed"):
+                raise RuntimeError(f"validation smoke test failed: {validation}")
             return {
-                "server": initialization.serverInfo.name,
-                "tools": [tool.name for tool in tools.tools],
+                "server": initialization.server_info.name,
+                "tools": tool_names,
                 "validation": {
-                    "is_error": bool(validation.isError),
+                    "is_error": bool(validation.is_error),
                     "project_id": structured.get("project_id"),
                     "passed": structured.get("passed"),
+                    "variant": structured.get("variant"),
                     "summary": structured.get("summary"),
                 },
             }
@@ -47,4 +64,3 @@ async def smoke() -> dict:
 
 if __name__ == "__main__":
     print(json.dumps(anyio.run(smoke), indent=2, sort_keys=True))
-

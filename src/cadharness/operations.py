@@ -2,33 +2,46 @@
 
 from __future__ import annotations
 
+from hashlib import sha256
+import json
 from pathlib import Path
 import re
-from typing import Iterable
+from typing import Any, Iterable
 
 from build123d import Compound, export_step, export_stl
 
 from .model import shape_metrics
+from .policy import ComparisonPolicy
+from .preview import VIEW_NAMES, write_svg_previews
 from .project import LoadedProject, discover_projects, load_project
+from .revision import build_snapshot, compare_snapshots
 
 
 _SAFE_NAME = re.compile(r"[^a-zA-Z0-9_.-]+")
 
 
-def inspect_project(path: str | Path) -> dict:
-    loaded = load_project(path)
+def inspect_project(
+    path: str | Path, *, variant: str | None = None
+) -> dict[str, Any]:
+    loaded = load_project(path, variant=variant)
     report = loaded.document.inspect()
     report["manifest"] = {
         "path": str(loaded.manifest_path),
         "description": loaded.manifest.description,
+        "variant": loaded.variant,
+        "default_variant": loaded.manifest.default_variant,
+        "available_variants": sorted(loaded.manifest.variants),
     }
     return report
 
 
-def validate_project(path: str | Path) -> dict:
-    loaded = load_project(path)
+def validate_project(
+    path: str | Path, *, variant: str | None = None
+) -> dict[str, Any]:
+    loaded = load_project(path, variant=variant)
     report = loaded.document.validate().to_dict()
     report["manifest_path"] = str(loaded.manifest_path)
+    report["variant"] = loaded.variant
     return report
 
 
@@ -42,24 +55,131 @@ def _contained_path(root: Path, candidate: Path) -> Path:
     return resolved
 
 
+def _project_artifact_path(loaded: LoadedProject, candidate: str | Path) -> Path:
+    path = Path(candidate)
+    if not path.is_absolute():
+        path = loaded.root / path
+    return _contained_path(loaded.root, path)
+
+
+def snapshot_project(
+    path: str | Path,
+    *,
+    output_file: str | Path = ".cadharness/baseline.json",
+    variant: str | None = None,
+    overwrite: bool = False,
+) -> dict[str, Any]:
+    """Build and persist a deterministic engineering snapshot."""
+    loaded = load_project(path, variant=variant)
+    target = _project_artifact_path(loaded, output_file)
+    if target.exists() and not overwrite:
+        raise FileExistsError(f"refusing to overwrite existing snapshot: {target}")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    snapshot = build_snapshot(loaded.document, variant=loaded.variant)
+    content = json.dumps(snapshot, indent=2, sort_keys=True) + "\n"
+    target.write_text(content, encoding="utf-8")
+    return {
+        "project_id": loaded.document.id,
+        "revision": loaded.document.revision,
+        "variant": loaded.variant,
+        "path": str(target),
+        "sha256": sha256(content.encode("utf-8")).hexdigest(),
+        "components": len(snapshot["components"]),
+        "checks": len(snapshot["validation"]["results"]),
+        "validation_passed": snapshot["validation"]["passed"],
+    }
+
+
+def compare_project(
+    path: str | Path,
+    *,
+    baseline_file: str | Path = ".cadharness/baseline.json",
+    variant: str | None = None,
+    policy_file: str | Path | None = None,
+    output_file: str | Path | None = None,
+    overwrite: bool = False,
+) -> dict[str, Any]:
+    """Compare current source-built geometry with a saved snapshot."""
+    loaded = load_project(path, variant=variant)
+    baseline_path = _project_artifact_path(loaded, baseline_file)
+    with baseline_path.open("r", encoding="utf-8") as stream:
+        baseline = json.load(stream)
+    configured_policy = policy_file or loaded.manifest.comparison_policy
+    if configured_policy:
+        policy_path = _project_artifact_path(loaded, configured_policy)
+        policy = ComparisonPolicy.from_file(
+            policy_path,
+            source=policy_path.relative_to(loaded.root).as_posix(),
+        )
+    else:
+        policy = ComparisonPolicy.exact()
+    current = build_snapshot(loaded.document, variant=loaded.variant)
+    report = compare_snapshots(baseline, current, policy=policy)
+    report["baseline_path"] = baseline_path.relative_to(loaded.root).as_posix()
+    if output_file is not None:
+        target = _project_artifact_path(loaded, output_file)
+        if target.exists() and not overwrite:
+            raise FileExistsError(f"refusing to overwrite comparison report: {target}")
+        target.parent.mkdir(parents=True, exist_ok=True)
+        content = json.dumps(report, indent=2, sort_keys=True) + "\n"
+        target.write_text(content, encoding="utf-8")
+        report["output_path"] = str(target)
+        report["output_sha256"] = sha256(content.encode("utf-8")).hexdigest()
+    return report
+
+
+def preview_project(
+    path: str | Path,
+    *,
+    output_dir: str | Path = "artifacts/previews",
+    views: Iterable[str] = ("iso",),
+    component_ids: Iterable[str] | None = None,
+    variant: str | None = None,
+    overwrite: bool = False,
+) -> dict[str, Any]:
+    """Generate headless hidden-line SVG views as inspectable artifacts."""
+    loaded = load_project(path, variant=variant)
+    target_dir = _project_artifact_path(loaded, output_dir)
+    normalized_views = [view.lower() for view in views]
+    invalid = sorted(set(normalized_views) - set(VIEW_NAMES))
+    if invalid:
+        raise ValueError(f"unknown preview views: {', '.join(invalid)}")
+    outputs = write_svg_previews(
+        loaded.document,
+        target_dir,
+        views=normalized_views,
+        component_ids=component_ids,
+        artifact_id=(
+            f"{loaded.document.id}-{loaded.variant}"
+            if loaded.variant
+            else loaded.document.id
+        ),
+        overwrite=overwrite,
+    )
+    return {
+        "project_id": loaded.document.id,
+        "revision": loaded.document.revision,
+        "variant": loaded.variant,
+        "outputs": outputs,
+    }
+
+
 def export_project(
     path: str | Path,
     *,
     output_dir: str | Path = "exports/cadharness",
     file_format: str = "step",
     component_ids: Iterable[str] | None = None,
+    variant: str | None = None,
     overwrite: bool = False,
-) -> dict:
+) -> dict[str, Any]:
     """Explicitly export selected components or the whole built document."""
-    loaded = load_project(path)
+    loaded = load_project(path, variant=variant)
     normalized_format = file_format.lower()
     if normalized_format not in {"step", "stl"}:
         raise ValueError("file_format must be 'step' or 'stl'")
 
-    output_candidate = Path(output_dir)
-    if not output_candidate.is_absolute():
-        output_candidate = loaded.root / output_candidate
-    target_dir = _contained_path(loaded.root, output_candidate)
+    target_dir = _project_artifact_path(loaded, output_dir)
     target_dir.mkdir(parents=True, exist_ok=True)
 
     selected = list(component_ids or [])
@@ -83,7 +203,8 @@ def export_project(
     outputs = []
     exporter = export_step if normalized_format == "step" else export_stl
     for item_id, shape in export_items:
-        filename = _SAFE_NAME.sub("-", item_id).strip("-.")
+        artifact_id = f"{item_id}-{loaded.variant}" if loaded.variant else item_id
+        filename = _SAFE_NAME.sub("-", artifact_id).strip("-.")
         output_path = target_dir / f"{filename}.{normalized_format}"
         if output_path.exists() and not overwrite:
             raise FileExistsError(f"refusing to overwrite existing export: {output_path}")
@@ -98,14 +219,17 @@ def export_project(
     return {
         "project_id": loaded.document.id,
         "format": normalized_format,
+        "variant": loaded.variant,
         "outputs": outputs,
     }
 
 
 __all__ = [
+    "compare_project",
     "discover_projects",
     "export_project",
     "inspect_project",
+    "preview_project",
+    "snapshot_project",
     "validate_project",
 ]
-

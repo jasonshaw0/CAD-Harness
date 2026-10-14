@@ -1,5 +1,13 @@
 [project]
 id = "project-box"
 name = "Parametric Project Box"
-description = "Unrelated two-part enclosure used to exercise the general cadharness contract."
+description = "Two-part enclosure exercising the general cadHarness project contract."
 entrypoint = "project.py:create_project"
+parameter_type = "project.py:ProjectBoxParameters"
+default_variant = "standard"
+comparison_policy = "comparison-policy.json"
+
+[variants.standard]
+
+[variants.clearance-fit]
+lid_clearance_per_side = 0.32

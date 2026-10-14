@@ -1,0 +1,345 @@
+{
+  "checks": [
+    {
+      "category": "interference",
+      "description": "assembled base and lid have no solid interference",
+      "id": "assembly.base-lid-interference"
+    },
+    {
+      "category": "engineering",
+      "description": "nominal lid skirt clearance per side",
+      "id": "fit.lid-clearance"
+    },
+    {
+      "category": "engineering",
+      "description": "minimum modeled wall thickness",
+      "id": "manufacturing.minimum-wall"
+    },
+    {
+      "category": "engineering",
+      "description": "base outside X dimension",
+      "id": "dimensions.outside-x"
+    },
+    {
+      "category": "engineering",
+      "description": "base outside Y dimension",
+      "id": "dimensions.outside-y"
+    }
+  ],
+  "components": {
+    "base": {
+      "geometry": {
+        "area_mm2": 14716.159999999998,
+        "bounding_box": {
+          "center_mm": [
+            0.0,
+            0.0,
+            11.2
+          ],
+          "max_mm": [
+            32.4,
+            22.4,
+            22.4
+          ],
+          "min_mm": [
+            -32.4,
+            -22.4,
+            0.0
+          ],
+          "size_mm": [
+            64.8,
+            44.8,
+            22.4
+          ]
+        },
+        "center_of_mass_mm": [
+          -3.851116021497216e-17,
+          -2.577100772778343e-15,
+          7.81735522280354
+        ],
+        "fingerprint": "sha256:882a5dd7413a67e08c9caaa77cecb6a59d91dd02d6ecd65738aace7a884bca5b",
+        "geometry_types": {
+          "curves": {
+            "line": {
+              "count": 24,
+              "length_mm": 1007.9999999999999
+            }
+          },
+          "surfaces": {
+            "plane": {
+              "area_mm2": 14716.159999999998,
+              "count": 11
+            }
+          }
+        },
+        "manifold": true,
+        "topology": {
+          "edges": 24,
+          "faces": 11,
+          "shells": 1,
+          "solids": 1,
+          "vertices": 16
+        },
+        "type": "Part",
+        "valid": true,
+        "volume_mm3": 17028.09599999999
+      },
+      "material": "printed-polymer",
+      "metadata": {},
+      "role": "printable-part",
+      "source": "project.make_base",
+      "tags": []
+    },
+    "lid": {
+      "geometry": {
+        "area_mm2": 7469.7599999999975,
+        "bounding_box": {
+          "center_mm": [
+            0.0,
+            0.0,
+            22.099999999999998
+          ],
+          "max_mm": [
+            32.4,
+            22.4,
+            24.799999999999997
+          ],
+          "min_mm": [
+            -32.4,
+            -22.4,
+            19.4
+          ],
+          "size_mm": [
+            64.8,
+            44.8,
+            5.399999999999999
+          ]
+        },
+        "center_of_mass_mm": [
+          4.14096835460928e-16,
+          7.909853587050548e-17,
+          23.22102906687513
+        ],
+        "fingerprint": "sha256:fb578c19a4d597a0c90b5d5184075d355258338e98614528207c4ec1ab54fcb0",
+        "geometry_types": {
+          "curves": {
+            "line": {
+              "count": 36,
+              "length_mm": 1230.4
+            }
+          },
+          "surfaces": {
+            "plane": {
+              "area_mm2": 7469.7599999999975,
+              "count": 16
+            }
+          }
+        },
+        "manifold": true,
+        "topology": {
+          "edges": 36,
+          "faces": 16,
+          "shells": 1,
+          "solids": 1,
+          "vertices": 24
+        },
+        "type": "Part",
+        "valid": true,
+        "volume_mm3": 8104.895999999999
+      },
+      "material": "printed-polymer",
+      "metadata": {},
+      "role": "printable-part",
+      "source": "project.make_lid",
+      "tags": []
+    }
+  },
+  "parameters": {
+    "floor": {
+      "description": "Example value; tune for the intended contents, process, and material.",
+      "source": "configurable-default",
+      "unit": "mm",
+      "value": 2.4
+    },
+    "inside_x": {
+      "description": "Example value; tune for the intended contents, process, and material.",
+      "source": "configurable-default",
+      "unit": "mm",
+      "value": 60.0
+    },
+    "inside_y": {
+      "description": "Example value; tune for the intended contents, process, and material.",
+      "source": "configurable-default",
+      "unit": "mm",
+      "value": 40.0
+    },
+    "inside_z": {
+      "description": "Example value; tune for the intended contents, process, and material.",
+      "source": "configurable-default",
+      "unit": "mm",
+      "value": 20.0
+    },
+    "lid_clearance_per_side": {
+      "description": "Example value; tune for the intended contents, process, and material.",
+      "source": "configurable-default",
+      "unit": "mm",
+      "value": 0.3
+    },
+    "lid_thickness": {
+      "description": "Example value; tune for the intended contents, process, and material.",
+      "source": "configurable-default",
+      "unit": "mm",
+      "value": 2.4
+    },
+    "locating_skirt_depth": {
+      "description": "Example value; tune for the intended contents, process, and material.",
+      "source": "configurable-default",
+      "unit": "mm",
+      "value": 3.0
+    },
+    "locating_skirt_wall": {
+      "description": "Example value; tune for the intended contents, process, and material.",
+      "source": "configurable-default",
+      "unit": "mm",
+      "value": 2.0
+    },
+    "wall": {
+      "description": "Example value; tune for the intended contents, process, and material.",
+      "source": "configurable-default",
+      "unit": "mm",
+      "value": 2.4
+    }
+  },
+  "project": {
+    "id": "project-box",
+    "metadata": {
+      "manufacturing_note": "Clearance and wall rules are configurable examples, not universal print-process values.",
+      "physical_validation": "not performed",
+      "purpose": "general-purpose regression example"
+    },
+    "name": "Parametric Project Box",
+    "revision": "example-v1",
+    "variant": "standard"
+  },
+  "schema": "cadharness.snapshot",
+  "schema_version": "1",
+  "validation": {
+    "passed": true,
+    "project_id": "project-box",
+    "results": [
+      {
+        "actual": {
+          "solid_count": 1,
+          "valid": true,
+          "volume_mm3": 17028.09599999999
+        },
+        "evidence": {
+          "role": "printable-part"
+        },
+        "expected": {
+          "nonempty": true,
+          "solid_required": true,
+          "valid": true
+        },
+        "id": "geometry.base",
+        "message": "base is valid, nonempty geometry",
+        "status": "pass",
+        "unit": null
+      },
+      {
+        "actual": {
+          "solid_count": 1,
+          "valid": true,
+          "volume_mm3": 8104.895999999999
+        },
+        "evidence": {
+          "role": "printable-part"
+        },
+        "expected": {
+          "nonempty": true,
+          "solid_required": true,
+          "valid": true
+        },
+        "id": "geometry.lid",
+        "message": "lid is valid, nonempty geometry",
+        "status": "pass",
+        "unit": null
+      },
+      {
+        "actual": 0.0,
+        "evidence": {
+          "components": [
+            "base",
+            "lid"
+          ]
+        },
+        "expected": {
+          "maximum": 1e-05
+        },
+        "id": "assembly.base-lid-interference",
+        "message": "assembled base and lid have no solid interference: overlap 0mm^3",
+        "status": "pass",
+        "unit": "mm^3"
+      },
+      {
+        "actual": 0.3,
+        "evidence": {
+          "classification": "configurable-default, not physically verified"
+        },
+        "expected": {
+          "minimum": 0.2
+        },
+        "id": "fit.lid-clearance",
+        "message": "nominal lid skirt clearance per side: 0.3mm meets minimum 0.2mm",
+        "status": "pass",
+        "unit": "mm"
+      },
+      {
+        "actual": 2.0,
+        "evidence": {
+          "classification": "example design rule"
+        },
+        "expected": {
+          "minimum": 1.6
+        },
+        "id": "manufacturing.minimum-wall",
+        "message": "minimum modeled wall thickness: 2mm meets minimum 1.6mm",
+        "status": "pass",
+        "unit": "mm"
+      },
+      {
+        "actual": 64.8,
+        "evidence": {},
+        "expected": {
+          "absolute_tolerance": 1e-07,
+          "value": 64.8
+        },
+        "id": "dimensions.outside-x",
+        "message": "base outside X dimension: observed expected value",
+        "status": "pass",
+        "unit": "mm"
+      },
+      {
+        "actual": 44.8,
+        "evidence": {},
+        "expected": {
+          "absolute_tolerance": 1e-07,
+          "value": 44.8
+        },
+        "id": "dimensions.outside-y",
+        "message": "base outside Y dimension: observed expected value",
+        "status": "pass",
+        "unit": "mm"
+      }
+    ],
+    "revision": "example-v1",
+    "schema_version": "1",
+    "summary": {
+      "error": 0,
+      "fail": 0,
+      "pass": 7,
+      "skip": 0,
+      "warn": 0
+    }
+  }
+}

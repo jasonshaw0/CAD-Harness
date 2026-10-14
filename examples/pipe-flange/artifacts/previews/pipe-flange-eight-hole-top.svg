@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg width="170.22mm" height="170.22mm" viewBox="-37.235625 -37.235625 74.47125 74.47125" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <g transform="scale(1,-1)" stroke-linecap="round">
+    <g fill="none" stroke="rgb(17,23,39)" stroke-width="0.09625" id="visible">
+      <circle cx="0.0" cy="0.0" r="35.0" />
+      <circle cx="-17.67767" cy="-17.67767" r="2.75" />
+      <circle cx="-0.0" cy="-25.0" r="2.75" />
+      <circle cx="17.67767" cy="-17.67767" r="2.75" />
+      <circle cx="-25.0" cy="0.0" r="2.75" />
+      <circle cx="-17.67767" cy="17.67767" r="2.75" />
+      <circle cx="25.0" cy="0.0" r="2.75" />
+      <circle cx="0.0" cy="25.0" r="2.75" />
+      <circle cx="17.67767" cy="17.67767" r="2.75" />
+      <circle cx="0.0" cy="0.0" r="18.0" />
+      <circle cx="0.0" cy="0.0" r="10.0" />
+    </g>
+    <g fill="none" stroke="rgb(155,163,174)" stroke-width="0.056875" id="hidden" stroke-dasharray="0.6825 0.170625">
+      <circle cx="0.0" cy="0.0" r="35.0" />
+      <circle cx="0.0" cy="0.0" r="18.0" />
+      <circle cx="-17.67767" cy="-17.67767" r="2.75" />
+      <circle cx="-0.0" cy="-25.0" r="2.75" />
+      <circle cx="17.67767" cy="-17.67767" r="2.75" />
+      <circle cx="-25.0" cy="0.0" r="2.75" />
+      <circle cx="-17.67767" cy="17.67767" r="2.75" />
+      <circle cx="0.0" cy="0.0" r="10.0" />
+      <circle cx="25.0" cy="0.0" r="2.75" />
+      <circle cx="0.0" cy="25.0" r="2.75" />
+      <circle cx="17.67767" cy="17.67767" r="2.75" />
+    </g>
+  </g>
+</svg>

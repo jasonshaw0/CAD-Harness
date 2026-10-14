@@ -4,14 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cadharness"
-version = "0.1.0"
-description = "Source-backed CAD project inspection and engineering validation for build123d"
+version = "0.3.0"
+description = "Source-backed CAD engineering workflows for build123d"
 readme = "README.md"
 requires-python = ">=3.11,<3.15"
 dependencies = ["build123d>=0.10"]
 
 [project.optional-dependencies]
-mcp = ["mcp>=1.26,<2"]
+mcp = ["mcp>=2.3,<3"]
 
 [project.scripts]
 cadharness = "cadharness.cli:main"
@@ -19,4 +19,3 @@ cadharness-mcp = "cadharness.mcp_server:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-

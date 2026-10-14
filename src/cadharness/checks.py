@@ -158,4 +158,3 @@ def interference_check(
         )
 
     return Check(check_id, summary, evaluate, category="interference")
-

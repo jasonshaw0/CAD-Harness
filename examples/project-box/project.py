@@ -1,4 +1,4 @@
-"""Small two-part electronics enclosure used as a non-rotary regression project."""
+"""Small two-part electronics enclosure used as a framework example."""
 
 from __future__ import annotations
 
@@ -188,4 +188,3 @@ def create_project(params: ProjectBoxParameters = DEFAULTS) -> CADDocument:
             "manufacturing_note": "Clearance and wall rules are configurable examples, not universal print-process values.",
         },
     )
-

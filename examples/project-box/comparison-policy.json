@@ -1,0 +1,48 @@
+{
+  "schema": "cadharness.comparison-policy",
+  "schema_version": "1",
+  "numeric_tolerances": {
+    "components.lid.area_mm2": {
+      "absolute": 20.0,
+      "percent": 1.0
+    },
+    "components.lid.center_of_mass_mm.*": {
+      "absolute": 0.05,
+      "percent": 0.0
+    },
+    "components.lid.geometry_types.curves.*.length_mm": {
+      "absolute": 20.0,
+      "percent": 1.0
+    },
+    "components.lid.geometry_types.surfaces.*.area_mm2": {
+      "absolute": 20.0,
+      "percent": 1.0
+    },
+    "components.lid.volume_mm3": {
+      "absolute": 20.0,
+      "percent": 1.0
+    },
+    "parameters.lid_clearance_per_side": {
+      "absolute": 0.05,
+      "percent": 0.0
+    },
+    "validation.fit.lid-clearance.actual": {
+      "absolute": 0.05,
+      "percent": 0.0
+    },
+    "validation.geometry.lid.actual.volume_mm3": {
+      "absolute": 20.0,
+      "percent": 1.0
+    }
+  },
+  "accepted_changes": [
+    {
+      "path": "project.variant",
+      "reason": "This report intentionally compares two named project variants."
+    },
+    {
+      "path": "components.lid.fingerprint",
+      "reason": "The clearance-fit variant intentionally changes the locating skirt geometry."
+    }
+  ]
+}

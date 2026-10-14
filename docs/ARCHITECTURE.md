@@ -1,156 +1,116 @@
-# cadharness architecture — milestone 1
+# cadHarness architecture — typed variants and revision policy
 
-## Decision
+## Product boundary
 
-cadharness is a source-backed engineering project layer for build123d, not a new
-geometric kernel, a second assembly system, or an embedded autonomous agent.
+cadHarness is a general-purpose, source-backed engineering workflow for build123d projects. It is not a geometric kernel, an assembly replacement, a sketch editor, or an embedded autonomous agent.
 
-The authoritative artifact remains ordinary Python that creates build123d
-shapes. A project factory returns a `CADDocument`, which attaches stable
-component identity, parameter provenance, engineering checks, and metadata to
-those native shapes. The same document is consumed by the Python API, CLI, and
-MCP server.
+The authoritative artifact remains ordinary Python that creates build123d/OCCT shapes. A project factory returns a `CADDocument`, which attaches stable identity and engineering meaning to those native shapes.
 
 ```text
 trusted Python project source
           |
           v
- build123d / OCCT shapes  <---- existing geometry, joints, topology, exchange
+  build123d / OCCT shapes
           |
           v
- CADDocument ------------- parameters + provenance
-          |                 components + roles
-          |                 executable checks + evidence
+ CADDocument ---- parameters + provenance
+          |       components + roles
+          |       checks + evidence
           |
-     +----+---------------------+
-     |              |           |
- Python API      JSON CLI      MCP tools
-     |              |           |
- tests/scripts   CI + agents   coding agents
+     +----+----------------+------------------+
+     |                     |                  |
+ inspection/validation  snapshot/diff     preview/export
+     |                     |                  |
+ Python API, JSON CLI, and bounded MCP tools share operations
 ```
 
-The core package does not know about the rotary platform. Its geometry stays
-in the existing modules and `rotary_project.py` is only an adapter. The
-unrelated `examples/project-box` enclosure exercises the same contract.
-
-## What the investigation found
-
-### build123d and OCCT already own geometry
-
-The local build123d checkout and current documentation show that build123d
-already provides:
-
-- native OCCT topology and booleans;
-- `Compound` assembly trees with labels, children, relative locations, and
-  global locations;
-- rigid, revolute, linear, and cylindrical joints;
-- validity, volume, area, center of mass, bounding boxes, distances, and
-  topology traversal;
-- STEP, STL, BREP, DXF, SVG, glTF, and 3MF data exchange.
-
-Re-wrapping those concepts would create identity and synchronization bugs.
-cadharness components therefore contain native `Shape` instances directly.
-
-References: [build123d assemblies](https://build123d.readthedocs.io/en/latest/assemblies.html),
-[joints](https://build123d.readthedocs.io/en/latest/joints.html), and
-[import/export](https://build123d.readthedocs.io/en/latest/import_export.html).
-
-### Existing adjacent tools change the product boundary
-
-- [PartCAD](https://github.com/partcad/partcad) is already pursuing a broad
-  package manager/digital-thread system across multiple CAD backends. cadharness
-  should not begin with remote package resolution, a registry, or PLM scope.
-- [build123d-mcp](https://github.com/pzfreo/build123d-mcp) is a capable
-  persistent scratch-session toolbox with rendering, measurement, feature
-  recognition, snapshots, and guarded execution. cadharness should interoperate
-  with it rather than fork its session tools. cadharness's MCP surface is instead
-  project-aware and source-backed: list, inspect, validate, and explicit export.
-- [FreeCAD FEM](https://github.com/FreeCAD/FreeCAD-documentation/blob/main/wiki/FEM_Workbench.md)
-  already coordinates geometry, meshing, external solvers, and postprocessing.
-  The existing FreeCAD/CalculiX pipeline remains a downstream analysis adapter;
-  FEA is not embedded in the core package.
-- OCCT's [XDE/XCAF](https://dev.opencascade.org/doc/overview/html/occt_user_guides__xde.html)
-  can preserve richer assembly attributes in exchange files. It is a sensible
-  later export backend, but not a reason to replace Python source with a custom
-  persistent document format in this milestone.
+Keeping native `Shape` instances avoids a second topology model and retains direct access to OCCT booleans, joints, measurements, traversal, and exchange. The framework owns project semantics and workflow evidence instead.
 
 ## Project contract
 
-Each project has a `cadharness.toml` manifest:
+Each project has a `cadharness.toml` manifest. Its entrypoint is trusted Python and must return a `CADDocument` with:
 
-```toml
-[project]
-id = "project-box"
-name = "Parametric Project Box"
-entrypoint = "project.py:create_project"
-```
-
-The factory returns a `CADDocument` with:
-
-- stable project and revision identifiers;
+- a stable project ID and explicit revision label;
 - named `Component` records containing native build123d shapes;
-- `Parameter` records with value, unit, source classification, and description;
-- `Check` evaluators returning structured `CheckResult` evidence;
-- metadata for risks, assumptions, source files, and physical-validation gaps.
+- `Parameter` values with unit, source classification, and description;
+- `Check` evaluators returning structured status, actual/expected values, units, and evidence;
+- metadata for assumptions and physical-validation gaps.
 
-Project files are trusted executable Python. The MCP server does not accept an
-arbitrary `execute` operation and restricts project paths to
-`CADHARNESS_PROJECT_ROOTS`, but this is a containment boundary, not a sandbox.
+Projects may also declare a dataclass `parameter_type`, a default named variant,
+and additional variant tables. The loader validates field names and TOML value
+types before constructing the dataclass and calling the project factory. Agents
+can therefore select a bounded, source-reviewed configuration by name rather
+than sending an arbitrary parameter dictionary.
 
-## Validation philosophy
+The loader keeps project-local imports isolated between builds. MCP paths are restricted to `CADHARNESS_PROJECT_ROOTS`. That prevents accidental path drift, but executing a project still executes its Python code and is not sandboxing.
 
-Validation has two layers:
+## Capabilities
 
-1. The framework checks every component for nonempty, valid OCCT geometry and
-   the expected presence of solids.
-2. Project source defines domain checks: dimensions, clearance budgets,
-   interference pairs, counts, sampled mechanism states, or other computed
-   assertions.
+### Inspection
 
-Every result contains status, actual value, expected condition, units, and
-evidence. A computational pass is not described as physical validation. The
-rotary adapter explicitly carries its axle and fit-coupon checks as unresolved
-physical work.
+Inspection reports OCCT validity, manifold state, mass properties, bounding boxes, topology counts, surface and curve type histograms, and a SHA-256 fingerprint of serialized BREP geometry. These are measured facts; feature intent is not inferred from topology.
 
-## Agent interface
+### Validation
 
-The CLI and MCP server share the same operation functions, so their output
-cannot drift:
+Validation first checks every component for nonempty, valid geometry and required solids. Project source then defines domain checks such as dimensions, clearance budgets, interference pairs, counts, or sampled states. Computational success is never labeled physical validation.
+
+### Revision evidence
+
+`snapshot` records deterministic project, parameter, component, geometry, and validation evidence. It intentionally omits timestamps so unchanged builds produce byte-stable JSON.
+
+`compare` rebuilds current source and explains changes against a saved snapshot:
+
+- parameters added, removed, or changed;
+- components added, removed, or changed;
+- exact BREP fingerprint changes;
+- volume, area, bounding-box, topology, and geometry-type deltas;
+- validation regressions and resolutions.
+
+An optional project comparison policy adds numeric tolerances and explicit
+accepted-change records. Every changed leaf remains in the report with one of
+three dispositions: `significant`, `tolerated`, or `accepted`. Accepted records
+must include a reason. A transition into `fail` or `error` is always a
+regression, even when a policy pattern attempts to accept it.
+
+Exact fingerprints detect a change; geometric deltas and policy decisions help
+explain and review it. Policy acceptance is recorded engineering intent, not a
+claim of geometric identity or physical suitability.
+
+### Visualization and exchange
+
+`preview` generates headless hidden-line SVG views (`iso`, `top`, `front`, and `right`) for review artifacts and future interfaces. It is intentionally not a modeling UI. `export` writes STEP or STL only when explicitly requested. Both operations confine outputs to the project root and refuse overwrite by default.
+
+## Interfaces
+
+The CLI and MCP server call the same operation layer:
 
 - `list`: discover manifests;
-- `inspect`: build a project and return parameters, component metadata, OCCT
-  metrics, and available checks;
-- `validate`: run geometry and project checks and return a versioned report;
-- `export`: explicitly write STEP or STL inside the project root, refusing to
-  overwrite unless requested.
+- `inspect`: build and report project evidence;
+- `validate`: execute geometry and project checks;
+- `snapshot`: persist deterministic revision evidence;
+- `compare`: explain current-versus-baseline changes;
+- `preview`: produce SVG review views;
+- `export`: explicitly write STEP or STL geometry.
 
-The MCP server uses stdio by default. It is AI-native but model-independent;
-ordinary Python and CLI users receive the same capabilities.
+The Python API exposes the same model and snapshot primitives for tests and custom integrations.
 
-## Why there is no visual application yet
+## Known limitations
 
-A useful visual application needs stable concepts to display. The milestone-1
-JSON schema now supplies them: component tree, roles, parameters, check status,
-evidence, and geometry metrics. The first UI should be a read-only project
-inspector with selection linking between the assembly and failed checks. A
-sketch editor, custom modeling language, cloud account system, and general
-solver UI are deliberately deferred.
+- Variants are source-declared and bounded; ad-hoc typed overrides and composed variant inheritance are not yet supported.
+- Policies classify measured evidence but do not prove geometric equivalence; an accepted fingerprint change still requires human engineering intent.
+- Surface and curve summaries describe topology, not semantic features such as a recognized counterbore or fillet chain.
+- Checks are synchronous Python callbacks. There is no dependency graph, incremental execution, or persisted history store.
+- SVG previews provide deterministic review evidence but no picking, annotations, section planes, or interactive component linking.
+- STEP/STL export does not yet preserve a rich assembly/product metadata model.
+- No physical test, material certificate, solver result, or manufacturing measurement is implied by framework validation.
 
 ## Next priorities
 
-1. Add schema-version fixtures and compatibility tests before external clients
-   depend on the report format.
-2. Add configuration/variant inputs to factories without allowing arbitrary
-   untyped dictionaries.
-3. Add cross-section, minimum-wall, hole/feature, and tolerance-stack checks by
-   composing OCCT operations; reuse mature implementations where available.
-4. Define analysis adapters so the current FreeCAD pipeline can publish the
-   same structured evidence model without making FreeCAD a core dependency.
-5. Integrate a headless preview artifact and then build the read-only visual
-   inspector.
-6. Evaluate XDE assembly export and a PartCAD bridge only when real projects
-   demonstrate metadata or dependency-management needs.
+1. Add schema fixtures and compatibility tests before third-party clients depend on the reports.
+2. Expand reusable checks for sections, walls, holes, clearances, and tolerance stacks while preserving evidence and uncertainty.
+3. Add typed command-line overrides and variant inheritance only if real projects demonstrate a need beyond named configurations.
+4. Build a read-only inspector linking components, variants, policy decisions, previews, and failed checks.
+5. Add review/sign-off metadata without turning cadHarness into a full PLM system.
+6. Evaluate XDE assembly export and external analysis adapters only when independent projects demonstrate the need.
 
-Not in the next milestone: a custom kernel, a general constraint solver, a
-full sketch-based editor, an in-process LLM, or unsandboxed remote execution.
-
+Out of scope for the near term: a custom kernel, a general constraint solver, a full sketch-based editor, an in-process LLM, or remote execution of untrusted project source.
