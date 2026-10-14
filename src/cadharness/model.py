@@ -18,6 +18,8 @@ from typing import Any, Callable, Mapping
 
 from build123d import Shape, export_brep
 
+from .schema import INSPECTION_SCHEMA, SCHEMA_VERSION, VALIDATION_SCHEMA
+
 
 _IDENTIFIER = re.compile(r"^[a-z][a-z0-9]*(?:[-_.][a-z0-9]+)*$")
 
@@ -236,7 +238,8 @@ class CADDocument:
 
     def inspect(self) -> dict[str, Any]:
         return {
-            "schema_version": "1",
+            "schema": INSPECTION_SCHEMA,
+            "schema_version": SCHEMA_VERSION,
             "project": {
                 "id": self.id,
                 "name": self.name,
@@ -357,7 +360,8 @@ class ValidationReport:
             for status in CheckStatus
         }
         return {
-            "schema_version": "1",
+            "schema": VALIDATION_SCHEMA,
+            "schema_version": SCHEMA_VERSION,
             "project_id": self.project_id,
             "revision": self.revision,
             "passed": self.passed,

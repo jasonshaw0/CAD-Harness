@@ -19,6 +19,7 @@ from .model import (
 from .project import LoadedProject, ProjectManifest, load_project
 from .policy import ComparisonPolicy, NumericTolerance
 from .revision import build_snapshot, compare_snapshots
+from .schema import require_schema, schema_catalog
 
 __all__ = [
     "CADDocument",
@@ -40,4 +41,6 @@ __all__ = [
     "load_project",
     "maximum_check",
     "minimum_check",
+    "require_schema",
+    "schema_catalog",
 ]

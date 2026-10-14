@@ -18,12 +18,15 @@ from .operations import (
     validate_project,
 )
 from .preview import VIEW_NAMES
+from .schema import schema_catalog
 
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="cadharness")
     parser.add_argument("--compact", action="store_true", help="emit compact JSON")
     subparsers = parser.add_subparsers(dest="command", required=True)
+
+    subparsers.add_parser("schemas", help="list supported public JSON schemas")
 
     list_parser = subparsers.add_parser("list", help="find projects beneath a root")
     list_parser.add_argument("root", nargs="?", default=".")
@@ -80,7 +83,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = _parser()
     args = parser.parse_args(argv)
     try:
-        if args.command == "list":
+        if args.command == "schemas":
+            result = schema_catalog()
+        elif args.command == "list":
             result = {"projects": discover_projects(Path(args.root))}
         elif args.command == "inspect":
             result = inspect_project(args.project, variant=args.variant)

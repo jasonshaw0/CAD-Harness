@@ -1,0 +1,26 @@
+{
+  "passed": true,
+  "project_id": "schema-fixture",
+  "results": [
+    {
+      "actual": 10.0,
+      "check_id": "width.positive",
+      "evidence": {},
+      "expected": {
+        "minimum": 0.0
+      },
+      "message": "Width is positive",
+      "status": "pass",
+      "unit": "mm"
+    }
+  ],
+  "revision": "1",
+  "schema": "cadharness.validation",
+  "schema_version": "1",
+  "summary": {
+    "error": 0,
+    "fail": 0,
+    "pass": 1,
+    "skip": 0
+  }
+}

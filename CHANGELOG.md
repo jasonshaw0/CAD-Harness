@@ -5,8 +5,18 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
-- Add versioned schema fixtures and compatibility checks.
 - Expand reusable geometric checks and their evidence model.
+
+## 0.4.0 — 2026-10-14
+
+- Added stable schema identities to inspection and validation reports.
+- Centralized the v1 contracts for inspection, validation, snapshot, diff, and
+  comparison-policy documents.
+- Added checked-in compatibility fixtures and tests that compare runtime output
+  with their stable top-level contracts.
+- Added schema discovery through `cadharness schemas` and the
+  `list_cad_schemas` MCP tool.
+- Reused central compatibility validation when loading snapshots and policies.
 
 ## 0.3.0 — 2026-10-14
 

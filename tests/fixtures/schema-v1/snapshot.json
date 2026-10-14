@@ -1,0 +1,28 @@
+{
+  "checks": [],
+  "components": {},
+  "parameters": {},
+  "project": {
+    "id": "schema-fixture",
+    "metadata": {},
+    "name": "Schema Fixture",
+    "revision": "1",
+    "variant": null
+  },
+  "schema": "cadharness.snapshot",
+  "schema_version": "1",
+  "validation": {
+    "passed": true,
+    "project_id": "schema-fixture",
+    "results": [],
+    "revision": "1",
+    "schema": "cadharness.validation",
+    "schema_version": "1",
+    "summary": {
+      "error": 0,
+      "fail": 0,
+      "pass": 0,
+      "skip": 0
+    }
+  }
+}

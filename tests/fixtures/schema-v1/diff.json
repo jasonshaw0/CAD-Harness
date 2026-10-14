@@ -1,0 +1,44 @@
+{
+  "baseline_revision": "1",
+  "baseline_variant": null,
+  "changed": false,
+  "components": {
+    "added": {},
+    "changed": {},
+    "removed": {}
+  },
+  "current_revision": "1",
+  "current_variant": null,
+  "decisions": [],
+  "parameters": {
+    "added": {},
+    "changed": {},
+    "removed": {}
+  },
+  "policy": {
+    "accepted_changes": [],
+    "numeric_tolerances": {},
+    "source": null
+  },
+  "project_id": "schema-fixture",
+  "schema": "cadharness.diff",
+  "schema_version": "1",
+  "severity": "identical",
+  "summary": {
+    "accepted_changes": 0,
+    "components_added": 0,
+    "components_changed": 0,
+    "components_removed": 0,
+    "parameters_added": 0,
+    "parameters_changed": 0,
+    "parameters_removed": 0,
+    "significant_changes": 0,
+    "tolerated_changes": 0,
+    "validation_regressions": 0,
+    "validation_resolutions": 0
+  },
+  "validation": {
+    "regressions": [],
+    "resolutions": []
+  }
+}

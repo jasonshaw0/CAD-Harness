@@ -1,0 +1,16 @@
+{
+  "accepted_changes": [
+    {
+      "path": "project.revision",
+      "reason": "Fixture demonstrates a reasoned acceptance."
+    }
+  ],
+  "numeric_tolerances": {
+    "components.*.geometry.volume_mm3": {
+      "absolute": 0.01,
+      "percent": 0.0
+    }
+  },
+  "schema": "cadharness.comparison-policy",
+  "schema_version": "1"
+}

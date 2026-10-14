@@ -18,6 +18,8 @@ from cadharness import (
     geometry_fingerprint,
     load_project,
     minimum_check,
+    require_schema,
+    schema_catalog,
 )
 from cadharness.cli import main as cli_main
 from cadharness.operations import compare_project, preview_project, snapshot_project
@@ -27,6 +29,7 @@ from cadharness.project import _typed_parameters
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 BOX_ROOT = PROJECT_ROOT / "examples" / "project-box"
 FLANGE_ROOT = PROJECT_ROOT / "examples" / "pipe-flange"
+SCHEMA_FIXTURES = PROJECT_ROOT / "tests" / "fixtures" / "schema-v1"
 
 
 def revision_document(size: float, minimum_size: float = 5.0) -> CADDocument:
@@ -45,6 +48,60 @@ def revision_document(size: float, minimum_size: float = 5.0) -> CADDocument:
 
 
 class CoreModelTests(unittest.TestCase):
+    def test_published_schema_fixtures_are_supported(self):
+        expected = {
+            "comparison-policy.json": "cadharness.comparison-policy",
+            "diff.json": "cadharness.diff",
+            "inspection.json": "cadharness.inspection",
+            "snapshot.json": "cadharness.snapshot",
+            "validation.json": "cadharness.validation",
+        }
+        self.assertEqual(
+            [item["name"] for item in schema_catalog()["schemas"]],
+            sorted(expected.values()),
+        )
+        for filename, schema_name in expected.items():
+            with self.subTest(fixture=filename):
+                document = json.loads(
+                    (SCHEMA_FIXTURES / filename).read_text(encoding="utf-8")
+                )
+                spec = require_schema(document, schema_name, label=filename)
+                self.assertEqual(spec.version, "1")
+        policy = json.loads(
+            (SCHEMA_FIXTURES / "comparison-policy.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertIn(
+            "components.*.geometry.volume_mm3",
+            ComparisonPolicy.from_dict(policy).numeric_tolerances,
+        )
+
+    def test_runtime_documents_match_v1_fixture_root_contracts(self):
+        document = revision_document(10.0)
+        snapshot = build_snapshot(document)
+        runtime_documents = {
+            "inspection.json": document.inspect(),
+            "validation.json": document.validate().to_dict(),
+            "snapshot.json": snapshot,
+            "diff.json": compare_snapshots(snapshot, build_snapshot(document)),
+        }
+        for filename, runtime_document in runtime_documents.items():
+            with self.subTest(fixture=filename):
+                fixture = json.loads(
+                    (SCHEMA_FIXTURES / filename).read_text(encoding="utf-8")
+                )
+                require_schema(runtime_document, fixture["schema"])
+                self.assertEqual(set(runtime_document), set(fixture))
+
+    def test_schema_compatibility_rejects_unknown_versions(self):
+        fixture = json.loads(
+            (SCHEMA_FIXTURES / "validation.json").read_text(encoding="utf-8")
+        )
+        fixture["schema_version"] = "999"
+        with self.assertRaisesRegex(ValueError, "unsupported.*schema version"):
+            require_schema(fixture)
+
     def test_variant_values_are_checked_against_dataclass_types(self):
         @dataclass(frozen=True)
         class Parameters:
@@ -215,6 +272,15 @@ class ProjectWorkflowTests(unittest.TestCase):
             exit_code = cli_main(["--compact", "validate", str(BOX_ROOT)])
         self.assertEqual(exit_code, 0)
         self.assertTrue(json.loads(output.getvalue())["passed"])
+
+    def test_cli_lists_supported_schemas(self):
+        output = StringIO()
+        with contextlib.redirect_stdout(output):
+            exit_code = cli_main(["--compact", "schemas"])
+        self.assertEqual(exit_code, 0)
+        schemas = json.loads(output.getvalue())["schemas"]
+        self.assertEqual(len(schemas), 5)
+        self.assertEqual(schemas[0]["version"], "1")
 
 
 if __name__ == "__main__":

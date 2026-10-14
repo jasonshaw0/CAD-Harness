@@ -94,6 +94,19 @@ The CLI and MCP server call the same operation layer:
 
 The Python API exposes the same model and snapshot primitives for tests and custom integrations.
 
+### Public JSON schemas
+
+Inspection, validation, snapshot, diff, and comparison-policy documents carry a
+stable `schema` identity and `schema_version`. `cadharness schemas` and the
+`list_cad_schemas` MCP tool publish the supported versions and top-level keys.
+The v1 examples in `tests/fixtures/schema-v1` are compatibility fixtures: tests
+validate every fixture and require runtime documents to retain the same root
+contract. Additive operation metadata is listed separately as optional.
+
+Schema versions protect document structure, not geometric-kernel behavior.
+Exact BREP fingerprints can still vary if a project deliberately changes its
+build123d/OCCT toolchain; revision evidence should record and review that change.
+
 ## Known limitations
 
 - Variants are source-declared and bounded; ad-hoc typed overrides and composed variant inheritance are not yet supported.
@@ -106,11 +119,10 @@ The Python API exposes the same model and snapshot primitives for tests and cust
 
 ## Next priorities
 
-1. Add schema fixtures and compatibility tests before third-party clients depend on the reports.
-2. Expand reusable checks for sections, walls, holes, clearances, and tolerance stacks while preserving evidence and uncertainty.
-3. Add typed command-line overrides and variant inheritance only if real projects demonstrate a need beyond named configurations.
-4. Build a read-only inspector linking components, variants, policy decisions, previews, and failed checks.
-5. Add review/sign-off metadata without turning cadHarness into a full PLM system.
-6. Evaluate XDE assembly export and external analysis adapters only when independent projects demonstrate the need.
+1. Expand reusable checks for sections, walls, holes, clearances, and tolerance stacks while preserving evidence and uncertainty.
+2. Add typed command-line overrides and variant inheritance only if real projects demonstrate a need beyond named configurations.
+3. Build a read-only inspector linking components, variants, policy decisions, previews, and failed checks.
+4. Add review/sign-off metadata without turning cadHarness into a full PLM system.
+5. Evaluate XDE assembly export and external analysis adapters only when independent projects demonstrate the need.
 
 Out of scope for the near term: a custom kernel, a general constraint solver, a full sketch-based editor, an in-process LLM, or remote execution of untrusted project source.

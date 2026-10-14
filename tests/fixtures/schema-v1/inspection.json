@@ -1,0 +1,36 @@
+{
+  "checks": [
+    {
+      "description": "Width is positive",
+      "id": "width.positive"
+    }
+  ],
+  "components": {
+    "body": {
+      "geometry": {
+        "fingerprint": "sha256:fixture"
+      },
+      "material": "fixture",
+      "metadata": {},
+      "role": "primary",
+      "source": "fixture.py",
+      "tags": []
+    }
+  },
+  "parameters": {
+    "width": {
+      "description": "Fixture width",
+      "source": "design",
+      "unit": "mm",
+      "value": 10.0
+    }
+  },
+  "project": {
+    "id": "schema-fixture",
+    "metadata": {},
+    "name": "Schema Fixture",
+    "revision": "1"
+  },
+  "schema": "cadharness.inspection",
+  "schema_version": "1"
+}

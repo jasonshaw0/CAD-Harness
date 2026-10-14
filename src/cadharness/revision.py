@@ -7,11 +7,12 @@ from typing import Any, Mapping
 
 from .model import CADDocument
 from .policy import ComparisonPolicy
-
-
-SNAPSHOT_SCHEMA = "cadharness.snapshot"
-DIFF_SCHEMA = "cadharness.diff"
-SCHEMA_VERSION = "1"
+from .schema import (
+    DIFF_SCHEMA,
+    SCHEMA_VERSION,
+    SNAPSHOT_SCHEMA,
+    require_schema,
+)
 
 
 def build_snapshot(
@@ -33,13 +34,7 @@ def build_snapshot(
 
 
 def _require_snapshot(snapshot: Mapping[str, Any], label: str) -> None:
-    if snapshot.get("schema") != SNAPSHOT_SCHEMA:
-        raise ValueError(f"{label} is not a cadHarness snapshot")
-    if snapshot.get("schema_version") != SCHEMA_VERSION:
-        raise ValueError(
-            f"{label} uses unsupported snapshot schema version "
-            f"{snapshot.get('schema_version')!r}"
-        )
+    require_schema(snapshot, SNAPSHOT_SCHEMA, label=label)
     if not isinstance(snapshot.get("project"), Mapping):
         raise ValueError(f"{label} has no project record")
 

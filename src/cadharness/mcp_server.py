@@ -17,6 +17,7 @@ from .operations import (
     snapshot_project,
     validate_project,
 )
+from .schema import schema_catalog
 
 
 def _configured_roots() -> tuple[Path, ...]:
@@ -46,6 +47,12 @@ mcp = MCPServer(
         "Project factories execute local Python and are restricted to configured roots."
     ),
 )
+
+
+@mcp.tool()
+def list_cad_schemas() -> dict[str, Any]:
+    """List supported public JSON document schemas and top-level keys."""
+    return schema_catalog()
 
 
 @mcp.tool()

@@ -333,6 +333,7 @@
       }
     ],
     "revision": "example-v1",
+    "schema": "cadharness.validation",
     "schema_version": "1",
     "summary": {
       "error": 0,

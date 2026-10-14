@@ -9,9 +9,7 @@ from pathlib import Path
 import json
 from typing import Any, Mapping
 
-
-POLICY_SCHEMA = "cadharness.comparison-policy"
-SCHEMA_VERSION = "1"
+from .schema import POLICY_SCHEMA, require_schema
 
 
 @dataclass(frozen=True)
@@ -46,10 +44,7 @@ class ComparisonPolicy:
     def from_dict(
         cls, data: Mapping[str, Any], *, source: str | None = None
     ) -> "ComparisonPolicy":
-        if data.get("schema") != POLICY_SCHEMA:
-            raise ValueError("comparison policy has an unsupported schema")
-        if str(data.get("schema_version")) != SCHEMA_VERSION:
-            raise ValueError("comparison policy has an unsupported schema version")
+        require_schema(data, POLICY_SCHEMA, label="comparison policy")
 
         raw_tolerances = data.get("numeric_tolerances", {})
         if not isinstance(raw_tolerances, Mapping):

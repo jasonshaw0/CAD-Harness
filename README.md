@@ -24,8 +24,9 @@ stay inside the project root and refuse accidental overwrite.
 - [x] Tolerance-aware, reasoned revision policies
 - [x] Headless hidden-line SVG previews
 - [x] CLI and MCP 2.3 interfaces
-- [ ] Versioned schema fixtures and compatibility guarantees — current focus
-- [ ] Reusable section, wall, hole, clearance, and tolerance-stack checks
+- [x] Versioned schema fixtures and compatibility checks
+- [ ] Reusable section, wall, hole, clearance, and tolerance-stack checks —
+  current focus
 - [ ] Read-only linked project inspector
 - [ ] Rich assembly metadata exchange and external analysis adapters
 
