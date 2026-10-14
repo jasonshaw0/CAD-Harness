@@ -2,13 +2,52 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from math import isclose
-from typing import Any, Callable, Mapping
+from typing import Any, Callable, Iterable, Mapping
 
 from .model import CADDocument, Check, CheckResult, CheckStatus
 
 
 ValueSource = Any | Callable[[CADDocument], Any]
+
+
+@dataclass(frozen=True)
+class ToleranceContribution:
+    """One signed nominal dimension and its lower/upper deviations."""
+
+    name: str
+    nominal: float
+    lower_deviation: float = 0.0
+    upper_deviation: float = 0.0
+    direction: int = 1
+
+    def __post_init__(self) -> None:
+        if not self.name.strip():
+            raise ValueError("tolerance contribution name cannot be empty")
+        if self.lower_deviation > self.upper_deviation:
+            raise ValueError("lower_deviation cannot exceed upper_deviation")
+        if self.direction not in (-1, 1):
+            raise ValueError("tolerance contribution direction must be -1 or 1")
+
+    def bounds(self) -> tuple[float, float]:
+        values = (
+            self.direction * (self.nominal + self.lower_deviation),
+            self.direction * (self.nominal + self.upper_deviation),
+        )
+        return min(values), max(values)
+
+    def to_dict(self) -> dict[str, Any]:
+        lower, upper = self.bounds()
+        return {
+            "name": self.name,
+            "nominal": self.nominal,
+            "lower_deviation": self.lower_deviation,
+            "upper_deviation": self.upper_deviation,
+            "direction": self.direction,
+            "contributed_minimum": lower,
+            "contributed_maximum": upper,
+        }
 
 
 def _value(source: ValueSource, document: CADDocument) -> Any:
@@ -18,7 +57,69 @@ def _value(source: ValueSource, document: CADDocument) -> Any:
 def _measurement_evidence(
     kind: str, evidence: Mapping[str, Any] | None
 ) -> dict[str, Any]:
-    return {"measurement_kind": kind, **dict(evidence or {})}
+    return {**dict(evidence or {}), "measurement_kind": kind}
+
+
+def tolerance_stack_check(
+    check_id: str,
+    description: str,
+    contributions: Iterable[ToleranceContribution],
+    *,
+    minimum: float | None = None,
+    maximum: float | None = None,
+    unit: str = "mm",
+    evidence: Mapping[str, Any] | None = None,
+) -> Check:
+    """Check worst-case arithmetic bounds for a signed 1D tolerance stack."""
+    items = tuple(contributions)
+    if not items:
+        raise ValueError("tolerance_stack_check requires at least one contribution")
+    if minimum is None and maximum is None:
+        raise ValueError("tolerance_stack_check requires a minimum, maximum, or both")
+    if minimum is not None and maximum is not None and minimum > maximum:
+        raise ValueError("tolerance stack minimum cannot exceed maximum")
+
+    expected = {
+        key: value
+        for key, value in (("minimum", minimum), ("maximum", maximum))
+        if value is not None
+    }
+    nominal = sum(item.direction * item.nominal for item in items)
+    bounds = [item.bounds() for item in items]
+    worst_minimum = sum(item[0] for item in bounds)
+    worst_maximum = sum(item[1] for item in bounds)
+
+    def evaluate(document: CADDocument) -> CheckResult:
+        del document
+        passed = (minimum is None or worst_minimum >= minimum) and (
+            maximum is None or worst_maximum <= maximum
+        )
+        return CheckResult(
+            id=check_id,
+            status=CheckStatus.PASS if passed else CheckStatus.FAIL,
+            message=(
+                f"{description}: worst-case range "
+                f"[{worst_minimum:g}, {worst_maximum:g}]{unit or ''} "
+                f"{'meets' if passed else 'violates'} limits"
+            ),
+            actual={
+                "nominal": nominal,
+                "minimum": worst_minimum,
+                "maximum": worst_maximum,
+            },
+            expected=expected,
+            unit=unit,
+            evidence=_measurement_evidence(
+                "tolerance-stack",
+                {
+                    **dict(evidence or {}),
+                    "method": "worst-case-arithmetic",
+                    "contributors": [item.to_dict() for item in items],
+                },
+            ),
+        )
+
+    return Check(check_id, description, evaluate, category="tolerance-stack")
 
 
 def range_check(

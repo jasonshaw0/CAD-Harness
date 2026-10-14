@@ -23,6 +23,8 @@ from cadharness import (
     range_check,
     require_schema,
     schema_catalog,
+    tolerance_stack_check,
+    ToleranceContribution,
     wall_thickness_check,
 )
 from cadharness.cli import main as cli_main
@@ -52,6 +54,45 @@ def revision_document(size: float, minimum_size: float = 5.0) -> CADDocument:
 
 
 class CoreModelTests(unittest.TestCase):
+    def test_tolerance_stack_reports_worst_case_signed_bounds(self):
+        stack = tolerance_stack_check(
+            "fit.stack",
+            "assembled clearance",
+            (
+                ToleranceContribution("opening", 10.0, -0.1, 0.1),
+                ToleranceContribution("insert", 9.5, -0.05, 0.05, direction=-1),
+            ),
+            minimum=0.3,
+        )
+        result = stack.evaluator(revision_document(10.0))
+        self.assertEqual(stack.category, "tolerance-stack")
+        self.assertEqual(result.status.value, "pass")
+        self.assertAlmostEqual(result.actual["nominal"], 0.5)
+        self.assertAlmostEqual(result.actual["minimum"], 0.35)
+        self.assertAlmostEqual(result.actual["maximum"], 0.65)
+        self.assertEqual(result.evidence["method"], "worst-case-arithmetic")
+        self.assertEqual(len(result.evidence["contributors"]), 2)
+
+    def test_tolerance_stack_fails_when_worst_case_violates_limit(self):
+        stack = tolerance_stack_check(
+            "fit.stack",
+            "assembled clearance",
+            (
+                ToleranceContribution("opening", 10.0, -0.1, 0.1),
+                ToleranceContribution("insert", 9.5, -0.05, 0.05, direction=-1),
+            ),
+            minimum=0.4,
+        )
+        self.assertEqual(stack.evaluator(revision_document(10.0)).status.value, "fail")
+
+    def test_tolerance_contributions_reject_invalid_definitions(self):
+        with self.assertRaisesRegex(ValueError, "cannot exceed"):
+            ToleranceContribution("invalid", 1.0, 0.1, -0.1)
+        with self.assertRaisesRegex(ValueError, "direction"):
+            ToleranceContribution("invalid", 1.0, direction=0)
+        with self.assertRaisesRegex(ValueError, "at least one"):
+            tolerance_stack_check("fit.empty", "empty stack", (), minimum=0.0)
+
     def test_range_check_supports_inclusive_one_or_two_sided_bounds(self):
         document = revision_document(10.0)
         bounded = range_check("size.range", "bounded size", 3.0, minimum=2.0, maximum=4.0)

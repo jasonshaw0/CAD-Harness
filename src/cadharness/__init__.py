@@ -9,6 +9,8 @@ from .checks import (
     maximum_check,
     minimum_check,
     range_check,
+    tolerance_stack_check,
+    ToleranceContribution,
     wall_thickness_check,
 )
 from .model import (
@@ -35,6 +37,7 @@ __all__ = [
     "Parameter",
     "NumericTolerance",
     "ProjectManifest",
+    "ToleranceContribution",
     "ValidationReport",
     "boolean_check",
     "build_snapshot",
@@ -50,5 +53,6 @@ __all__ = [
     "range_check",
     "require_schema",
     "schema_catalog",
+    "tolerance_stack_check",
     "wall_thickness_check",
 ]
