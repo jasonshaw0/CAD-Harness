@@ -14,12 +14,16 @@ from cadharness import (
     Component,
     Parameter,
     build_snapshot,
+    clearance_check,
     compare_snapshots,
     geometry_fingerprint,
+    hole_diameter_check,
     load_project,
     minimum_check,
+    range_check,
     require_schema,
     schema_catalog,
+    wall_thickness_check,
 )
 from cadharness.cli import main as cli_main
 from cadharness.operations import compare_project, preview_project, snapshot_project
@@ -48,6 +52,43 @@ def revision_document(size: float, minimum_size: float = 5.0) -> CADDocument:
 
 
 class CoreModelTests(unittest.TestCase):
+    def test_range_check_supports_inclusive_one_or_two_sided_bounds(self):
+        document = revision_document(10.0)
+        bounded = range_check("size.range", "bounded size", 3.0, minimum=2.0, maximum=4.0)
+        lower_only = range_check("size.minimum", "minimum size", 2.0, minimum=2.0)
+        self.assertEqual(bounded.evaluator(document).status.value, "pass")
+        self.assertEqual(lower_only.evaluator(document).status.value, "pass")
+        with self.assertRaisesRegex(ValueError, "requires"):
+            range_check("size.invalid", "invalid", 1.0)
+        with self.assertRaisesRegex(ValueError, "cannot exceed"):
+            range_check("size.invalid", "invalid", 1.0, minimum=2.0, maximum=1.0)
+
+    def test_specialized_dimensional_checks_preserve_measurement_meaning(self):
+        document = revision_document(10.0)
+        checks = (
+            clearance_check("fit.clearance", "fit clearance", 0.25, 0.2),
+            wall_thickness_check("section.wall", "wall thickness", 1.8, 1.6),
+            hole_diameter_check(
+                "hole.mount", "mounting hole", 4.1, 4.0,
+                lower_deviation=0.0, upper_deviation=0.2,
+            ),
+        )
+        self.assertEqual([check.category for check in checks], ["clearance", "section", "hole"])
+        results = [check.evaluator(document) for check in checks]
+        self.assertTrue(all(result.status.value == "pass" for result in results))
+        self.assertEqual(
+            [result.evidence["measurement_kind"] for result in results],
+            ["clearance", "wall-thickness", "hole-diameter"],
+        )
+        self.assertEqual(results[2].expected, {"minimum": 4.0, "maximum": 4.2})
+
+    def test_hole_diameter_check_rejects_inverted_deviations(self):
+        with self.assertRaisesRegex(ValueError, "cannot exceed"):
+            hole_diameter_check(
+                "hole.invalid", "invalid hole", 4.0, 4.0,
+                lower_deviation=0.2, upper_deviation=0.1,
+            )
+
     def test_published_schema_fixtures_are_supported(self):
         expected = {
             "comparison-policy.json": "cadharness.comparison-policy",

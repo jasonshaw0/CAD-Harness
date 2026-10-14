@@ -2,10 +2,14 @@
 
 from .checks import (
     boolean_check,
+    clearance_check,
     equals_check,
+    hole_diameter_check,
     interference_check,
     maximum_check,
     minimum_check,
+    range_check,
+    wall_thickness_check,
 )
 from .model import (
     CADDocument,
@@ -34,13 +38,17 @@ __all__ = [
     "ValidationReport",
     "boolean_check",
     "build_snapshot",
+    "clearance_check",
     "compare_snapshots",
     "equals_check",
     "geometry_fingerprint",
+    "hole_diameter_check",
     "interference_check",
     "load_project",
     "maximum_check",
     "minimum_check",
+    "range_check",
     "require_schema",
     "schema_catalog",
+    "wall_thickness_check",
 ]
