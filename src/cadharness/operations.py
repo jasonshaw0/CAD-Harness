@@ -39,7 +39,7 @@ def inspect_project(
 def inspector_project(
     path: str | Path,
     *,
-    output_file: str | Path = "artifacts/inspector/index.html",
+    output_file: str | Path = ".cadharness/inspector/index.html",
     views: Iterable[str] = ("iso", "top"),
     component_ids: Iterable[str] | None = None,
     variant: str | None = None,
@@ -197,7 +197,7 @@ def compare_project(
 def preview_project(
     path: str | Path,
     *,
-    output_dir: str | Path = "artifacts/previews",
+    output_dir: str | Path = ".cadharness/previews",
     views: Iterable[str] = ("iso",),
     component_ids: Iterable[str] | None = None,
     variant: str | None = None,

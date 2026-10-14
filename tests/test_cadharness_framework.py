@@ -409,6 +409,27 @@ class ProjectWorkflowTests(unittest.TestCase):
         self.assertEqual(len(schemas), 5)
         self.assertEqual(schemas[0]["version"], "1")
 
+    def test_cli_accepts_compact_after_subcommand(self):
+        output = StringIO()
+        with contextlib.redirect_stdout(output):
+            exit_code = cli_main(["schemas", "--compact"])
+        self.assertEqual(exit_code, 0)
+        self.assertNotIn("\n  ", output.getvalue())
+        self.assertEqual(len(json.loads(output.getvalue())["schemas"]), 5)
+
+    def test_cli_doctor_identifies_checkout_and_projects(self):
+        output = StringIO()
+        with contextlib.redirect_stdout(output):
+            exit_code = cli_main(["--compact", "doctor", str(PROJECT_ROOT)])
+        self.assertEqual(exit_code, 0)
+        report = json.loads(output.getvalue())
+        self.assertEqual(Path(report["cadharness"]["checkout"]), PROJECT_ROOT)
+        self.assertTrue(report["mcp"]["available"])
+        self.assertEqual(
+            {project["id"] for project in report["workspace"]["projects"]},
+            {"pipe-flange", "project-box"},
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

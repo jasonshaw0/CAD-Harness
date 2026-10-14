@@ -8,6 +8,7 @@ from pathlib import Path
 import sys
 from typing import Sequence
 
+from .diagnostics import doctor_report, package_version
 from .operations import (
     compare_project,
     discover_projects,
@@ -23,14 +24,37 @@ from .schema import schema_catalog
 
 
 def _parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="cadharness")
+    parser = argparse.ArgumentParser(
+        prog="cadharness",
+        description="Inspect and validate trusted source-backed build123d projects.",
+        epilog=(
+            "examples:\n"
+            "  cadharness doctor .\n"
+            "  cadharness list examples\n"
+            "  cadharness validate examples/project-box --variant standard\n"
+            "  cadharness inspector examples/project-box --variant standard"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument("--compact", action="store_true", help="emit compact JSON")
+    parser.add_argument(
+        "--version", action="version", version=f"%(prog)s {package_version()}"
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     subparsers.add_parser("schemas", help="list supported public JSON schemas")
 
+    doctor_parser = subparsers.add_parser(
+        "doctor", help="diagnose the active installation and project discovery"
+    )
+    doctor_parser.add_argument(
+        "root", nargs="?", default=".", help="directory to scan for projects"
+    )
+
     list_parser = subparsers.add_parser("list", help="find projects beneath a root")
-    list_parser.add_argument("root", nargs="?", default=".")
+    list_parser.add_argument(
+        "root", nargs="?", default=".", help="directory to scan (default: current)"
+    )
 
     inspect_parser = subparsers.add_parser("inspect", help="build and inspect a project")
     inspect_parser.add_argument("project")
@@ -42,7 +66,7 @@ def _parser() -> argparse.ArgumentParser:
     inspector_parser.add_argument("project")
     inspector_parser.add_argument("--variant")
     inspector_parser.add_argument(
-        "--output", default="artifacts/inspector/index.html"
+        "--output", default=".cadharness/inspector/index.html"
     )
     inspector_parser.add_argument(
         "--view", action="append", choices=VIEW_NAMES, dest="views"
@@ -77,7 +101,7 @@ def _parser() -> argparse.ArgumentParser:
     )
     preview_parser.add_argument("project")
     preview_parser.add_argument("--variant")
-    preview_parser.add_argument("--output-dir", default="artifacts/previews")
+    preview_parser.add_argument("--output-dir", default=".cadharness/previews")
     preview_parser.add_argument(
         "--view", action="append", choices=VIEW_NAMES, dest="views"
     )
@@ -96,10 +120,15 @@ def _parser() -> argparse.ArgumentParser:
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = _parser()
-    args = parser.parse_args(argv)
+    raw_args = list(sys.argv[1:] if argv is None else argv)
+    compact = "--compact" in raw_args
+    args = parser.parse_args([item for item in raw_args if item != "--compact"])
+    args.compact = compact
     try:
         if args.command == "schemas":
             result = schema_catalog()
+        elif args.command == "doctor":
+            result = doctor_report(args.root)
         elif args.command == "list":
             result = {"projects": discover_projects(Path(args.root))}
         elif args.command == "inspect":
@@ -159,8 +188,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 1
         return 0
     except Exception as exc:
+        hint = None
+        if isinstance(exc, FileExistsError):
+            hint = "Use --overwrite or choose a different output path."
+        elif isinstance(exc, FileNotFoundError) and "cadharness.toml" in str(exc):
+            hint = "Pass a project directory containing cadharness.toml; use 'cadharness list <root>' to discover projects."
+        error = {"error": type(exc).__name__, "message": str(exc)}
+        if hint:
+            error["hint"] = hint
         json.dump(
-            {"error": type(exc).__name__, "message": str(exc)},
+            error,
             sys.stderr,
             indent=2,
         )
