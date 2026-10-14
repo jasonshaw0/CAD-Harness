@@ -487,6 +487,26 @@ def _requirement_changes(
     }
 
 
+def _snapshot_requirements(snapshot: Mapping[str, Any]) -> list[Mapping[str, Any]]:
+    """Include built-in geometry criteria already stored in validation results."""
+    requirements = list(snapshot["checks"])
+    for result in snapshot["validation"]["results"]:
+        check_id = result["id"]
+        if check_id.startswith("geometry.") and check_id.removeprefix("geometry.") in snapshot["components"]:
+            requirements.append(
+                {
+                    "id": check_id,
+                    "category": "geometry",
+                    "requirement": {
+                        "type": "geometry-validity",
+                        "criteria": result.get("expected"),
+                    },
+                    "evidence": {"kind": "geometry-derived"},
+                }
+            )
+    return requirements
+
+
 def compare_snapshots(
     baseline: Mapping[str, Any],
     current: Mapping[str, Any],
@@ -530,8 +550,8 @@ def compare_snapshots(
         decisions,
     )
     requirements = _requirement_changes(
-        list(baseline.get("checks", [])),
-        list(current.get("checks", [])),
+        _snapshot_requirements(baseline),
+        _snapshot_requirements(current),
         active_policy,
         decisions,
     )

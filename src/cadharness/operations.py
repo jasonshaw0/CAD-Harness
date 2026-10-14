@@ -350,7 +350,9 @@ def export_project(
         os.close(descriptor)
         temporary_path = Path(temporary_name)
         try:
-            exporter(shape, temporary_path)
+            exported = exporter(shape, temporary_path)
+            if exported is False:
+                raise RuntimeError(f"exporter reported failure: {output_path}")
             if not temporary_path.is_file() or temporary_path.stat().st_size == 0:
                 raise RuntimeError(
                     f"exporter did not produce a valid file: {output_path}"

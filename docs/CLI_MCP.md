@@ -40,8 +40,22 @@ $cad = ".\.venv\Scripts\python.exe"
 
 Every command emits JSON. Add `--compact` anywhere in the command for one-line
 JSON. `validate` exits with status 1 when checks fail; `compare` exits with
-status 1 for a regression; `verify` exits with status 0 on gate pass, 1 on gate
-failure; usage and runtime errors exit with status 2.
+status 1 for a regression. `verify` exits with status 0 on gate pass, 1 on a
+gate failure without check execution errors, and 2 when the gate rejects check
+execution errors. Usage and runtime errors also exit with status 2.
+
+Verification defaults reject failed, erroneous, or skipped checks, removed
+requirements, normative requirement edits, and unaccepted revision changes.
+Warnings and new passing requirements are allowed by default. Requirement gates
+also cover built-in geometry criteria, including whether a solid is required.
+Description-only edits remain informational.
+
+Use `--baseline <file>` to include revision comparison and `--policy <file>`
+to classify revision changes. The `--allow-*` and `--fail-on-*` flags configure
+individual verification gates; for example, `--allow-removed-requirements`
+allows removal without a second rejection for the associated validation result.
+`--allow-check-errors` can pass the gate while the validation evidence still
+records the errors. A gate exception never rewrites the underlying evidence.
 
 | Command | Purpose | Writes files |
 | --- | --- | --- |

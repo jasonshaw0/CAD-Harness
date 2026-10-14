@@ -4,16 +4,55 @@
     "checks": [],
     "components": {},
     "parameters": {},
-    "project": {},
+    "project": {
+      "id": "schema-fixture",
+      "metadata": {},
+      "name": "Schema Fixture",
+      "revision": "1",
+      "variant": null
+    },
     "schema": "cadharness.snapshot",
     "schema_version": "1",
-    "validation": {}
+    "toolchain": {
+      "brep_fingerprint": "build123d.export_brep/sha256",
+      "build123d": "fixture",
+      "cadharness": "fixture",
+      "measurement_tolerance_mm": 1e-06,
+      "occt": "fixture"
+    },
+    "validation": {
+      "passed": true,
+      "project_id": "schema-fixture",
+      "results": [],
+      "revision": "1",
+      "schema": "cadharness.validation",
+      "schema_version": "1",
+      "summary": {
+        "error": 0,
+        "fail": 0,
+        "pass": 0,
+        "skip": 0
+      }
+    }
   },
   "project_id": "schema-fixture",
   "revision": "1",
   "schema": "cadharness.verification",
   "schema_version": "1",
-  "validation": {},
+  "validation": {
+    "passed": true,
+    "project_id": "schema-fixture",
+    "results": [],
+    "revision": "1",
+    "schema": "cadharness.validation",
+    "schema_version": "1",
+    "summary": {
+      "error": 0,
+      "fail": 0,
+      "pass": 0,
+      "skip": 0
+    }
+  },
   "variant": null,
   "verification": {
     "outcome": "passed",

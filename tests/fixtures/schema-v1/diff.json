@@ -3,17 +3,17 @@
   "baseline_variant": null,
   "changed": false,
   "components": {
-    "added": {},
+    "added": [],
     "changed": {},
-    "removed": {}
+    "removed": []
   },
   "current_revision": "1",
   "current_variant": null,
   "decisions": [],
   "parameters": {
-    "added": {},
+    "added": [],
     "changed": {},
-    "removed": {}
+    "removed": []
   },
   "policy": {
     "accepted_changes": [],

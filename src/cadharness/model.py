@@ -298,6 +298,9 @@ class CADDocument:
         check_ids = [check.id for check in self.checks]
         if len(set(check_ids)) != len(check_ids):
             raise ValueError("check ids must be unique")
+        builtin_ids = {f"geometry.{name}" for name in self.components}
+        if builtin_ids.intersection(check_ids):
+            raise ValueError("check ids must not shadow built-in geometry checks")
 
     def inspect(self) -> dict[str, Any]:
         return {
@@ -332,6 +335,10 @@ class CADDocument:
         for check in self.checks:
             try:
                 result = check.evaluator(self)
+                if not isinstance(result, CheckResult):
+                    raise TypeError("check evaluator must return a CheckResult")
+                if not isinstance(result.status, CheckStatus):
+                    raise TypeError("check result status must be CheckStatus")
                 if result.id != check.id:
                     raise ValueError(
                         f"check {check.id!r} returned result id {result.id!r}"

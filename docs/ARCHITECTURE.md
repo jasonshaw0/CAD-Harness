@@ -103,6 +103,15 @@ An accepted geometric difference cannot override failed engineering validation, 
 
 Checks declare stable `Requirement` definitions (type, criteria, units, origin) and `EvidenceSpec` provenance (distinguishing `declared`, `geometry-derived`, and `external` evidence). Revision comparisons track added, removed, and modified requirements, distinguishing normative acceptance-criteria changes from harmless description edits.
 
+Built-in geometry acceptance criteria are compared from their saved validation
+results, so relaxing `require_solid` is also a normative requirement change.
+Project check IDs cannot shadow these built-in checks. Malformed callback
+results become check execution errors rather than passing or crashing a report.
+
+Requirement addition/removal gates operate independently of revision acceptance.
+Explicit gate exceptions remain visible in the policy and validation evidence;
+the verification outcome describes the gate decision under that policy.
+
 Snapshots record toolchain metadata (cadharness, build123d, and OCCT versions, BREP fingerprint method, and computational tolerance) without timestamps, ensuring byte-stable reproducibility while explaining environment differences.
 
 ### Visualization and exchange
@@ -148,7 +157,11 @@ stable `schema` identity and `schema_version`. `cadharness schemas` and the
 `list_cad_schemas` MCP tool publish the supported versions and top-level keys.
 The v1 examples in `tests/fixtures/schema-v1` are compatibility fixtures: tests
 validate every fixture and require runtime documents to retain the same root
-contract. Additive operation metadata is listed separately as optional.
+contract. Validation checks nested evidence identities, unique check IDs, status
+values, summary counts, and verdict consistency. Snapshot and verification
+contracts recursively validate their embedded reports. New requirement and
+toolchain fields remain optional when reading older v1 snapshots. Additive
+operation metadata is listed separately as optional.
 
 Schema versions protect document structure, not geometric-kernel behavior.
 Exact BREP fingerprints can still vary if a project deliberately changes its

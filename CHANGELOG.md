@@ -5,6 +5,16 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
+- Fixed verification gate exceptions being overridden by validation-result
+  additions/removals, and made check-error outcomes and CLI exit codes consistent.
+- Included built-in geometry criteria in requirement drift and rejected check-ID
+  collisions, malformed evaluator results, and nonboolean gate settings.
+- Recursively validate saved evidence and corrected invalid schema fixtures.
+- Avoid labeling validation-only inspector reports as verified; show warnings
+  and skipped checks in review colors, and preserve artifacts on exporter failure.
+
+### Planned
+
 - Independent geometric measurement engine for actual OCCT geometry.
 - Richer assembly metadata exchange without duplicating build123d.
 

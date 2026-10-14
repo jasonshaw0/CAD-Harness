@@ -240,8 +240,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 1
         if args.command == "compare" and result["severity"] == "regression":
             return 1
-        if args.command == "verify" and not result["verification"]["passed"]:
-            return 1
+        if args.command == "verify":
+            if result["verification"]["outcome"] == "error":
+                return 2
+            if not result["verification"]["passed"]:
+                return 1
         return 0
     except Exception as exc:
         hint = None

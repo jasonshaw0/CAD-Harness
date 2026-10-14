@@ -4,11 +4,11 @@
   "results": [
     {
       "actual": 10.0,
-      "check_id": "width.positive",
       "evidence": {},
       "expected": {
         "minimum": 0.0
       },
+      "id": "width.positive",
       "message": "Width is positive",
       "status": "pass",
       "unit": "mm"

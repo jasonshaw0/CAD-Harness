@@ -130,15 +130,25 @@ def render_inspector(
             "</tr>"
         )
 
-    gate = verification or {"passed": validation.get("passed"), "reasons": []}
+    gate = verification if verification is not None else {
+        "passed": validation.get("passed"), "reasons": []
+    }
     passed = bool(gate.get("passed"))
-    verdict = "Verified" if passed else "Verification failed"
+    verdict = (
+        ("Verified" if passed else "Verification failed")
+        if verification is not None
+        else ("Validation passed" if passed else "Validation failed")
+    )
     verdict_class = "pass" if passed else "fail"
     title = _html(project.get("name", project.get("id", "cadHarness project")))
     variant = inspection.get("manifest", {})
     variant_name = variant.get("variant") if isinstance(variant, Mapping) else None
     gate_reasons = gate.get("reasons", [])
-    reason_text = _html(gate_reasons) if gate_reasons else "No verification gate failures."
+    reason_text = (
+        "Verification gate was not run."
+        if verification is None
+        else _html(gate_reasons) if gate_reasons else "No verification gate failures."
+    )
 
     return f"""<!doctype html>
 <html lang="en">
@@ -162,6 +172,7 @@ h2 {{ margin:0 0 18px; font-size:1.55rem; }} h3 {{ margin:.35rem 0; }}
 .pill,.filters button {{ border:1px solid var(--line); border-radius:999px; padding:6px 11px;
   background:transparent; color:var(--muted); font:inherit; }}
 .pill.pass,.status {{ color:var(--pass); }} .pill.fail,.check-fail .status,.check-error .status {{ color:var(--fail); }}
+.check-warn .status,.check-skip .status {{ color:var(--warn); }}
 nav {{ position:sticky; top:0; z-index:2; background:color-mix(in srgb,var(--bg) 88%,transparent);
   backdrop-filter:blur(14px); border-bottom:1px solid var(--line); }}
 nav .shell {{ display:flex; gap:18px; overflow:auto; padding:12px 0; }}
@@ -174,7 +185,7 @@ figcaption {{ color:var(--muted); margin-top:8px; }} dl {{ margin:12px 0 0; }}
 dl div {{ display:flex; justify-content:space-between; gap:14px; border-top:1px solid var(--line); padding:7px 0; }}
 dt {{ color:var(--muted); }} dd {{ margin:0; text-align:right; }}
 .check {{ border-left:3px solid var(--pass); }} .check-fail,.check-error {{ border-left-color:var(--fail); }}
-.check-warn {{ border-left-color:var(--warn); }} .status {{ float:right; text-transform:uppercase; font-size:.75rem; }}
+.check-warn,.check-skip {{ border-left-color:var(--warn); }} .status {{ float:right; text-transform:uppercase; font-size:.75rem; }}
 .links:empty {{ display:none; }} details {{ color:var(--muted); }} pre {{ white-space:pre-wrap; overflow-wrap:anywhere; }}
 button[aria-pressed="true"] {{ color:var(--text); border-color:var(--accent); }}
 table {{ width:100%; border-collapse:collapse; font-size:.92rem; }} th,td {{ padding:10px; border-bottom:1px solid var(--line); text-align:left; }}

@@ -6,7 +6,7 @@ change and is intentionally preserved as a separate fact in the report.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from typing import Any, Mapping
 
 from .model import CADDocument, CheckStatus
@@ -27,6 +27,11 @@ class VerificationPolicy:
     fail_on_removed_requirements: bool = True
     fail_on_modified_requirements: bool = True
     fail_on_unaccepted_changes: bool = True
+
+    def __post_init__(self) -> None:
+        for field in fields(self):
+            if not isinstance(getattr(self, field.name), bool):
+                raise TypeError(f"{field.name} must be bool")
 
     def to_dict(self) -> dict[str, bool]:
         return {
@@ -104,12 +109,13 @@ def verify_document(
             for decision in comparison["decisions"]
             if decision["disposition"] == "significant"
             and not decision["kind"].startswith("requirement-")
-            and decision["kind"] != "validation-status"
+            and decision["kind"]
+            not in {"validation-status", "validation-added", "validation-removed"}
         ]
         if gates.fail_on_unaccepted_changes and significant:
             reject("unaccepted_revision_changes", significant)
 
-    has_execution_error = bool(by_status["error"])
+    has_execution_error = gates.fail_on_check_errors and bool(by_status["error"])
     return {
         "schema": VERIFICATION_SCHEMA,
         "schema_version": SCHEMA_VERSION,
