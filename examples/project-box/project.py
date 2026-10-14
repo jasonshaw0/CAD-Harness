@@ -9,6 +9,7 @@ from build123d import Align, Box, Part, Pos
 from cadharness import (
     CADDocument,
     Component,
+    EvidenceKind,
     Parameter,
     clearance_check,
     equals_check,
@@ -135,6 +136,7 @@ def create_project(params: ProjectBoxParameters = DEFAULTS) -> CADDocument:
         )
         for name in params.__dataclass_fields__
     }
+
     checks = (
         interference_check(
             "assembly.base-lid-interference",
@@ -166,6 +168,9 @@ def create_project(params: ProjectBoxParameters = DEFAULTS) -> CADDocument:
             params.outside_x,
             absolute_tolerance=1e-7,
             unit="mm",
+            evidence_kind=EvidenceKind.GEOMETRY,
+            measurement_method="occt-bounding-box",
+            components=("base",),
         ),
         equals_check(
             "dimensions.outside-y",
@@ -174,6 +179,9 @@ def create_project(params: ProjectBoxParameters = DEFAULTS) -> CADDocument:
             params.outside_y,
             absolute_tolerance=1e-7,
             unit="mm",
+            evidence_kind=EvidenceKind.GEOMETRY,
+            measurement_method="occt-bounding-box",
+            components=("base",),
         ),
     )
     return CADDocument(

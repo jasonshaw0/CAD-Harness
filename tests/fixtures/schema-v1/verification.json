@@ -1,0 +1,24 @@
+{
+  "comparison": null,
+  "current_snapshot": {
+    "checks": [],
+    "components": {},
+    "parameters": {},
+    "project": {},
+    "schema": "cadharness.snapshot",
+    "schema_version": "1",
+    "validation": {}
+  },
+  "project_id": "schema-fixture",
+  "revision": "1",
+  "schema": "cadharness.verification",
+  "schema_version": "1",
+  "validation": {},
+  "variant": null,
+  "verification": {
+    "outcome": "passed",
+    "passed": true,
+    "policy": {},
+    "reasons": []
+  }
+}

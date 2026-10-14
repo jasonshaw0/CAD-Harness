@@ -5,7 +5,19 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
-- Define richer assembly metadata exchange without duplicating build123d.
+- Independent geometric measurement engine for actual OCCT geometry.
+- Richer assembly metadata exchange without duplicating build123d.
+
+## 0.8.0 — 2026-10-14
+
+- Added first-class verification through Python, `cadharness verify`, and
+  `verify_cad_project`, with deterministic 0/1/2 CLI outcomes.
+- Kept revision comparison distinct from current validation and verification;
+  accepted changes cannot hide failed or erroneous checks.
+- Added stable requirement definitions, normative requirement-drift detection,
+  evidence provenance, configurable gates, and toolchain snapshot metadata.
+- Strengthened nested contract validation, atomic JSON/HTML writes, verified
+  exporter output, schema fixtures, and regression coverage.
 
 ## 0.7.0 — 2026-10-14
 

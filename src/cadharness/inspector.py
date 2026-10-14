@@ -46,6 +46,7 @@ def render_inspector(
     validation: Mapping[str, Any],
     *,
     previews: Iterable[Mapping[str, Any]] = (),
+    verification: Mapping[str, Any] | None = None,
 ) -> str:
     """Render trusted report data into a portable, read-only HTML document."""
     project = inspection.get("project", {})
@@ -102,12 +103,15 @@ def render_inspector(
         links = _component_links(result, component_ids)
         evidence = result.get("evidence", {})
         details = _html(evidence) if evidence else "No supplemental evidence"
+        evidence_kind = _html(result.get("evidence_kind", "unspecified"))
         check_cards.append(
             f'<article class="check check-{escape(status, quote=True)}" '
             f'data-status="{escape(status, quote=True)}">'
             f'<span class="status">{_html(status)}</span>'
             f"<h3>{_html(result.get('id'))}</h3>"
             f"<p>{_html(result.get('message'))}</p>"
+            f'<p class="evidence-kind">Evidence: {evidence_kind}</p>'
+            f"<p>Actual: {_html(result.get('actual'))}<br>Expected: {_html(result.get('expected'))}</p>"
             f'<p class="links">{links}</p>'
             f"<details><summary>Evidence</summary><pre>{details}</pre></details>"
             "</article>"
@@ -126,12 +130,15 @@ def render_inspector(
             "</tr>"
         )
 
-    passed = bool(validation.get("passed"))
-    verdict = "Passing" if passed else "Needs review"
+    gate = verification or {"passed": validation.get("passed"), "reasons": []}
+    passed = bool(gate.get("passed"))
+    verdict = "Verified" if passed else "Verification failed"
     verdict_class = "pass" if passed else "fail"
     title = _html(project.get("name", project.get("id", "cadHarness project")))
     variant = inspection.get("manifest", {})
     variant_name = variant.get("variant") if isinstance(variant, Mapping) else None
+    gate_reasons = gate.get("reasons", [])
+    reason_text = _html(gate_reasons) if gate_reasons else "No verification gate failures."
 
     return f"""<!doctype html>
 <html lang="en">
@@ -193,6 +200,7 @@ footer {{ padding:28px 0 48px; color:var(--muted); }}
   <a href="#checks">Checks</a><a href="#parameters">Parameters</a>
 </div></nav>
 <main class="shell">
+  <section id="verification"><h2>Verification</h2><p>{reason_text}</p></section>
   <section id="previews"><h2>Previews</h2><div class="grid">{''.join(preview_cards) or '<p>No preview artifacts linked.</p>'}</div></section>
   <section id="components"><h2>Components</h2><div class="grid">{''.join(component_cards)}</div></section>
   <section id="checks"><h2>Checks</h2>

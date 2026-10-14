@@ -7,7 +7,7 @@ geometry or assembly object model.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field, is_dataclass
+from dataclasses import asdict, dataclass, field, is_dataclass, replace
 from enum import Enum
 from hashlib import sha256
 from io import BytesIO
@@ -98,6 +98,54 @@ class CheckStatus(str, Enum):
     SKIP = "skip"
 
 
+class EvidenceKind(str, Enum):
+    """The provenance class of evidence evaluated by an engineering check."""
+
+    DECLARED = "declared"
+    GEOMETRY = "geometry-derived"
+    EXTERNAL = "external"
+
+
+@dataclass(frozen=True)
+class EvidenceSpec:
+    """Stable description of how a check obtains its evidence."""
+
+    kind: EvidenceKind = EvidenceKind.DECLARED
+    method: str = "project-supplied-value"
+    components: tuple[str, ...] = ()
+    feature: str | None = None
+    limitations: tuple[str, ...] = ()
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "kind": self.kind.value,
+            "method": self.method,
+            "components": list(self.components),
+            "feature": self.feature,
+            "limitations": list(self.limitations),
+        }
+
+
+@dataclass(frozen=True)
+class Requirement:
+    """Revision-stable engineering acceptance criteria and traceability."""
+
+    type: str = "assertion"
+    criteria: Mapping[str, Any] = field(default_factory=dict)
+    unit: str | None = None
+    origin: str = "project-source"
+    metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "type": self.type,
+            "criteria": json_safe(self.criteria),
+            "unit": self.unit,
+            "origin": self.origin,
+            "metadata": json_safe(self.metadata),
+        }
+
+
 @dataclass(frozen=True)
 class CheckResult:
     id: str
@@ -106,6 +154,7 @@ class CheckResult:
     actual: Any = None
     expected: Any = None
     unit: str | None = None
+    evidence_kind: EvidenceKind | None = None
     evidence: Mapping[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -116,6 +165,9 @@ class CheckResult:
             "actual": json_safe(self.actual),
             "expected": json_safe(self.expected),
             "unit": self.unit,
+            "evidence_kind": (
+                self.evidence_kind.value if self.evidence_kind is not None else None
+            ),
             "evidence": json_safe(self.evidence),
         }
 
@@ -131,9 +183,20 @@ class Check:
     description: str
     evaluator: CheckEvaluator
     category: str = "engineering"
+    requirement: Requirement = field(default_factory=Requirement)
+    evidence: EvidenceSpec = field(default_factory=EvidenceSpec)
 
     def __post_init__(self) -> None:
         _require_identifier(self.id, "check id")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "category": self.category,
+            "description": self.description,
+            "requirement": self.requirement.to_dict(),
+            "evidence": self.evidence.to_dict(),
+        }
 
 
 def geometry_fingerprint(shape: Shape) -> str:
@@ -261,14 +324,7 @@ class CADDocument:
                 }
                 for name, component in sorted(self.components.items())
             },
-            "checks": [
-                {
-                    "id": check.id,
-                    "category": check.category,
-                    "description": check.description,
-                }
-                for check in self.checks
-            ],
+            "checks": [check.to_dict() for check in self.checks],
         }
 
     def validate(self) -> "ValidationReport":
@@ -280,6 +336,8 @@ class CADDocument:
                     raise ValueError(
                         f"check {check.id!r} returned result id {result.id!r}"
                     )
+                if result.evidence_kind is None:
+                    result = replace(result, evidence_kind=check.evidence.kind)
                 results.append(result)
             except Exception as exc:
                 results.append(
@@ -287,6 +345,7 @@ class CADDocument:
                         id=check.id,
                         status=CheckStatus.ERROR,
                         message=f"check raised {type(exc).__name__}: {exc}",
+                        evidence_kind=check.evidence.kind,
                         evidence={"category": check.category},
                     )
                 )
@@ -331,6 +390,7 @@ class CADDocument:
                     "nonempty": True,
                     "solid_required": component.require_solid,
                 },
+                evidence_kind=EvidenceKind.GEOMETRY,
                 evidence={"role": component.role},
             )
         except Exception as exc:
@@ -338,6 +398,7 @@ class CADDocument:
                 id=check_id,
                 status=CheckStatus.ERROR,
                 message=f"geometry inspection raised {type(exc).__name__}: {exc}",
+                evidence_kind=EvidenceKind.GEOMETRY,
             )
 
 

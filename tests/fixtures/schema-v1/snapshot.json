@@ -11,6 +11,13 @@
   },
   "schema": "cadharness.snapshot",
   "schema_version": "1",
+  "toolchain": {
+    "brep_fingerprint": "build123d.export_brep/sha256",
+    "build123d": "fixture",
+    "cadharness": "fixture",
+    "measurement_tolerance_mm": 1e-06,
+    "occt": "fixture"
+  },
   "validation": {
     "passed": true,
     "project_id": "schema-fixture",

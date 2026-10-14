@@ -21,6 +21,12 @@
     "source": null
   },
   "project_id": "schema-fixture",
+  "requirements": {
+    "added": [],
+    "modified": {},
+    "removed": [],
+    "unchanged": []
+  },
   "schema": "cadharness.diff",
   "schema_version": "1",
   "severity": "identical",

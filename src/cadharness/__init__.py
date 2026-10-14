@@ -17,8 +17,11 @@ from .model import (
     CADDocument,
     Check,
     CheckResult,
+    EvidenceKind,
+    EvidenceSpec,
     Component,
     Parameter,
+    Requirement,
     ValidationReport,
     geometry_fingerprint,
 )
@@ -27,6 +30,7 @@ from .project import LoadedProject, ProjectManifest, load_project
 from .policy import ComparisonPolicy, NumericTolerance
 from .revision import build_snapshot, compare_snapshots
 from .schema import require_schema, schema_catalog
+from .verification import VerificationPolicy, verify_document
 
 __all__ = [
     "CADDocument",
@@ -34,12 +38,16 @@ __all__ = [
     "CheckResult",
     "Component",
     "ComparisonPolicy",
+    "EvidenceKind",
+    "EvidenceSpec",
     "LoadedProject",
     "Parameter",
     "NumericTolerance",
     "ProjectManifest",
+    "Requirement",
     "ToleranceContribution",
     "ValidationReport",
+    "VerificationPolicy",
     "boolean_check",
     "build_snapshot",
     "clearance_check",
@@ -56,5 +64,6 @@ __all__ = [
     "require_schema",
     "schema_catalog",
     "tolerance_stack_check",
+    "verify_document",
     "wall_thickness_check",
 ]

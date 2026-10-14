@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+from importlib.metadata import PackageNotFoundError, version
 from numbers import Real
 from typing import Any, Mapping
 
-from .model import CADDocument
+import OCP
+
+from .model import CADDocument, ValidationReport
 from .policy import ComparisonPolicy
 from .schema import (
     DIFF_SCHEMA,
@@ -16,7 +19,10 @@ from .schema import (
 
 
 def build_snapshot(
-    document: CADDocument, *, variant: str | None = None
+    document: CADDocument,
+    *,
+    variant: str | None = None,
+    validation: ValidationReport | None = None,
 ) -> dict[str, Any]:
     """Capture geometry, parameters, metadata, and validation without timestamps."""
     inspection = document.inspect()
@@ -29,8 +35,22 @@ def build_snapshot(
         "parameters": inspection["parameters"],
         "components": inspection["components"],
         "checks": inspection["checks"],
-        "validation": document.validate().to_dict(),
+        "validation": (validation or document.validate()).to_dict(),
+        "toolchain": {
+            "cadharness": _package_version("cadharness"),
+            "build123d": _package_version("build123d"),
+            "occt": getattr(OCP, "__version__", "unknown"),
+            "brep_fingerprint": "build123d.export_brep/sha256",
+            "measurement_tolerance_mm": 1e-6,
+        },
     }
+
+
+def _package_version(name: str) -> str:
+    try:
+        return version(name)
+    except PackageNotFoundError:
+        return "unknown"
 
 
 def _require_snapshot(snapshot: Mapping[str, Any], label: str) -> None:
@@ -409,6 +429,64 @@ def _validation_changes(
     }
 
 
+def _requirement_changes(
+    baseline: list[Mapping[str, Any]],
+    current: list[Mapping[str, Any]],
+    policy: ComparisonPolicy,
+    decisions: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Compare stable check identity and normative versus descriptive fields."""
+    before = {str(item.get("id")): item for item in baseline}
+    after = {str(item.get("id")): item for item in current}
+    before_ids = set(before)
+    after_ids = set(after)
+    for check_id in sorted(after_ids - before_ids):
+        _decision(policy, decisions, f"requirements.{check_id}", "requirement-added")
+    for check_id in sorted(before_ids - after_ids):
+        _decision(policy, decisions, f"requirements.{check_id}", "requirement-removed")
+
+    modified: dict[str, Any] = {}
+    for check_id in sorted(before_ids & after_ids):
+        old = before[check_id]
+        new = after[check_id]
+        normative_fields = ("category", "requirement", "evidence")
+        normative = {
+            field: {"baseline": old.get(field), "current": new.get(field)}
+            for field in normative_fields
+            if old.get(field) != new.get(field)
+        }
+        informational = {}
+        if old.get("description") != new.get("description"):
+            informational["description"] = {
+                "baseline": old.get("description"),
+                "current": new.get("description"),
+            }
+        if normative:
+            assessment = _decision(
+                policy,
+                decisions,
+                f"requirements.{check_id}.normative",
+                "requirement-modified",
+            )
+        else:
+            assessment = None
+        if normative or informational:
+            modified[check_id] = {
+                "normative": normative,
+                "informational": informational,
+                "assessment": assessment,
+                "legacy_metadata_missing": any(
+                    field not in old for field in normative_fields
+                ),
+            }
+    return {
+        "added": sorted(after_ids - before_ids),
+        "removed": sorted(before_ids - after_ids),
+        "modified": modified,
+        "unchanged": sorted((before_ids & after_ids) - set(modified)),
+    }
+
+
 def compare_snapshots(
     baseline: Mapping[str, Any],
     current: Mapping[str, Any],
@@ -451,6 +529,12 @@ def compare_snapshots(
         active_policy,
         decisions,
     )
+    requirements = _requirement_changes(
+        list(baseline.get("checks", [])),
+        list(current.get("checks", [])),
+        active_policy,
+        decisions,
+    )
     changed = bool(decisions)
     counts = {
         disposition: sum(
@@ -485,12 +569,18 @@ def compare_snapshots(
             "components_changed": len(components["changed"]),
             "validation_regressions": len(validation["regressions"]),
             "validation_resolutions": len(validation["resolutions"]),
+            "requirements_added": len(requirements["added"]),
+            "requirements_removed": len(requirements["removed"]),
+            "requirements_modified": sum(
+                bool(item["normative"]) for item in requirements["modified"].values()
+            ),
             **{f"{name}_changes": count for name, count in counts.items()},
         },
         "policy": active_policy.to_dict(),
         "decisions": decisions,
         "parameters": parameters,
         "components": components,
+        "requirements": requirements,
         "validation": validation,
     }
 

@@ -19,9 +19,11 @@ from .operations import (
     preview_project,
     snapshot_project,
     validate_project,
+    verify_project,
 )
 from .preview import VIEW_NAMES
 from .schema import schema_catalog
+from .verification import VerificationPolicy
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -33,7 +35,10 @@ def _parser() -> argparse.ArgumentParser:
             "  cadharness doctor .\n"
             "  cadharness list examples\n"
             "  cadharness validate examples/project-box --variant standard\n"
-            "  cadharness inspector examples/project-box --variant standard"
+            "  cadharness verify examples/project-box --variant standard\n"
+            "  cadharness inspector examples/project-box --variant standard\n"
+            "\n"
+            "verify exit codes: 0 gate passed, 1 gate failed, 2 usage or execution error"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -110,6 +115,22 @@ def _parser() -> argparse.ArgumentParser:
     compare_parser.add_argument("--output")
     compare_parser.add_argument("--overwrite", action="store_true")
 
+    verify_parser = subparsers.add_parser(
+        "verify", help="gate current engineering evidence and optional revision changes"
+    )
+    verify_parser.add_argument("project")
+    verify_parser.add_argument("--baseline")
+    verify_parser.add_argument("--variant")
+    verify_parser.add_argument("--policy")
+    verify_parser.add_argument("--allow-failed-checks", action="store_true")
+    verify_parser.add_argument("--allow-check-errors", action="store_true")
+    verify_parser.add_argument("--fail-on-warnings", action="store_true")
+    verify_parser.add_argument("--allow-skipped-checks", action="store_true")
+    verify_parser.add_argument("--fail-on-added-requirements", action="store_true")
+    verify_parser.add_argument("--allow-removed-requirements", action="store_true")
+    verify_parser.add_argument("--allow-modified-requirements", action="store_true")
+    verify_parser.add_argument("--allow-unaccepted-changes", action="store_true")
+
     preview_parser = subparsers.add_parser(
         "preview", help="generate headless hidden-line SVG views"
     )
@@ -176,6 +197,23 @@ def main(argv: Sequence[str] | None = None) -> int:
                 output_file=args.output,
                 overwrite=args.overwrite,
             )
+        elif args.command == "verify":
+            result = verify_project(
+                args.project,
+                baseline_file=args.baseline,
+                variant=args.variant,
+                policy_file=args.policy,
+                gate_policy=VerificationPolicy(
+                    fail_on_failed_checks=not args.allow_failed_checks,
+                    fail_on_check_errors=not args.allow_check_errors,
+                    fail_on_warnings=args.fail_on_warnings,
+                    fail_on_skipped_checks=not args.allow_skipped_checks,
+                    fail_on_added_requirements=args.fail_on_added_requirements,
+                    fail_on_removed_requirements=not args.allow_removed_requirements,
+                    fail_on_modified_requirements=not args.allow_modified_requirements,
+                    fail_on_unaccepted_changes=not args.allow_unaccepted_changes,
+                ),
+            )
         elif args.command == "preview":
             result = preview_project(
                 args.project,
@@ -201,6 +239,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.command == "validate" and not result["passed"]:
             return 1
         if args.command == "compare" and result["severity"] == "regression":
+            return 1
+        if args.command == "verify" and not result["verification"]["passed"]:
             return 1
         return 0
     except Exception as exc:

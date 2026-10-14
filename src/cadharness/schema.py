@@ -12,6 +12,7 @@ VALIDATION_SCHEMA = "cadharness.validation"
 SNAPSHOT_SCHEMA = "cadharness.snapshot"
 DIFF_SCHEMA = "cadharness.diff"
 POLICY_SCHEMA = "cadharness.comparison-policy"
+VERIFICATION_SCHEMA = "cadharness.verification"
 
 
 @dataclass(frozen=True)
@@ -72,6 +73,7 @@ _SPECS = (
             "checks",
             "validation",
         ),
+        ("toolchain",),
     ),
     SchemaSpec(
         DIFF_SCHEMA,
@@ -93,13 +95,29 @@ _SPECS = (
             "components",
             "validation",
         ),
-        ("baseline_path", "output_path", "output_sha256"),
+        ("baseline_path", "output_path", "output_sha256", "requirements"),
     ),
     SchemaSpec(
         POLICY_SCHEMA,
         SCHEMA_VERSION,
         ("schema", "schema_version"),
         ("numeric_tolerances", "accepted_changes"),
+    ),
+    SchemaSpec(
+        VERIFICATION_SCHEMA,
+        SCHEMA_VERSION,
+        (
+            "schema",
+            "schema_version",
+            "project_id",
+            "revision",
+            "variant",
+            "validation",
+            "comparison",
+            "verification",
+            "current_snapshot",
+        ),
+        ("baseline_path",),
     ),
 )
 
@@ -139,7 +157,52 @@ def require_schema(
     missing = [key for key in spec.required_keys if key not in document]
     if missing:
         raise ValueError(f"{label} is missing required keys: {', '.join(missing)}")
+    _validate_nested(document, spec.name, label)
     return spec
+
+
+def _expect(value: Any, expected: type, path: str) -> None:
+    if not isinstance(value, expected):
+        raise TypeError(f"{path} must be {expected.__name__}")
+
+
+def _validate_nested(document: Mapping[str, Any], schema_name: str, label: str) -> None:
+    """Validate the nested structures consumed by cadharness itself.
+
+    V1 remains additive and accepts legacy fixtures which omit newer optional
+    fields, while rejecting wrong container and scalar types.
+    """
+    if schema_name == INSPECTION_SCHEMA:
+        for key, kind in (("project", Mapping), ("parameters", Mapping), ("components", Mapping), ("checks", list)):
+            _expect(document[key], kind, f"{label}.{key}")
+    elif schema_name == VALIDATION_SCHEMA:
+        _expect(document["passed"], bool, f"{label}.passed")
+        _expect(document["summary"], Mapping, f"{label}.summary")
+        _expect(document["results"], list, f"{label}.results")
+        for index, result in enumerate(document["results"]):
+            _expect(result, Mapping, f"{label}.results[{index}]")
+            if not isinstance(result.get("status"), str):
+                raise TypeError(f"{label}.results[{index}].status must be str")
+    elif schema_name == SNAPSHOT_SCHEMA:
+        for key in ("project", "parameters", "components", "validation"):
+            _expect(document[key], Mapping, f"{label}.{key}")
+        _expect(document["checks"], list, f"{label}.checks")
+    elif schema_name == DIFF_SCHEMA:
+        for key in ("summary", "policy", "parameters", "components", "validation"):
+            _expect(document[key], Mapping, f"{label}.{key}")
+        _expect(document["decisions"], list, f"{label}.decisions")
+        _expect(document["changed"], bool, f"{label}.changed")
+    elif schema_name == POLICY_SCHEMA:
+        if "numeric_tolerances" in document:
+            _expect(document["numeric_tolerances"], Mapping, f"{label}.numeric_tolerances")
+        if "accepted_changes" in document:
+            _expect(document["accepted_changes"], list, f"{label}.accepted_changes")
+    elif schema_name == VERIFICATION_SCHEMA:
+        _expect(document["validation"], Mapping, f"{label}.validation")
+        _expect(document["verification"], Mapping, f"{label}.verification")
+        _expect(document["current_snapshot"], Mapping, f"{label}.current_snapshot")
+        if document["comparison"] is not None:
+            _expect(document["comparison"], Mapping, f"{label}.comparison")
 
 
 __all__ = [
@@ -151,6 +214,7 @@ __all__ = [
     "SNAPSHOT_SCHEMA",
     "SchemaSpec",
     "VALIDATION_SCHEMA",
+    "VERIFICATION_SCHEMA",
     "require_schema",
     "schema_catalog",
 ]

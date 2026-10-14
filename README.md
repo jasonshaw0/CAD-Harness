@@ -1,7 +1,7 @@
 # cadHarness
 
 Source-backed CAD engineering workflows for build123d: inspect, validate,
-snapshot, compare, preview, and explicitly export trusted Python projects.
+verify, compare, preview, and explicitly export trusted Python projects.
 
 ## Quickstart
 
@@ -18,6 +18,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m cadharness doctor .
 .\.venv\Scripts\python.exe -m cadharness list examples
 .\.venv\Scripts\python.exe -m cadharness validate examples/project-box --variant standard
+.\.venv\Scripts\python.exe -m cadharness verify examples/project-box --variant standard
 .\.venv\Scripts\python.exe -m cadharness inspector examples/project-box --variant standard
 .\.venv\Scripts\python.exe -m cadharness mcp-config .
 ```
@@ -32,6 +33,7 @@ python3 -m venv .venv
 ./.venv/bin/python -m cadharness doctor .
 ./.venv/bin/python -m cadharness list examples
 ./.venv/bin/python -m cadharness validate examples/project-box --variant standard
+./.venv/bin/python -m cadharness verify examples/project-box --variant standard
 ./.venv/bin/python -m cadharness inspector examples/project-box --variant standard
 ./.venv/bin/python -m cadharness mcp-config .
 ```
@@ -57,7 +59,10 @@ stay inside the project root and refuse accidental overwrite.
 - [x] Versioned schema fixtures and compatibility checks
 - [x] Reusable bounded-dimension, clearance, wall, hole, and tolerance-stack checks
 - [x] Browser-verified, read-only linked project inspector
-- [ ] Rich assembly metadata exchange and external analysis adapters — current focus
+- [x] Verification gates that cannot confuse an accepted diff with a valid design
+- [x] Requirement-change tracking and declared/geometry/external provenance
+- [ ] Independent geometric measurement engine for actual OCCT geometry
+- [ ] Rich assembly metadata exchange and external analysis adapters
 
 See the [CLI and MCP guide](docs/CLI_MCP.md) for setup and usage, the
 [architecture](docs/ARCHITECTURE.md) for contracts and limitations, and the

@@ -10,6 +10,7 @@ from build123d import Align, Cylinder, Part, Pos
 from cadharness import (
     CADDocument,
     Component,
+    EvidenceKind,
     Parameter,
     equals_check,
     minimum_check,
@@ -117,6 +118,9 @@ def create_project(params: PipeFlangeParameters = DEFAULTS) -> CADDocument:
             params.flange_diameter,
             absolute_tolerance=1e-7,
             unit="mm",
+            evidence_kind=EvidenceKind.GEOMETRY,
+            measurement_method="occt-bounding-box",
+            components=("flange",),
         ),
         equals_check(
             "dimensions.overall-height",
@@ -125,6 +129,9 @@ def create_project(params: PipeFlangeParameters = DEFAULTS) -> CADDocument:
             params.hub_height,
             absolute_tolerance=1e-7,
             unit="mm",
+            evidence_kind=EvidenceKind.GEOMETRY,
+            measurement_method="occt-bounding-box",
+            components=("flange",),
         ),
         wall_thickness_check(
             "geometry.hub-wall",

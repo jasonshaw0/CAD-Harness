@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from hashlib import sha256
 import json
+import os
 from pathlib import Path
 import re
+import tempfile
 from typing import Any, Iterable
 
 from build123d import Compound, export_step, export_stl
@@ -16,9 +18,29 @@ from .policy import ComparisonPolicy
 from .preview import VIEW_NAMES, write_svg_previews
 from .project import LoadedProject, discover_projects, load_project
 from .revision import build_snapshot, compare_snapshots
+from .verification import VerificationPolicy, verify_document
 
 
 _SAFE_NAME = re.compile(r"[^a-zA-Z0-9_.-]+")
+
+
+def _atomic_write_text(target: Path, content: str) -> None:
+    target.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary = tempfile.mkstemp(
+        dir=target.parent, prefix=f".{target.name}.", suffix=".tmp"
+    )
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8", newline="") as stream:
+            stream.write(content)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, target)
+    except Exception:
+        try:
+            os.unlink(temporary)
+        except FileNotFoundError:
+            pass
+        raise
 
 
 def inspect_project(
@@ -80,7 +102,10 @@ def inspector_project(
         "default_variant": loaded.manifest.default_variant,
         "available_variants": sorted(loaded.manifest.variants),
     }
-    validation = loaded.document.validate().to_dict()
+    verification_report = verify_document(
+        loaded.document, variant=loaded.variant
+    )
+    validation = verification_report["validation"]
     previews = [
         {
             "view": output["view"],
@@ -88,8 +113,13 @@ def inspector_project(
         }
         for output in preview_outputs
     ]
-    content = render_inspector(inspection, validation, previews=previews)
-    target.write_text(content, encoding="utf-8")
+    content = render_inspector(
+        inspection,
+        validation,
+        previews=previews,
+        verification=verification_report["verification"],
+    )
+    _atomic_write_text(target, content)
     return {
         "project_id": loaded.document.id,
         "revision": loaded.document.revision,
@@ -97,6 +127,7 @@ def inspector_project(
         "path": str(target),
         "sha256": sha256(content.encode("utf-8")).hexdigest(),
         "validation_passed": validation["passed"],
+        "verification_passed": verification_report["verification"]["passed"],
         "previews": preview_outputs,
     }
 
@@ -143,7 +174,7 @@ def snapshot_project(
     target.parent.mkdir(parents=True, exist_ok=True)
     snapshot = build_snapshot(loaded.document, variant=loaded.variant)
     content = json.dumps(snapshot, indent=2, sort_keys=True) + "\n"
-    target.write_text(content, encoding="utf-8")
+    _atomic_write_text(target, content)
     return {
         "project_id": loaded.document.id,
         "revision": loaded.document.revision,
@@ -188,9 +219,46 @@ def compare_project(
             raise FileExistsError(f"refusing to overwrite comparison report: {target}")
         target.parent.mkdir(parents=True, exist_ok=True)
         content = json.dumps(report, indent=2, sort_keys=True) + "\n"
-        target.write_text(content, encoding="utf-8")
+        _atomic_write_text(target, content)
         report["output_path"] = str(target)
         report["output_sha256"] = sha256(content.encode("utf-8")).hexdigest()
+    return report
+
+
+def verify_project(
+    path: str | Path,
+    *,
+    baseline_file: str | Path | None = None,
+    variant: str | None = None,
+    policy_file: str | Path | None = None,
+    gate_policy: VerificationPolicy | None = None,
+) -> dict[str, Any]:
+    """Run the unified current-design verification gate."""
+    loaded = load_project(path, variant=variant)
+    baseline = None
+    baseline_path = None
+    if baseline_file is not None:
+        baseline_path = _project_artifact_path(loaded, baseline_file)
+        with baseline_path.open("r", encoding="utf-8") as stream:
+            baseline = json.load(stream)
+    configured_policy = policy_file or loaded.manifest.comparison_policy
+    if configured_policy:
+        policy_path = _project_artifact_path(loaded, configured_policy)
+        comparison_policy = ComparisonPolicy.from_file(
+            policy_path,
+            source=policy_path.relative_to(loaded.root).as_posix(),
+        )
+    else:
+        comparison_policy = ComparisonPolicy.exact()
+    report = verify_document(
+        loaded.document,
+        baseline=baseline,
+        variant=loaded.variant,
+        comparison_policy=comparison_policy,
+        gate_policy=gate_policy,
+    )
+    if baseline_path is not None:
+        report["baseline_path"] = baseline_path.relative_to(loaded.root).as_posix()
     return report
 
 
@@ -274,7 +342,23 @@ def export_project(
         output_path = target_dir / f"{filename}.{normalized_format}"
         if output_path.exists() and not overwrite:
             raise FileExistsError(f"refusing to overwrite existing export: {output_path}")
-        exporter(shape, output_path)
+        descriptor, temporary_name = tempfile.mkstemp(
+            dir=target_dir,
+            prefix=f".{filename}.",
+            suffix=f".{normalized_format}",
+        )
+        os.close(descriptor)
+        temporary_path = Path(temporary_name)
+        try:
+            exporter(shape, temporary_path)
+            if not temporary_path.is_file() or temporary_path.stat().st_size == 0:
+                raise RuntimeError(
+                    f"exporter did not produce a valid file: {output_path}"
+                )
+            os.replace(temporary_path, output_path)
+        except Exception:
+            temporary_path.unlink(missing_ok=True)
+            raise
         outputs.append(
             {
                 "component_id": item_id,
@@ -299,4 +383,5 @@ __all__ = [
     "preview_project",
     "snapshot_project",
     "validate_project",
+    "verify_project",
 ]

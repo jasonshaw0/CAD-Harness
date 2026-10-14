@@ -31,6 +31,10 @@ async def smoke() -> dict:
                     "validate_cad_project",
                     {"project_path": "examples/project-box"},
                 )
+                verification = await session.call_tool(
+                    "verify_cad_project",
+                    {"project_path": "examples/project-box"},
+                )
                 status_content = status.structured_content or {}
                 structured = validation.structured_content or {}
                 tool_names = [tool.name for tool in tools.tools]
@@ -41,6 +45,7 @@ async def smoke() -> dict:
                     "list_cad_projects",
                     "inspect_cad_project",
                     "validate_cad_project",
+                    "verify_cad_project",
                     "snapshot_cad_project",
                     "compare_cad_project",
                     "preview_cad_project",
@@ -56,6 +61,9 @@ async def smoke() -> dict:
                     raise RuntimeError(f"status smoke test failed: {status}")
                 if validation.is_error or not structured.get("passed"):
                     raise RuntimeError(f"validation smoke test failed: {validation}")
+                verified = verification.structured_content or {}
+                if verification.is_error or not verified.get("verification", {}).get("passed"):
+                    raise RuntimeError(f"verification smoke test failed: {verification}")
                 return {
                     "server": initialization.server_info.name,
                     "version": initialization.server_info.version,
@@ -71,6 +79,7 @@ async def smoke() -> dict:
                         "variant": structured.get("variant"),
                         "summary": structured.get("summary"),
                     },
+                    "verification": verified.get("verification"),
                 }
 
 

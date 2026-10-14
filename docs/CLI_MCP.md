@@ -32,6 +32,7 @@ $cad = ".\.venv\Scripts\python.exe"
 & $cad -m cadharness list examples
 & $cad -m cadharness inspect examples/project-box --variant standard
 & $cad -m cadharness validate examples/project-box --variant standard
+& $cad -m cadharness verify examples/project-box --variant standard
 & $cad -m cadharness inspector examples/project-box --variant standard
 & $cad -m cadharness snapshot examples/project-box --variant standard
 & $cad -m cadharness compare examples/project-box --variant standard
@@ -39,7 +40,8 @@ $cad = ".\.venv\Scripts\python.exe"
 
 Every command emits JSON. Add `--compact` anywhere in the command for one-line
 JSON. `validate` exits with status 1 when checks fail; `compare` exits with
-status 1 for a regression; usage and runtime errors exit with status 2.
+status 1 for a regression; `verify` exits with status 0 on gate pass, 1 on gate
+failure; usage and runtime errors exit with status 2.
 
 | Command | Purpose | Writes files |
 | --- | --- | --- |
@@ -48,6 +50,7 @@ status 1 for a regression; usage and runtime errors exit with status 2.
 | `schemas` | List public JSON document contracts | No |
 | `inspect <project>` | Build and return measured geometry evidence | No |
 | `validate <project>` | Run geometry and project engineering checks | No |
+| `verify <project>` | Gate current evidence and optional revision changes | No |
 | `inspector <project>` | Create a linked HTML/SVG review report | `.cadharness/inspector/` |
 | `snapshot <project>` | Save deterministic revision evidence | `.cadharness/baseline.json` |
 | `compare <project>` | Compare source-built geometry with a snapshot | Only with `--output` |
@@ -98,8 +101,8 @@ Pass multiple trusted roots when required:
 .\.venv\Scripts\python.exe -m cadharness mcp-config C:\CAD\project-a D:\CAD\project-b
 ```
 
-The server exposes discovery, schema, inspection, validation, inspector,
-snapshot, comparison, preview, and export tools. Call
+The server exposes discovery, schema, inspection, validation, verification,
+inspector, snapshot, comparison, preview, and export tools. Call
 `get_cadharness_status` first to confirm the version, trusted roots, and
 discovered projects visible to the host.
 

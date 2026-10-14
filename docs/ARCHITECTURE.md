@@ -88,6 +88,23 @@ Exact fingerprints detect a change; geometric deltas and policy decisions help
 explain and review it. Policy acceptance is recorded engineering intent, not a
 claim of geometric identity or physical suitability.
 
+### Verification integrity
+
+`verify` evaluates whether the current design satisfies engineering requirements,
+optionally combining that assessment with revision comparison against a baseline snapshot.
+
+Crucially, cadHarness maintains a strict separation of concerns:
+- **Geometry validity**: whether the solid can be constructed and is topologically sound.
+- **Engineering validation**: whether the model satisfies declared functional checks and bounds.
+- **Revision comparison**: an objective diff between two states (which may report "identical" even between two failing revisions).
+- **Verification gate**: whether the current revision passes all engineering gates under the active policy.
+
+An accepted geometric difference cannot override failed engineering validation, and an identical failing baseline remains a failed current design.
+
+Checks declare stable `Requirement` definitions (type, criteria, units, origin) and `EvidenceSpec` provenance (distinguishing `declared`, `geometry-derived`, and `external` evidence). Revision comparisons track added, removed, and modified requirements, distinguishing normative acceptance-criteria changes from harmless description edits.
+
+Snapshots record toolchain metadata (cadharness, build123d, and OCCT versions, BREP fingerprint method, and computational tolerance) without timestamps, ensuring byte-stable reproducibility while explaining environment differences.
+
 ### Visualization and exchange
 
 `preview` generates headless hidden-line SVG views (`iso`, `top`, `front`, and `right`) for review artifacts. `inspector` combines those views with component metrics, parameters, validation results, evidence, and cross-links in a portable HTML document. It is read-only and intentionally not a modeling UI.
@@ -111,6 +128,7 @@ The CLI and MCP server call the same operation layer:
 - `inspect`: build and report project evidence;
 - `inspector`: generate linked, read-only HTML and SVG evidence;
 - `validate`: execute geometry and project checks;
+- `verify`: gate current geometry and requirements against policies and baselines;
 - `snapshot`: persist deterministic revision evidence;
 - `compare`: explain current-versus-baseline changes;
 - `preview`: produce SVG review views;
@@ -125,7 +143,7 @@ The Python API exposes the same model and snapshot primitives for tests and cust
 
 ### Public JSON schemas
 
-Inspection, validation, snapshot, diff, and comparison-policy documents carry a
+Inspection, validation, snapshot, diff, comparison-policy, and verification documents carry a
 stable `schema` identity and `schema_version`. `cadharness schemas` and the
 `list_cad_schemas` MCP tool publish the supported versions and top-level keys.
 The v1 examples in `tests/fixtures/schema-v1` are compatibility fixtures: tests

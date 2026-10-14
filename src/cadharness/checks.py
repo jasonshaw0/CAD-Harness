@@ -6,7 +6,15 @@ from dataclasses import dataclass
 from math import isclose
 from typing import Any, Callable, Iterable, Mapping
 
-from .model import CADDocument, Check, CheckResult, CheckStatus
+from .model import (
+    CADDocument,
+    Check,
+    CheckResult,
+    CheckStatus,
+    EvidenceKind,
+    EvidenceSpec,
+    Requirement,
+)
 
 
 ValueSource = Any | Callable[[CADDocument], Any]
@@ -119,7 +127,18 @@ def tolerance_stack_check(
             ),
         )
 
-    return Check(check_id, description, evaluate, category="tolerance-stack")
+    return Check(
+        check_id,
+        description,
+        evaluate,
+        category="tolerance-stack",
+        requirement=Requirement("range", expected, unit),
+        evidence=EvidenceSpec(
+            EvidenceKind.DECLARED,
+            "worst-case-arithmetic",
+            limitations=("Declared deviations; not measured process capability.",),
+        ),
+    )
 
 
 def range_check(
@@ -132,6 +151,9 @@ def range_check(
     unit: str | None = None,
     evidence: Mapping[str, Any] | None = None,
     category: str = "dimension",
+    evidence_kind: EvidenceKind = EvidenceKind.DECLARED,
+    measurement_method: str = "project-supplied-value",
+    components: Iterable[str] = (),
 ) -> Check:
     """Check a measured value against one or both inclusive bounds."""
     if minimum is None and maximum is None:
@@ -165,7 +187,18 @@ def range_check(
             evidence=dict(evidence or {}),
         )
 
-    return Check(check_id, description, evaluate, category=category)
+    return Check(
+        check_id,
+        description,
+        evaluate,
+        category=category,
+        requirement=Requirement("range", expected, unit),
+        evidence=EvidenceSpec(
+            evidence_kind,
+            measurement_method,
+            tuple(components),
+        ),
+    )
 
 
 def clearance_check(
@@ -272,7 +305,12 @@ def minimum_check(
             evidence=evidence or {},
         )
 
-    return Check(check_id, description, evaluate)
+    return Check(
+        check_id,
+        description,
+        evaluate,
+        requirement=Requirement("minimum", {"minimum": minimum}, unit),
+    )
 
 
 def maximum_check(
@@ -301,7 +339,12 @@ def maximum_check(
             evidence=evidence or {},
         )
 
-    return Check(check_id, description, evaluate)
+    return Check(
+        check_id,
+        description,
+        evaluate,
+        requirement=Requirement("maximum", {"maximum": maximum}, unit),
+    )
 
 
 def equals_check(
@@ -313,6 +356,9 @@ def equals_check(
     absolute_tolerance: float = 0.0,
     unit: str | None = None,
     evidence: dict[str, Any] | None = None,
+    evidence_kind: EvidenceKind = EvidenceKind.DECLARED,
+    measurement_method: str = "project-supplied-value",
+    components: Iterable[str] = (),
 ) -> Check:
     def evaluate(document: CADDocument) -> CheckResult:
         measured = _value(actual, document)
@@ -339,7 +385,21 @@ def equals_check(
             evidence=evidence or {},
         )
 
-    return Check(check_id, description, evaluate)
+    return Check(
+        check_id,
+        description,
+        evaluate,
+        requirement=Requirement(
+            "equals",
+            {"value": expected, "absolute_tolerance": absolute_tolerance},
+            unit,
+        ),
+        evidence=EvidenceSpec(
+            evidence_kind,
+            measurement_method,
+            tuple(components),
+        ),
+    )
 
 
 def boolean_check(
@@ -388,4 +448,17 @@ def interference_check(
             evidence={"components": [first_component, second_component]},
         )
 
-    return Check(check_id, summary, evaluate, category="interference")
+    return Check(
+        check_id,
+        summary,
+        evaluate,
+        category="interference",
+        requirement=Requirement(
+            "maximum", {"maximum": maximum_volume_mm3}, "mm^3"
+        ),
+        evidence=EvidenceSpec(
+            EvidenceKind.GEOMETRY,
+            "occt-boolean-common-volume",
+            (first_component, second_component),
+        ),
+    )

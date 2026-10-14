@@ -20,8 +20,10 @@ from .operations import (
     preview_project,
     snapshot_project,
     validate_project,
+    verify_project,
 )
 from .schema import schema_catalog
+from .verification import VerificationPolicy
 
 
 def _configured_roots(cli_roots: Iterable[str] | None = None) -> tuple[Path, ...]:
@@ -174,6 +176,25 @@ def compare_cad_project(
         policy_file=policy_file,
         output_file=output_file,
         overwrite=overwrite,
+    )
+
+
+@mcp.tool()
+def verify_cad_project(
+    project_path: str,
+    baseline_file: str | None = None,
+    variant: str | None = None,
+    policy_file: str | None = None,
+    gate_policy: dict[str, bool] | None = None,
+) -> dict[str, Any]:
+    """Gate current geometry and requirements; comparison remains separate evidence."""
+    gates = VerificationPolicy(**gate_policy) if gate_policy else None
+    return verify_project(
+        _resolve_in_roots(project_path, ROOTS),
+        baseline_file=baseline_file,
+        variant=variant,
+        policy_file=policy_file,
+        gate_policy=gates,
     )
 
 

@@ -167,6 +167,7 @@ class CoreModelTests(unittest.TestCase):
             "inspection.json": "cadharness.inspection",
             "snapshot.json": "cadharness.snapshot",
             "validation.json": "cadharness.validation",
+            "verification.json": "cadharness.verification",
         }
         self.assertEqual(
             [item["name"] for item in schema_catalog()["schemas"]],
@@ -409,7 +410,7 @@ class ProjectWorkflowTests(unittest.TestCase):
             exit_code = cli_main(["--compact", "schemas"])
         self.assertEqual(exit_code, 0)
         schemas = json.loads(output.getvalue())["schemas"]
-        self.assertEqual(len(schemas), 5)
+        self.assertEqual(len(schemas), 6)
         self.assertEqual(schemas[0]["version"], "1")
 
     def test_cli_accepts_compact_after_subcommand(self):
@@ -418,7 +419,7 @@ class ProjectWorkflowTests(unittest.TestCase):
             exit_code = cli_main(["schemas", "--compact"])
         self.assertEqual(exit_code, 0)
         self.assertNotIn("\n  ", output.getvalue())
-        self.assertEqual(len(json.loads(output.getvalue())["schemas"]), 5)
+        self.assertEqual(len(json.loads(output.getvalue())["schemas"]), 6)
 
     def test_cli_doctor_identifies_checkout_and_projects(self):
         output = StringIO()
