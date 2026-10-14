@@ -9,6 +9,7 @@ import sys
 from typing import Sequence
 
 from .diagnostics import doctor_report, package_version
+from .mcp_config import mcp_client_config
 from .operations import (
     compare_project,
     discover_projects,
@@ -49,6 +50,19 @@ def _parser() -> argparse.ArgumentParser:
     )
     doctor_parser.add_argument(
         "root", nargs="?", default=".", help="directory to scan for projects"
+    )
+
+    mcp_config_parser = subparsers.add_parser(
+        "mcp-config", help="print a portable MCP client configuration"
+    )
+    mcp_config_parser.add_argument(
+        "roots",
+        nargs="*",
+        default=["."],
+        help="trusted project roots (default: current directory)",
+    )
+    mcp_config_parser.add_argument(
+        "--name", default="cadharness", help="server name in the generated config"
     )
 
     list_parser = subparsers.add_parser("list", help="find projects beneath a root")
@@ -129,6 +143,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             result = schema_catalog()
         elif args.command == "doctor":
             result = doctor_report(args.root)
+        elif args.command == "mcp-config":
+            result = mcp_client_config(args.roots, name=args.name)
         elif args.command == "list":
             result = {"projects": discover_projects(Path(args.root))}
         elif args.command == "inspect":

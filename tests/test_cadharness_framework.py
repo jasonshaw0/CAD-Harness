@@ -2,7 +2,9 @@ import contextlib
 from dataclasses import dataclass
 from io import StringIO
 import json
+import os
 from pathlib import Path
+import sys
 from tempfile import TemporaryDirectory
 import unittest
 
@@ -29,6 +31,7 @@ from cadharness import (
     wall_thickness_check,
 )
 from cadharness.cli import main as cli_main
+from cadharness.mcp_config import mcp_client_config
 from cadharness.operations import (
     compare_project,
     inspector_project,
@@ -429,6 +432,38 @@ class ProjectWorkflowTests(unittest.TestCase):
             {project["id"] for project in report["workspace"]["projects"]},
             {"pipe-flange", "project-box"},
         )
+
+    def test_mcp_config_uses_absolute_interpreter_and_roots(self):
+        config = mcp_client_config([PROJECT_ROOT, PROJECT_ROOT / "examples"])
+        server = config["mcpServers"]["cadharness"]
+        self.assertEqual(server["command"], sys.executable)
+        self.assertEqual(
+            server["args"],
+            [
+                "-m",
+                "cadharness.mcp_server",
+                "--root",
+                str(PROJECT_ROOT),
+                "--root",
+                str(PROJECT_ROOT / "examples"),
+            ],
+        )
+
+    def test_mcp_root_precedence_is_cli_then_environment(self):
+        from cadharness.mcp_server import _configured_roots
+
+        previous = os.environ.get("CADHARNESS_PROJECT_ROOTS")
+        os.environ["CADHARNESS_PROJECT_ROOTS"] = str(PROJECT_ROOT / "examples")
+        try:
+            self.assertEqual(_configured_roots([str(PROJECT_ROOT)]), (PROJECT_ROOT,))
+            self.assertEqual(
+                _configured_roots(), (PROJECT_ROOT / "examples",)
+            )
+        finally:
+            if previous is None:
+                os.environ.pop("CADHARNESS_PROJECT_ROOTS", None)
+            else:
+                os.environ["CADHARNESS_PROJECT_ROOTS"] = previous
 
 
 if __name__ == "__main__":

@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import argparse
 import os
 from pathlib import Path
+import sys
 from typing import Any, Iterable
 
 from mcp.server import MCPServer
 
+from .diagnostics import package_version
 from .operations import (
     compare_project,
     discover_projects,
@@ -21,12 +24,31 @@ from .operations import (
 from .schema import schema_catalog
 
 
-def _configured_roots() -> tuple[Path, ...]:
-    raw = os.environ.get("CADHARNESS_PROJECT_ROOTS", "")
-    values = [value for value in raw.split(os.pathsep) if value]
+def _configured_roots(cli_roots: Iterable[str] | None = None) -> tuple[Path, ...]:
+    values = list(cli_roots or ())
+    if not values:
+        raw = os.environ.get("CADHARNESS_PROJECT_ROOTS", "")
+        values = [value for value in raw.split(os.pathsep) if value]
     if not values:
         values = [str(Path.cwd())]
     return tuple(Path(value).expanduser().resolve() for value in values)
+
+
+def _parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="cadharness-mcp",
+        description="Run the cadHarness MCP server over stdio.",
+    )
+    parser.add_argument(
+        "--root",
+        action="append",
+        dest="roots",
+        help="trusted project root; repeat for multiple roots",
+    )
+    parser.add_argument(
+        "--version", action="version", version=f"%(prog)s {package_version()}"
+    )
+    return parser
 
 
 def _resolve_in_roots(path: str, roots: Iterable[Path]) -> Path:
@@ -43,11 +65,29 @@ def _resolve_in_roots(path: str, roots: Iterable[Path]) -> Path:
 ROOTS = _configured_roots()
 mcp = MCPServer(
     "cadHarness",
+    version=package_version(),
     instructions=(
         "Inspect and validate trusted source-backed build123d projects. "
         "Project factories execute local Python and are restricted to configured roots."
     ),
 )
+
+
+@mcp.tool()
+def get_cadharness_status() -> dict[str, Any]:
+    """Report server version, configured trust roots, and discovered projects."""
+    root_status = [
+        {"path": str(root), "exists": root.is_dir()}
+        for root in ROOTS
+    ]
+    projects = sum((discover_projects(root) for root in ROOTS if root.is_dir()), [])
+    return {
+        "version": package_version(),
+        "roots": root_status,
+        "project_count": len(projects),
+        "projects": projects,
+        "security": "Project factories execute trusted local Python within these roots.",
+    }
 
 
 @mcp.tool()
@@ -59,7 +99,10 @@ def list_cad_schemas() -> dict[str, Any]:
 @mcp.tool()
 def list_cad_projects() -> dict[str, Any]:
     """List cadharness manifests beneath the configured project roots."""
-    return {"roots": [str(root) for root in ROOTS], "projects": sum((discover_projects(root) for root in ROOTS), [])}
+    return {
+        "roots": [str(root) for root in ROOTS],
+        "projects": sum((discover_projects(root) for root in ROOTS), []),
+    }
 
 
 @mcp.tool()
@@ -73,7 +116,7 @@ def inspect_cad_project(
 @mcp.tool()
 def build_cad_inspector(
     project_path: str,
-    output_file: str = "artifacts/inspector/index.html",
+    output_file: str = ".cadharness/inspector/index.html",
     views: list[str] | None = None,
     component_ids: list[str] | None = None,
     variant: str | None = None,
@@ -137,7 +180,7 @@ def compare_cad_project(
 @mcp.tool()
 def preview_cad_project(
     project_path: str,
-    output_dir: str = "artifacts/previews",
+    output_dir: str = ".cadharness/previews",
     views: list[str] | None = None,
     component_ids: list[str] | None = None,
     variant: str | None = None,
@@ -174,8 +217,11 @@ def export_cad_project(
     )
 
 
-def main() -> None:
-    mcp.run()
+def main(argv: Iterable[str] | None = None) -> None:
+    global ROOTS
+    args = _parser().parse_args(list(sys.argv[1:] if argv is None else argv))
+    ROOTS = _configured_roots(args.roots)
+    mcp.run(transport="stdio")
 
 
 if __name__ == "__main__":
