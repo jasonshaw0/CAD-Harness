@@ -1,24 +1,19 @@
 # cadHarness
 
-cadHarness is a Python framework and CLI for inspecting, validating, and
-comparing build123d CAD projects defined in Python source. A project factory
-returns a `CADDocument` containing native build123d shapes, stable component IDs,
-parameters, and executable engineering checks. Shared operations expose
-geometry measurements, verification gates, revision snapshots and diffs,
-SVG previews, HTML inspection reports, and explicit CAD exports through the
-Python API, JSON CLI, and optional MCP server.
+cadHarness checks CAD models written in Python with build123d. It measures the
+built geometry and tests it against requirements you define, such as hole counts
+and clearances.
 
-Verification evaluates the current geometry and project checks independently
-of revision comparison. An unchanged model can still fail verification.
-Check results record status, actual and expected values, units, and evidence
-provenance. Geometry measurements operate on OCCT shapes; the framework does
-not infer design intent or replace build123d's geometry model.
+Use it to:
+
+- Review a model and its check results in an HTML report.
+- Run pass/fail checks from the command line or Python.
+- Compare revisions, export CAD files, or connect an assistant through MCP.
 
 ## Quickstart
 
-Requires Git and Python 3.11–3.14. Installation includes build123d 0.13.x.
-The example below generates an inspection report for a motor mount with
-four mounting holes and a clearance check.
+Requires Git and Python 3.11–3.14. Installation includes build123d.
+Start by generating a report for the included motor-mount example:
 
 ### Windows PowerShell
 
@@ -42,49 +37,46 @@ python3 -m venv .venv
 ```
 
 Open `examples/nema17-mount/.cadharness/inspector/index.html` in your browser.
-The default variant reports **Verified**, **3 components**, and **10 checks**.
-The report includes two CAD views, measured values, requirements, and
-expandable evidence.
-No MCP setup is needed for this workflow.
+The report shows the model, measured values, and check results. The example
+should show **Verified**, with **3 components** and **10 checks**.
+You do not need MCP to use the command line or view reports.
 
 To regenerate an existing report, add `--overwrite` to the inspector command.
 
-## Verification failure example
+## Run checks
 
-The `missing-hole` variant builds three holes while the requirement still calls
-for four. In PowerShell:
+Use `verify` when you need a pass/fail result, for example in a script or CI job:
 
 ```powershell
-.\.venv\Scripts\python.exe -m cadharness verify examples/nema17-mount --variant missing-hole --summary
+.\.venv\Scripts\python.exe -m cadharness verify examples/nema17-mount --summary
 ```
 
-On macOS/Linux, use `./.venv/bin/python` instead. Expect **Verification failed**,
-with **Actual: 3** and **Expected: 4** for `mount.hole-count`, and exit code 1.
-Other pattern checks also fail. This is an intentional regression example.
+On macOS/Linux, use `./.venv/bin/python` instead. By default, exit code 0 means
+verification passed; 1 means it failed; 2 means a check or command encountered an
+error. Generating a report does not require the model to pass verification.
 
-## Project contract
+To see a failed check, add `--variant missing-hole`. That example has three
+mounting holes where four are required.
 
-Each project directory contains a `cadharness.toml` manifest identifying a
-trusted Python factory that returns `CADDocument`. Components retain native
-build123d `Shape` objects. Checks define acceptance criteria and classify
-evidence as declared, geometry-derived, or external. Manifests can also declare
-typed parameters and named variants. The
-[project guide](docs/GETTING_STARTED.md) contains a minimal executable example.
+## Use your own model
 
-## Interfaces and documentation
+A cadHarness project has a `cadharness.toml` file pointing to a Python function
+that returns a `CADDocument`: your build123d shapes plus their checks.
+Follow the [project guide](docs/GETTING_STARTED.md) to create one or wrap an
+existing model.
+
+## Documentation
 
 | Topic | Reference |
 | --- | --- |
-| Project factories and checks | [Project guide](docs/GETTING_STARTED.md) |
+| Create a project and add checks | [Project guide](docs/GETTING_STARTED.md) |
 | MCP server configuration | [MCP setup](docs/CLI_MCP.md#connect-an-mcp-client) |
-| Hole, clearance, and sampled thickness measurements | [Geometry measurements](docs/MEASUREMENTS.md) |
-| Snapshots and revision comparison | [CLI workflow](docs/CLI_MCP.md#cli-workflow) |
+| Measure holes, clearances, and thickness | [Geometry measurements](docs/MEASUREMENTS.md) |
+| Commands and revision comparison | [CLI workflow](docs/CLI_MCP.md#cli-workflow) |
 | Installation and project discovery | [Troubleshooting](docs/CLI_MCP.md#troubleshooting) |
 
-CLI output is JSON by default. `verify` and `inspector` also offer `--summary`
-for terminal use. `verify` exits 0 when its gate passes, 1 when it fails, and 2
-for rejected check errors or usage/runtime errors. Generating an inspector is a
-report-building operation; use `verify` when a script needs a pass/fail gate.
+Commands return JSON by default. Use `--summary` with `verify` or `inspector`
+for readable terminal output.
 
 ## Development
 
@@ -96,13 +88,9 @@ Install the MCP extra to run the complete integration checks. From the checkout:
 .\.venv\Scripts\python.exe scripts/smoke_mcp.py
 ```
 
-On macOS/Linux, use `./.venv/bin/python`. CI runs unit tests, CLI checks, and
-the MCP smoke test on Windows and Linux with Python 3.11 and 3.12, plus a job
-using the minimum supported build123d version.
+On macOS/Linux, use `./.venv/bin/python`.
 
-Project factories execute trusted local Python and are not sandboxed.
-Verification describes computational evidence; physical fit and manufacturing
-suitability still need their own validation. Example dimensions are assumptions,
-not hardware certification.
+Only run projects whose Python source you trust; project code is not sandboxed.
+Passing checks does not replace physical fit or manufacturing validation.
 
 [Architecture](docs/ARCHITECTURE.md) · [Changelog](CHANGELOG.md)
