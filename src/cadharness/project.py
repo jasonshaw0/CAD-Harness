@@ -2,18 +2,20 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field, fields, is_dataclass
-from enum import Enum
+import importlib.abc
+import importlib.machinery
 import importlib.util
-from pathlib import Path
 import re
 import sys
 import tomllib
 import types
-from typing import Any, Literal, Mapping, Union, get_args, get_origin, get_type_hints
+from collections.abc import Mapping
+from dataclasses import dataclass, field, fields, is_dataclass
+from enum import Enum
+from pathlib import Path
+from typing import Any, Literal, Union, get_args, get_origin, get_type_hints
 
 from .model import CADDocument
-
 
 MANIFEST_NAME = "cadharness.toml"
 _VARIANT_NAME = re.compile(r"^[a-z][a-z0-9]*(?:[-_.][a-z0-9]+)*$")
@@ -31,7 +33,7 @@ class ProjectManifest:
     variants: Mapping[str, Mapping[str, Any]] = field(default_factory=dict)
 
     @classmethod
-    def from_file(cls, path: Path) -> "ProjectManifest":
+    def from_file(cls, path: Path) -> ProjectManifest:
         with path.open("rb") as stream:
             data = tomllib.load(stream)
         project = data.get("project")
@@ -60,7 +62,9 @@ class ProjectManifest:
         if default_variant is not None and default_variant not in variants:
             raise ValueError(f"default variant {default_variant!r} is not defined")
         if variants and default_variant is None:
-            raise ValueError("projects with variants must declare project.default_variant")
+            raise ValueError(
+                "projects with variants must declare project.default_variant"
+            )
 
         return cls(
             id=str(project["id"]),
@@ -118,9 +122,36 @@ def _reference(root: Path, reference: str, label: str) -> tuple[Path, str]:
     return module_path, object_name
 
 
+class _ProjectSourceLoader(importlib.machinery.SourceFileLoader):
+    """Compile current project source even when a timestamp-based pyc looks valid."""
+
+    def get_code(self, fullname: str) -> types.CodeType:
+        return self.source_to_code(self.get_data(self.path), self.path)
+
+
+class _ProjectSourceFinder(importlib.abc.MetaPathFinder):
+    def __init__(self, root: Path) -> None:
+        self.root = root
+
+    def find_spec(self, fullname: str, path=None, target=None):
+        spec = importlib.machinery.PathFinder.find_spec(fullname, path, target)
+        if (
+            spec is not None
+            and spec.origin is not None
+            and isinstance(spec.loader, importlib.machinery.SourceFileLoader)
+            and _inside(Path(spec.origin), self.root)
+        ):
+            spec.loader = _ProjectSourceLoader(fullname, spec.origin)
+            return spec
+        return None
+
+
 def _execute_module(module_path: Path, suffix: str) -> Any:
     unique_name = f"_cadharness_project_{abs(hash(module_path))}_{suffix}"
-    spec = importlib.util.spec_from_file_location(unique_name, module_path)
+    loader = _ProjectSourceLoader(unique_name, str(module_path))
+    spec = importlib.util.spec_from_file_location(
+        unique_name, module_path, loader=loader
+    )
     if spec is None or spec.loader is None:
         raise ImportError(f"could not create a module spec for {module_path}")
     module = importlib.util.module_from_spec(spec)
@@ -143,7 +174,9 @@ def _coerce_value(name: str, value: Any, annotation: Any) -> Any:
         raise TypeError(f"variant field {name!r} does not match {annotation!r}")
     if origin is Literal:
         if value not in get_args(annotation):
-            raise ValueError(f"variant field {name!r} must be one of {get_args(annotation)!r}")
+            raise ValueError(
+                f"variant field {name!r} must be one of {get_args(annotation)!r}"
+            )
         return value
     if origin is list:
         if not isinstance(value, list):
@@ -174,10 +207,14 @@ def _coerce_value(name: str, value: Any, annotation: Any) -> Any:
         try:
             return annotation(value)
         except ValueError as exc:
-            raise ValueError(f"invalid value for variant field {name!r}: {value!r}") from exc
+            raise ValueError(
+                f"invalid value for variant field {name!r}: {value!r}"
+            ) from exc
     if isinstance(annotation, type) and isinstance(value, annotation):
         return value
-    raise TypeError(f"unsupported or invalid type for variant field {name!r}: {annotation!r}")
+    raise TypeError(
+        f"unsupported or invalid type for variant field {name!r}: {annotation!r}"
+    )
 
 
 def _typed_parameters(parameter_class: type, values: Mapping[str, Any]) -> Any:
@@ -212,7 +249,10 @@ def _load_document(
     values = dict(manifest.variants.get(selected_variant, {}))
 
     modules_before = set(sys.modules)
+    finder = _ProjectSourceFinder(root)
+    importlib.invalidate_caches()
     sys.path.insert(0, str(root))
+    sys.meta_path.insert(0, finder)
     try:
         module = _execute_module(module_path, "entry")
         factory = getattr(module, factory_name, None)
@@ -238,6 +278,7 @@ def _load_document(
                 raise ValueError("this project does not declare typed variants")
             document = factory()
     finally:
+        sys.meta_path.remove(finder)
         sys.path.remove(str(root))
         for name in set(sys.modules) - modules_before:
             loaded_module = sys.modules.get(name)
