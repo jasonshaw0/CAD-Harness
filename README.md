@@ -25,9 +25,8 @@ stay inside the project root and refuse accidental overwrite.
 - [x] Headless hidden-line SVG previews
 - [x] CLI and MCP 2.3 interfaces
 - [x] Versioned schema fixtures and compatibility checks
-- [ ] Reusable section, wall, hole, clearance, and tolerance-stack checks —
-  current focus
-- [ ] Read-only linked project inspector
+- [x] Reusable bounded-dimension, clearance, wall, hole, and tolerance-stack checks
+- [ ] Read-only linked project inspector — current focus
 - [ ] Rich assembly metadata exchange and external analysis adapters
 
 See [architecture](docs/ARCHITECTURE.md) for contracts and limitations, and

@@ -5,7 +5,17 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
-- Expand reusable geometric checks and their evidence model.
+- Build a read-only project inspector linking evidence and preview artifacts.
+
+## 0.5.0 — 2026-10-14
+
+- Added inclusive one- and two-sided numeric range checks.
+- Added semantic clearance, wall-thickness, and hole-diameter checks with
+  structured measurement evidence.
+- Added signed tolerance contributions and deterministic worst-case arithmetic
+  stack checks with contributor-level evidence.
+- Updated the enclosure and flange examples to use semantic dimensional checks
+  and refreshed the deterministic enclosure baseline.
 
 ## 0.4.0 — 2026-10-14
 

@@ -54,6 +54,13 @@ Inspection reports OCCT validity, manifold state, mass properties, bounding boxe
 
 Validation first checks every component for nonempty, valid geometry and required solids. Project source then defines domain checks such as dimensions, clearance budgets, interference pairs, counts, or sampled states. Computational success is never labeled physical validation.
 
+Reusable constructors cover inclusive numeric ranges, clearances, modeled wall
+thicknesses, hole diameters with explicit deviations, and signed one-dimensional
+tolerance stacks. Each result carries its actual value, explicit bounds, unit,
+and measurement kind. Tolerance stacks report nominal and worst-case arithmetic
+bounds plus every signed contributor; they do not infer statistical distributions
+or manufacturing capability.
+
 ### Revision evidence
 
 `snapshot` records deterministic project, parameter, component, geometry, and validation evidence. It intentionally omits timestamps so unchanged builds produce byte-stable JSON.
@@ -113,15 +120,19 @@ build123d/OCCT toolchain; revision evidence should record and review that change
 - Policies classify measured evidence but do not prove geometric equivalence; an accepted fingerprint change still requires human engineering intent.
 - Surface and curve summaries describe topology, not semantic features such as a recognized counterbore or fillet chain.
 - Checks are synchronous Python callbacks. There is no dependency graph, incremental execution, or persisted history store.
+- Dimensional checks consume values or project callbacks; topology-derived wall,
+  section, and feature recognition remain the project's responsibility.
+- Tolerance stacks are worst-case one-dimensional arithmetic over declared
+  deviations, not RSS/statistical analysis or measured process capability.
 - SVG previews provide deterministic review evidence but no picking, annotations, section planes, or interactive component linking.
 - STEP/STL export does not yet preserve a rich assembly/product metadata model.
 - No physical test, material certificate, solver result, or manufacturing measurement is implied by framework validation.
 
 ## Next priorities
 
-1. Expand reusable checks for sections, walls, holes, clearances, and tolerance stacks while preserving evidence and uncertainty.
-2. Add typed command-line overrides and variant inheritance only if real projects demonstrate a need beyond named configurations.
-3. Build a read-only inspector linking components, variants, policy decisions, previews, and failed checks.
+1. Build a read-only inspector linking components, variants, policy decisions, previews, and failed checks.
+2. Add topology-derived measurement helpers only where OCCT evidence can be made explicit and robust.
+3. Add typed command-line overrides and variant inheritance only if real projects demonstrate a need beyond named configurations.
 4. Add review/sign-off metadata without turning cadHarness into a full PLM system.
 5. Evaluate XDE assembly export and external analysis adapters only when independent projects demonstrate the need.
 
