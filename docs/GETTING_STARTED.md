@@ -4,7 +4,7 @@ cadHarness wraps ordinary build123d shapes with stable component IDs and
 engineering checks. Start with a small project, then replace the example geometry
 with your existing shape factory.
 
-Install using the [README quickstart](../README.md#try-the-example). The commands
+Install using the [README quickstart](../README.md#quickstart). The commands
 below assume you are in that checkout and use its virtual environment.
 
 ## Create two files

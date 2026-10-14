@@ -8,7 +8,7 @@ Run commands from the repository checkout unless you pass absolute paths.
 Use a project-local virtual environment so another editable checkout cannot
 silently replace the version you intend to run.
 
-The [README](../README.md#try-the-example) covers a first report without MCP.
+The [README](../README.md#quickstart) covers a first report without MCP.
 Install the `[mcp]` extra below when connecting an assistant or MCP client.
 
 ```powershell
