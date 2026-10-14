@@ -42,7 +42,12 @@ types before constructing the dataclass and calling the project factory. Agents
 can therefore select a bounded, source-reviewed configuration by name rather
 than sending an arbitrary parameter dictionary.
 
-The loader keeps project-local imports isolated between builds. MCP paths are restricted to `CADHARNESS_PROJECT_ROOTS`. That prevents accidental path drift, but executing a project still executes its Python code and is not sandboxing.
+The loader keeps project-local imports isolated between builds. MCP paths are
+restricted to explicit `--root` arguments, with `CADHARNESS_PROJECT_ROOTS` as a
+compatibility fallback. Generated client configurations use absolute
+interpreter and root paths, so the host working directory cannot change the
+selected trust boundary. Path restriction prevents accidental drift, but
+executing a project still executes its Python code and is not sandboxing.
 
 ## Capabilities
 
@@ -100,6 +105,8 @@ by default.
 
 The CLI and MCP server call the same operation layer:
 
+- `doctor`: report the active install and project discovery environment;
+- `mcp-config`: generate a portable stdio client configuration;
 - `list`: discover manifests;
 - `inspect`: build and report project evidence;
 - `inspector`: generate linked, read-only HTML and SVG evidence;
@@ -108,6 +115,11 @@ The CLI and MCP server call the same operation layer:
 - `compare`: explain current-versus-baseline changes;
 - `preview`: produce SVG review views;
 - `export`: explicitly write STEP or STL geometry.
+
+The MCP server also exposes `get_cadharness_status`, which reports its package
+version, configured trust roots, and discovered projects before any
+project-specific operation. CLI root arguments take precedence over the legacy
+environment variable and the host working directory is only a final fallback.
 
 The Python API exposes the same model and snapshot primitives for tests and custom integrations.
 

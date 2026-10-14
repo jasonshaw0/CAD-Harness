@@ -4,12 +4,12 @@ Source-backed CAD engineering workflows for build123d: inspect, validate,
 snapshot, compare, preview, and explicitly export trusted Python projects.
 
 ```powershell
-python -m pip install -e ".[mcp]"
-cadharness list examples
-cadharness validate examples/project-box --variant standard
-cadharness inspector examples/project-box --variant standard
-cadharness snapshot examples/project-box --variant standard --output artifacts/baseline.json
-cadharness compare examples/project-box --variant clearance-fit --baseline artifacts/baseline.json
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[mcp]"
+.\.venv\Scripts\python.exe -m cadharness doctor .
+.\.venv\Scripts\python.exe -m cadharness list examples
+.\.venv\Scripts\python.exe -m cadharness validate examples/project-box --variant standard
+.\.venv\Scripts\python.exe -m cadharness mcp-config .
 ```
 
 Projects declare a trusted Python factory, a parameter dataclass, and bounded
@@ -24,13 +24,14 @@ stay inside the project root and refuse accidental overwrite.
 - [x] Typed named variants
 - [x] Tolerance-aware, reasoned revision policies
 - [x] Headless hidden-line SVG previews
-- [x] CLI and MCP 2.3 interfaces
+- [x] Diagnosable CLI and portable MCP 2.3 interfaces
 - [x] Versioned schema fixtures and compatibility checks
 - [x] Reusable bounded-dimension, clearance, wall, hole, and tolerance-stack checks
 - [x] Browser-verified, read-only linked project inspector
 - [ ] Rich assembly metadata exchange and external analysis adapters — current focus
 
-See [architecture](docs/ARCHITECTURE.md) for contracts and limitations, and
+See the [CLI and MCP guide](docs/CLI_MCP.md) for setup and usage, the
+[architecture](docs/ARCHITECTURE.md) for contracts and limitations, and the
 [changelog](CHANGELOG.md) for completed milestones.
 
 Project factories execute local Python and are not sandboxed. Computational

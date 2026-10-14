@@ -24,5 +24,6 @@ docs
 !docs/
 docs/*
 !docs/ARCHITECTURE.md
+!docs/CLI_MCP.md
 
 build123d-source
