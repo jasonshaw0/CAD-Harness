@@ -5,6 +5,10 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
+- Define richer assembly metadata exchange without duplicating build123d.
+
+## 0.7.0 — 2026-10-14
+
 - Added `cadharness doctor` with active-checkout, interpreter, MCP dependency,
   console-script, and project-discovery diagnostics.
 - Added `cadharness mcp-config` to generate client JSON with an absolute Python
@@ -15,7 +19,6 @@ versioning while its public schemas remain experimental.
   preview defaults beneath the ignored `.cadharness` workspace.
 - Added a checkout-to-client CLI and MCP guide and a host-independent real
   stdio smoke test.
-- Define richer assembly metadata exchange without duplicating build123d.
 
 ## 0.6.0 — 2026-10-14
 
