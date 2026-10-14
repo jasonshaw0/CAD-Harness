@@ -21,6 +21,7 @@ from cadharness import (
     load_project,
     minimum_check,
     range_check,
+    render_inspector,
     require_schema,
     schema_catalog,
     tolerance_stack_check,
@@ -54,6 +55,27 @@ def revision_document(size: float, minimum_size: float = 5.0) -> CADDocument:
 
 
 class CoreModelTests(unittest.TestCase):
+    def test_inspector_links_evidence_and_escapes_project_text(self):
+        document = CADDocument(
+            id="inspector-fixture",
+            name="Unsafe <script>alert(1)</script>",
+            revision="1",
+            components={"block": Component("block", Box(10, 10, 10))},
+            parameters={"width": Parameter(10.0, unit="mm", source="fixture")},
+            checks=(minimum_check("size.minimum", "minimum size", 10.0, 5.0),),
+        )
+        html = render_inspector(
+            document.inspect(),
+            document.validate().to_dict(),
+            previews=({"view": "iso", "href": "previews/fixture-iso.svg"},),
+        )
+        self.assertIn("Unsafe &lt;script&gt;alert(1)&lt;/script&gt;", html)
+        self.assertNotIn("Unsafe <script>", html)
+        self.assertIn('id="component-block"', html)
+        self.assertIn('href="#component-block"', html)
+        self.assertIn('src="previews/fixture-iso.svg"', html)
+        self.assertIn('data-filter="review"', html)
+
     def test_tolerance_stack_reports_worst_case_signed_bounds(self):
         stack = tolerance_stack_check(
             "fit.stack",

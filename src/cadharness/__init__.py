@@ -22,6 +22,7 @@ from .model import (
     ValidationReport,
     geometry_fingerprint,
 )
+from .inspector import render_inspector
 from .project import LoadedProject, ProjectManifest, load_project
 from .policy import ComparisonPolicy, NumericTolerance
 from .revision import build_snapshot, compare_snapshots
@@ -51,6 +52,7 @@ __all__ = [
     "maximum_check",
     "minimum_check",
     "range_check",
+    "render_inspector",
     "require_schema",
     "schema_catalog",
     "tolerance_stack_check",
