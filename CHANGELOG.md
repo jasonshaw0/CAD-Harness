@@ -5,6 +5,15 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
+- Simplified first-run setup around a browser report, with optional MCP setup
+  and a copyable guide for wrapping an existing build123d model.
+- Added readable `--summary` output for verification and inspector commands,
+  preserving JSON defaults, gate policies, exit codes, and overwrite protection.
+- Compile current project factories and local helpers from source so rapid edits
+  cannot reuse stale timestamp-based bytecode and verify the previous geometry.
+
+### Planned
+
 - Richer assembly metadata exchange without duplicating build123d.
 
 ## 0.9.0 — 2026-10-14

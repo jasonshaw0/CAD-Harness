@@ -8,6 +8,9 @@ Run commands from the repository checkout unless you pass absolute paths.
 Use a project-local virtual environment so another editable checkout cannot
 silently replace the version you intend to run.
 
+The [README](../README.md#try-the-example) covers a first report without MCP.
+Install the `[mcp]` extra below when connecting an assistant or MCP client.
+
 ```powershell
 git clone https://github.com/jasonshaw0/cadharness.git
 cd cadharness
@@ -38,8 +41,13 @@ $cad = ".\.venv\Scripts\python.exe"
 & $cad -m cadharness compare examples/project-box --variant standard
 ```
 
-Every command emits JSON. Add `--compact` anywhere in the command for one-line
-JSON. `validate` exits with status 1 when checks fail; `compare` exits with
+Commands emit JSON by default. Add `--compact` anywhere in the command for
+one-line JSON. `verify` and `inspector` accept `--summary` for readable terminal
+output, including the verdict, checks needing attention, or report path.
+`--summary` and `--compact` cannot be combined. Neither changes the verification
+policy or exit codes. Runtime errors remain structured JSON on stderr.
+
+`validate` exits with status 1 when checks fail; `compare` exits with
 status 1 for a regression. `verify` exits with status 0 on gate pass, 1 on a
 gate failure without check execution errors, and 2 when the gate rejects check
 execution errors. Usage and runtime errors also exit with status 2.

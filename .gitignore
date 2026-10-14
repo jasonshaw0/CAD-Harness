@@ -27,5 +27,6 @@ docs/*
 !docs/ARCHITECTURE.md
 !docs/CLI_MCP.md
 !docs/MEASUREMENTS.md
+!docs/GETTING_STARTED.md
 
 build123d-source

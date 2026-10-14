@@ -42,7 +42,9 @@ types before constructing the dataclass and calling the project factory. Agents
 can therefore select a bounded, source-reviewed configuration by name rather
 than sending an arbitrary parameter dictionary.
 
-The loader keeps project-local imports isolated between builds. MCP paths are
+The loader keeps project-local imports isolated between builds and compiles
+project factories and local Python helpers from current source. Timestamp-based
+bytecode caches cannot hide same-size edits made within one clock tick. MCP paths are
 restricted to explicit `--root` arguments, with `CADHARNESS_PROJECT_ROOTS` as a
 compatibility fallback. Generated client configurations use absolute
 interpreter and root paths, so the host working directory cannot change the

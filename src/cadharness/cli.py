@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
 import sys
-from typing import Sequence
+from collections.abc import Mapping, Sequence
+from pathlib import Path
+from typing import Any
 
 from .diagnostics import doctor_report, package_version
 from .mcp_config import mcp_client_config
+from .measurements import ComputationalTolerance
 from .operations import (
     compare_project,
     discover_projects,
@@ -25,7 +27,6 @@ from .operations import (
 from .preview import VIEW_NAMES
 from .schema import schema_catalog
 from .verification import VerificationPolicy
-from .measurements import ComputationalTolerance
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -37,8 +38,8 @@ def _parser() -> argparse.ArgumentParser:
             "  cadharness doctor .\n"
             "  cadharness list examples\n"
             "  cadharness validate examples/project-box --variant standard\n"
-            "  cadharness verify examples/project-box --variant standard\n"
-            "  cadharness inspector examples/project-box --variant standard\n"
+            "  cadharness verify examples/nema17-mount --summary\n"
+            "  cadharness inspector examples/nema17-mount --summary\n"
             "\n"
             "verify exit codes: 0 gate passed, 1 gate failed, 2 usage or execution error"
         ),
@@ -96,6 +97,11 @@ def _parser() -> argparse.ArgumentParser:
     )
     inspector_parser.add_argument("--component", action="append", dest="components")
     inspector_parser.add_argument("--overwrite", action="store_true")
+    inspector_parser.add_argument(
+        "--summary",
+        action="store_true",
+        help="show the verdict and report path in readable text",
+    )
 
     validate_parser = subparsers.add_parser("validate", help="run project checks")
     validate_parser.add_argument("project")
@@ -173,6 +179,11 @@ def _parser() -> argparse.ArgumentParser:
     verify_parser.add_argument("--allow-removed-requirements", action="store_true")
     verify_parser.add_argument("--allow-modified-requirements", action="store_true")
     verify_parser.add_argument("--allow-unaccepted-changes", action="store_true")
+    verify_parser.add_argument(
+        "--summary",
+        action="store_true",
+        help="show the verdict and checks needing attention in readable text",
+    )
 
     preview_parser = subparsers.add_parser(
         "preview", help="generate headless hidden-line SVG views"
@@ -198,12 +209,89 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _value_text(value: Any) -> str:
+    if isinstance(value, str):
+        return value
+    return json.dumps(value, sort_keys=True, ensure_ascii=False)
+
+
+def _expected_text(expected: Any) -> str:
+    if not isinstance(expected, Mapping):
+        return _value_text(expected)
+    if "expected" in expected or "value" in expected:
+        value = expected.get("expected", expected.get("value"))
+        tolerance = expected.get("absolute_tolerance", 0)
+        return _value_text(value) + (
+            f" (absolute tolerance {_value_text(tolerance)})" if tolerance else ""
+        )
+    if set(expected) == {"minimum"}:
+        return f"at least {_value_text(expected['minimum'])}"
+    if set(expected) == {"maximum"}:
+        return f"at most {_value_text(expected['maximum'])}"
+    return _value_text(expected)
+
+
+def _print_summary(command: str, result: Mapping[str, Any]) -> None:
+    identity = result["project_id"]
+    if result.get("variant"):
+        identity += f" ({result['variant']})"
+    if command == "inspector":
+        verdict = "passed" if result["verification_passed"] else "failed"
+        print(f"Verification {verdict}: {identity}")
+        print(f"Report: {result['path']}")
+        print(
+            "Open this HTML file in your browser to review previews, checks, and evidence."
+        )
+        return
+    gate = result["verification"]
+    print(f"Verification {gate['outcome']}: {identity}")
+    counts = result["validation"]["summary"]
+    print(
+        "Checks: "
+        + ", ".join(
+            f"{counts.get(status, 0)} {label}"
+            for status, label in (
+                ("pass", "passed"),
+                ("fail", "failed"),
+                ("error", "errors"),
+                ("warn", "warnings"),
+                ("skip", "skipped"),
+            )
+        )
+    )
+    for check in result["validation"]["results"]:
+        if check["status"] != "pass":
+            print(f"\n{check['status'].upper()} {check['id']}: {check['message']}")
+            if check.get("actual") is not None or check.get("expected") is not None:
+                suffix = f" {check['unit']}" if check.get("unit") else ""
+                print(f"  Actual: {_value_text(check.get('actual'))}{suffix}")
+                print(f"  Expected: {_expected_text(check.get('expected'))}{suffix}")
+    for reason in gate["reasons"]:
+        detail = reason["detail"]
+        detail_text = (
+            ", ".join(_value_text(item) for item in detail)
+            if isinstance(detail, list)
+            else _value_text(detail)
+        )
+        print(f"{reason['code'].replace('_', ' ').capitalize()}: {detail_text}")
+    defaults = VerificationPolicy().to_dict()
+    overrides = [
+        f"{key}={str(value).lower()}"
+        for key, value in gate["policy"].items()
+        if value != defaults[key]
+    ]
+    if overrides:
+        print("Policy overrides: " + ", ".join(overrides))
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = _parser()
     raw_args = list(sys.argv[1:] if argv is None else argv)
     compact = "--compact" in raw_args
     args = parser.parse_args([item for item in raw_args if item != "--compact"])
     args.compact = compact
+    if args.compact and getattr(args, "summary", False):
+        parser.error("--summary and --compact cannot be used together")
     try:
         if args.command == "schemas":
             result = schema_catalog()
@@ -299,10 +387,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         else:  # pragma: no cover - argparse guarantees a registered command
             parser.error(f"unsupported command: {args.command}")
-        json.dump(
-            result, sys.stdout, indent=None if args.compact else 2, sort_keys=True
-        )
-        sys.stdout.write("\n")
+        if getattr(args, "summary", False):
+            _print_summary(args.command, result)
+        else:
+            json.dump(
+                result, sys.stdout, indent=None if args.compact else 2, sort_keys=True
+            )
+            sys.stdout.write("\n")
         if args.command == "validate" and not result["passed"]:
             return 1
         if args.command == "measure":

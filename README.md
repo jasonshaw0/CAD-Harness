@@ -1,12 +1,17 @@
 # cadHarness
 
-Source-backed CAD engineering workflows for build123d: inspect, validate,
-verify, compare, preview, and explicitly export trusted Python projects.
+**Build your CAD. Check the geometry. Review the evidence.**
 
-## Quickstart
+cadHarness turns a build123d project into a reviewable CAD report: previews,
+measured geometry, engineering checks, and clear verification results. Your
+Python source stays authoritative. Use the same project from the terminal or
+through an AI assistant connected over MCP.
 
-Requires Git, Python 3.11–3.14, and build123d 0.13.x. Clone and install the MCP
-extra into a project-local virtual environment.
+## Try the example
+
+You need **Git and Python 3.11–3.14**. Installation includes build123d 0.13.x.
+The example is an illustrative motor mount with four mounting holes and a
+clearance check.
 
 ### Windows PowerShell
 
@@ -14,13 +19,9 @@ extra into a project-local virtual environment.
 git clone https://github.com/jasonshaw0/cadHarness.git
 cd cadHarness
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e ".[mcp]"
-.\.venv\Scripts\python.exe -m cadharness doctor .
-.\.venv\Scripts\python.exe -m cadharness list examples
-.\.venv\Scripts\python.exe -m cadharness validate examples/project-box --variant standard
-.\.venv\Scripts\python.exe -m cadharness verify examples/project-box --variant standard
-.\.venv\Scripts\python.exe -m cadharness inspector examples/project-box --variant standard
-.\.venv\Scripts\python.exe -m cadharness mcp-config .
+.\.venv\Scripts\python.exe -m pip install -e .
+.\.venv\Scripts\python.exe -m cadharness inspector examples/nema17-mount --summary
+Invoke-Item .\examples\nema17-mount\.cadharness\inspector\index.html
 ```
 
 ### macOS and Linux
@@ -29,45 +30,47 @@ python -m venv .venv
 git clone https://github.com/jasonshaw0/cadHarness.git
 cd cadHarness
 python3 -m venv .venv
-./.venv/bin/python -m pip install -e ".[mcp]"
-./.venv/bin/python -m cadharness doctor .
-./.venv/bin/python -m cadharness list examples
-./.venv/bin/python -m cadharness validate examples/project-box --variant standard
-./.venv/bin/python -m cadharness verify examples/project-box --variant standard
-./.venv/bin/python -m cadharness inspector examples/project-box --variant standard
-./.venv/bin/python -m cadharness mcp-config .
+./.venv/bin/python -m pip install -e .
+./.venv/bin/python -m cadharness inspector examples/nema17-mount --summary
 ```
 
-`doctor` confirms which checkout and interpreter are active. The inspector is
-written to `examples/project-box/.cadharness/inspector/index.html`. To connect
-an MCP host, copy the generated `cadharness` entry into its `mcpServers`
-configuration and reload the host.
+Open `examples/nema17-mount/.cadharness/inspector/index.html` in your browser.
+You should see **Verified**, **3 components**, and **10 checks**. The report
+includes two CAD views, measured values, requirements, and expandable evidence.
+No MCP setup is needed for this workflow.
 
-Projects declare a trusted Python factory, a parameter dataclass, and bounded
-named variants in `cadharness.toml`. Commands return JSON; generated artifacts
-stay inside the project root and refuse accidental overwrite.
+To regenerate an existing report, add `--overwrite` to the inspector command.
 
-## Progress
+## See a real failure
 
-- [x] Native build123d project/component contract
-- [x] Structured inspection and executable engineering checks
-- [x] Deterministic snapshots and exact geometry fingerprints
-- [x] Typed named variants
-- [x] Tolerance-aware, reasoned revision policies
-- [x] Headless hidden-line SVG previews
-- [x] Diagnosable CLI and portable MCP 2.3 interfaces
-- [x] Versioned schema fixtures and compatibility checks
-- [x] Reusable bounded-dimension, clearance, wall, hole, and tolerance-stack checks
-- [x] Browser-verified, read-only linked project inspector
-- [x] Verification gates that cannot confuse an accepted diff with a valid design
-- [x] Requirement-change tracking and declared/geometry/external provenance
-- [x] Independent geometric measurement engine for actual OCCT geometry
-- [ ] Rich assembly metadata exchange and external analysis adapters
+The `missing-hole` variant builds three holes while the requirement still calls
+for four. In PowerShell:
 
-See the [measurement guide](docs/MEASUREMENTS.md) for geometry selections and
-limitations, the [CLI and MCP guide](docs/CLI_MCP.md) for setup and usage, the
-[architecture](docs/ARCHITECTURE.md) for contracts and limitations, and the
-[changelog](CHANGELOG.md) for completed milestones.
+```powershell
+.\.venv\Scripts\python.exe -m cadharness verify examples/nema17-mount --variant missing-hole --summary
+```
 
-Project factories execute local Python and are not sandboxed. Computational
-checks are evidence, not physical or manufacturing validation.
+On macOS/Linux, use `./.venv/bin/python` instead. Expect **Verification failed**,
+with **Actual: 3** and **Expected: 4** for `mount.hole-count`, and exit code 1.
+Other pattern checks also fail. This is an intentional regression example.
+
+## Use it for your work
+
+| You want to… | Start here |
+| --- | --- |
+| Add checks to your own build123d model | [Create your first project](docs/GETTING_STARTED.md) |
+| Connect an AI assistant through MCP | [MCP setup](docs/CLI_MCP.md#connect-an-mcp-client) |
+| Measure holes, clearance, or sampled thickness | [Geometry measurements](docs/MEASUREMENTS.md) |
+| Save evidence and compare revisions | [CLI workflow](docs/CLI_MCP.md#cli-workflow) |
+| Diagnose installation or discovery problems | [Troubleshooting](docs/CLI_MCP.md#troubleshooting) |
+
+CLI output is JSON by default. `verify` and `inspector` also offer `--summary`
+for terminal use. `verify` exits 0 when its gate passes, 1 when it fails, and 2
+for rejected check errors or usage/runtime errors. Generating an inspector is a
+report-building operation; use `verify` when a script needs a pass/fail gate.
+
+Project factories execute trusted local Python. Verification describes
+computational evidence; physical fit and manufacturing suitability still need
+their own validation. Example dimensions are assumptions, not hardware certification.
+
+[Architecture](docs/ARCHITECTURE.md) · [Changelog](CHANGELOG.md)
