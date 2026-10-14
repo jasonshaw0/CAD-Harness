@@ -1,0 +1,21 @@
+[project]
+id = "nema17-mount"
+name = "Illustrative NEMA 17 Mount"
+description = "Multi-component mounting and clearance example; dimensions are explicit design assumptions."
+entrypoint = "project.py:create_project"
+parameter_type = "project.py:MountParameters"
+default_variant = "standard"
+
+[variants.standard]
+
+[variants.missing-hole]
+generated_hole_count = 3
+
+[variants.shifted-hole]
+hole_position_shift = 3.0
+
+[variants.wrong-diameter]
+hole_diameter_offset = 0.5
+
+[variants.tight-clearance]
+cable_keepout_gap = 2.0

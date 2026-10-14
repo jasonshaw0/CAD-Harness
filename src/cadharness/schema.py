@@ -13,6 +13,7 @@ SNAPSHOT_SCHEMA = "cadharness.snapshot"
 DIFF_SCHEMA = "cadharness.diff"
 POLICY_SCHEMA = "cadharness.comparison-policy"
 VERIFICATION_SCHEMA = "cadharness.verification"
+MEASUREMENT_SCHEMA = "cadharness.measurement"
 
 
 @dataclass(frozen=True)
@@ -34,6 +35,27 @@ class SchemaSpec:
 
 
 _SPECS = (
+    SchemaSpec(
+        MEASUREMENT_SCHEMA,
+        SCHEMA_VERSION,
+        (
+            "schema",
+            "schema_version",
+            "id",
+            "type",
+            "status",
+            "value",
+            "unit",
+            "provenance",
+            "components",
+            "features",
+            "method",
+            "computational_tolerance",
+            "limitations",
+            "diagnostics",
+        ),
+        ("project_id", "revision", "variant"),
+    ),
     SchemaSpec(
         INSPECTION_SCHEMA,
         SCHEMA_VERSION,
@@ -180,6 +202,18 @@ def _strings(value: Any, path: str) -> None:
         _expect(item, str, f"{path}[{index}]")
 
 
+def _finite_json(value: Any, path: str) -> None:
+    """Measurement values must remain portable, finite JSON data."""
+    if isinstance(value, float) and not isfinite(value):
+        raise ValueError(f"{path} must not contain NaN or infinity")
+    if isinstance(value, Mapping):
+        for key, item in value.items():
+            _finite_json(item, f"{path}.{key}")
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            _finite_json(item, f"{path}[{index}]")
+
+
 def _unique_records(value: Any, path: str) -> None:
     _expect(value, list, path)
     seen = set()
@@ -282,7 +316,48 @@ def _validate_nested(document: Mapping[str, Any], schema_name: str, label: str) 
     V1 remains additive and accepts legacy fixtures which omit newer optional
     fields, while rejecting wrong container and scalar types.
     """
-    if schema_name in {INSPECTION_SCHEMA, SNAPSHOT_SCHEMA}:
+    if schema_name == MEASUREMENT_SCHEMA:
+        for key in ("id", "type", "status", "method"):
+            _expect(document[key], str, f"{label}.{key}")
+        if document["status"] not in {
+            "success",
+            "no-match",
+            "ambiguous",
+            "unsupported",
+            "invalid-input",
+            "kernel-error",
+        }:
+            raise ValueError(f"{label}.status is unsupported")
+        if document["unit"] is not None:
+            _expect(document["unit"], str, f"{label}.unit")
+        _record(document["provenance"], {"kind": str}, f"{label}.provenance")
+        if document["provenance"]["kind"] != "geometry-derived":
+            raise ValueError(f"{label}.provenance.kind must be geometry-derived")
+        _strings(document["components"], f"{label}.components")
+        _strings(document["limitations"], f"{label}.limitations")
+        _expect(document["features"], list, f"{label}.features")
+        for index, feature in enumerate(document["features"]):
+            _record(feature, {"id": str}, f"{label}.features[{index}]")
+        _expect(document["diagnostics"], Mapping, f"{label}.diagnostics")
+        _expect(
+            document["computational_tolerance"],
+            Mapping,
+            f"{label}.computational_tolerance",
+        )
+        for key in ("linear_mm", "angular_deg", "volume_mm3"):
+            value = document["computational_tolerance"].get(key)
+            if (
+                isinstance(value, bool)
+                or not isinstance(value, (int, float))
+                or not isfinite(value)
+                or value < 0
+            ):
+                raise ValueError(
+                    f"{label}.computational_tolerance.{key} must be finite and nonnegative"
+                )
+        _finite_json(document["value"], f"{label}.value")
+        _finite_json(document["features"], f"{label}.features")
+    elif schema_name in {INSPECTION_SCHEMA, SNAPSHOT_SCHEMA}:
         _inspection_fields(document, label)
         if schema_name == SNAPSHOT_SCHEMA:
             require_schema(
@@ -308,6 +383,13 @@ def _validate_nested(document: Mapping[str, Any], schema_name: str, label: str) 
             if result["status"] not in counts:
                 raise ValueError(f"{label}.results[{index}].status is unsupported")
             counts[result["status"]] += 1
+            evidence = result.get("evidence", {})
+            if isinstance(evidence, Mapping) and "measurement" in evidence:
+                require_schema(
+                    evidence["measurement"],
+                    MEASUREMENT_SCHEMA,
+                    label=f"{label}.results[{index}].evidence.measurement",
+                )
         for status, count in counts.items():
             value = document["summary"].get(status, 0)
             _expect(value, int, f"{label}.summary.{status}")
@@ -407,6 +489,7 @@ def _validate_nested(document: Mapping[str, Any], schema_name: str, label: str) 
 
 
 __all__ = [
+    "MEASUREMENT_SCHEMA",
     "DIFF_SCHEMA",
     "INSPECTION_SCHEMA",
     "POLICY_SCHEMA",

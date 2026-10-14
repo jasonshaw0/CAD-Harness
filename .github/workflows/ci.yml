@@ -37,6 +37,22 @@ jobs:
           python -m cadharness schemas
           python -m cadharness validate examples/project-box --variant standard
           python -m cadharness verify examples/project-box --variant standard
+          python -m cadharness measure examples/nema17-mount --type hole-pattern --component mounting-plate --radius-min 1 --radius-max 3 --axis-direction 0 0 1
+          python -m cadharness verify examples/nema17-mount --variant standard
 
       - name: Run MCP smoke test
         run: python scripts/smoke_mcp.py
+
+  minimum-build123d:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install minimum supported geometry stack
+        run: python -m pip install -e ".[mcp]" "build123d==0.13.0"
+      - name: Run unit tests and MCP smoke test
+        run: |
+          python -m unittest discover -s tests -v
+          python scripts/smoke_mcp.py

@@ -168,6 +168,7 @@ class CoreModelTests(unittest.TestCase):
             "snapshot.json": "cadharness.snapshot",
             "validation.json": "cadharness.validation",
             "verification.json": "cadharness.verification",
+            "measurement.json": "cadharness.measurement",
         }
         self.assertEqual(
             [item["name"] for item in schema_catalog()["schemas"]],
@@ -410,7 +411,7 @@ class ProjectWorkflowTests(unittest.TestCase):
             exit_code = cli_main(["--compact", "schemas"])
         self.assertEqual(exit_code, 0)
         schemas = json.loads(output.getvalue())["schemas"]
-        self.assertEqual(len(schemas), 6)
+        self.assertEqual(len(schemas), 7)
         self.assertEqual(schemas[0]["version"], "1")
 
     def test_cli_accepts_compact_after_subcommand(self):
@@ -419,7 +420,7 @@ class ProjectWorkflowTests(unittest.TestCase):
             exit_code = cli_main(["schemas", "--compact"])
         self.assertEqual(exit_code, 0)
         self.assertNotIn("\n  ", output.getvalue())
-        self.assertEqual(len(json.loads(output.getvalue())["schemas"]), 6)
+        self.assertEqual(len(json.loads(output.getvalue())["schemas"]), 7)
 
     def test_cli_doctor_identifies_checkout_and_projects(self):
         output = StringIO()
@@ -429,9 +430,9 @@ class ProjectWorkflowTests(unittest.TestCase):
         report = json.loads(output.getvalue())
         self.assertEqual(Path(report["cadharness"]["checkout"]), PROJECT_ROOT)
         self.assertTrue(report["mcp"]["available"])
-        self.assertEqual(
-            {project["id"] for project in report["workspace"]["projects"]},
-            {"pipe-flange", "project-box"},
+        self.assertTrue(
+            {"pipe-flange", "project-box", "nema17-mount"}
+            <= {project["id"] for project in report["workspace"]["projects"]},
         )
 
     def test_mcp_config_uses_absolute_interpreter_and_roots(self):

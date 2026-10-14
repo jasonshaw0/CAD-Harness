@@ -16,6 +16,7 @@ from .operations import (
     export_project,
     inspect_project,
     inspector_project,
+    measure_project,
     preview_project,
     snapshot_project,
     validate_project,
@@ -24,6 +25,7 @@ from .operations import (
 from .preview import VIEW_NAMES
 from .schema import schema_catalog
 from .verification import VerificationPolicy
+from .measurements import ComputationalTolerance
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -75,7 +77,9 @@ def _parser() -> argparse.ArgumentParser:
         "root", nargs="?", default=".", help="directory to scan (default: current)"
     )
 
-    inspect_parser = subparsers.add_parser("inspect", help="build and inspect a project")
+    inspect_parser = subparsers.add_parser(
+        "inspect", help="build and inspect a project"
+    )
     inspect_parser.add_argument("project")
     inspect_parser.add_argument("--variant")
 
@@ -96,6 +100,45 @@ def _parser() -> argparse.ArgumentParser:
     validate_parser = subparsers.add_parser("validate", help="run project checks")
     validate_parser.add_argument("project")
     validate_parser.add_argument("--variant")
+
+    measure_parser = subparsers.add_parser(
+        "measure", help="measure explicitly selected OCCT geometry"
+    )
+    measure_parser.add_argument("project")
+    measure_parser.add_argument("--variant")
+    measure_parser.add_argument(
+        "--type",
+        required=True,
+        choices=(
+            "cylindrical-feature",
+            "hole-pattern",
+            "shape-clearance",
+            "directional-thickness",
+        ),
+        dest="measurement_type",
+    )
+    measure_parser.add_argument(
+        "--component", action="append", required=True, dest="components"
+    )
+    measure_parser.add_argument("--id", default="measurement", dest="measurement_id")
+    measure_parser.add_argument("--radius-min", type=float, dest="radius_min_mm")
+    measure_parser.add_argument("--radius-max", type=float, dest="radius_max_mm")
+    measure_parser.add_argument("--axis-direction", type=float, nargs=3)
+    measure_parser.add_argument(
+        "--axis-location", type=float, nargs=3, dest="axis_location_mm"
+    )
+    measure_parser.add_argument("--axis-angular-tolerance", type=float, default=0.1)
+    measure_parser.add_argument("--location-tolerance", type=float, default=1e-4)
+    measure_parser.add_argument(
+        "--concavity", choices=("concave", "convex", "any"), default="concave"
+    )
+    measure_parser.add_argument(
+        "--point", type=float, nargs=3, action="append", dest="sample_points_mm"
+    )
+    measure_parser.add_argument("--direction", type=float, nargs=3)
+    measure_parser.add_argument("--linear-tolerance", type=float, default=1e-6)
+    measure_parser.add_argument("--angular-tolerance", type=float, default=1e-4)
+    measure_parser.add_argument("--volume-tolerance", type=float, default=1e-7)
 
     snapshot_parser = subparsers.add_parser(
         "snapshot", help="save deterministic geometry and validation evidence"
@@ -143,7 +186,9 @@ def _parser() -> argparse.ArgumentParser:
     preview_parser.add_argument("--component", action="append", dest="components")
     preview_parser.add_argument("--overwrite", action="store_true")
 
-    export_parser = subparsers.add_parser("export", help="explicitly export CAD geometry")
+    export_parser = subparsers.add_parser(
+        "export", help="explicitly export CAD geometry"
+    )
     export_parser.add_argument("project")
     export_parser.add_argument("--variant")
     export_parser.add_argument("--format", choices=("step", "stl"), default="step")
@@ -181,6 +226,26 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         elif args.command == "validate":
             result = validate_project(args.project, variant=args.variant)
+        elif args.command == "measure":
+            result = measure_project(
+                args.project,
+                measurement_type=args.measurement_type,
+                component_ids=args.components,
+                measurement_id=args.measurement_id,
+                variant=args.variant,
+                radius_min_mm=args.radius_min_mm,
+                radius_max_mm=args.radius_max_mm,
+                axis_direction=args.axis_direction,
+                axis_location_mm=args.axis_location_mm,
+                axis_angular_tolerance_deg=args.axis_angular_tolerance,
+                location_tolerance_mm=args.location_tolerance,
+                concavity=args.concavity,
+                sample_points_mm=args.sample_points_mm,
+                direction=args.direction,
+                tolerance=ComputationalTolerance(
+                    args.linear_tolerance, args.angular_tolerance, args.volume_tolerance
+                ),
+            )
         elif args.command == "snapshot":
             result = snapshot_project(
                 args.project,
@@ -234,10 +299,17 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         else:  # pragma: no cover - argparse guarantees a registered command
             parser.error(f"unsupported command: {args.command}")
-        json.dump(result, sys.stdout, indent=None if args.compact else 2, sort_keys=True)
+        json.dump(
+            result, sys.stdout, indent=None if args.compact else 2, sort_keys=True
+        )
         sys.stdout.write("\n")
         if args.command == "validate" and not result["passed"]:
             return 1
+        if args.command == "measure":
+            if result["status"] in {"invalid-input", "kernel-error"}:
+                return 2
+            if result["status"] != "success":
+                return 1
         if args.command == "compare" and result["severity"] == "regression":
             return 1
         if args.command == "verify":

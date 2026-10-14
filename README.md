@@ -5,7 +5,7 @@ verify, compare, preview, and explicitly export trusted Python projects.
 
 ## Quickstart
 
-Requires Git and Python 3.11–3.14. Clone the repository and install the MCP
+Requires Git, Python 3.11–3.14, and build123d 0.13.x. Clone and install the MCP
 extra into a project-local virtual environment.
 
 ### Windows PowerShell
@@ -61,10 +61,11 @@ stay inside the project root and refuse accidental overwrite.
 - [x] Browser-verified, read-only linked project inspector
 - [x] Verification gates that cannot confuse an accepted diff with a valid design
 - [x] Requirement-change tracking and declared/geometry/external provenance
-- [ ] Independent geometric measurement engine for actual OCCT geometry
+- [x] Independent geometric measurement engine for actual OCCT geometry
 - [ ] Rich assembly metadata exchange and external analysis adapters
 
-See the [CLI and MCP guide](docs/CLI_MCP.md) for setup and usage, the
+See the [measurement guide](docs/MEASUREMENTS.md) for geometry selections and
+limitations, the [CLI and MCP guide](docs/CLI_MCP.md) for setup and usage, the
 [architecture](docs/ARCHITECTURE.md) for contracts and limitations, and the
 [changelog](CHANGELOG.md) for completed milestones.
 

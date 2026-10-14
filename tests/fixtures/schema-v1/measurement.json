@@ -1,0 +1,20 @@
+{
+  "components": ["body"],
+  "computational_tolerance": {
+    "angular_deg": 0.0001,
+    "linear_mm": 1e-06,
+    "volume_mm3": 1e-07
+  },
+  "diagnostics": {},
+  "features": [],
+  "id": "fixture.measurement",
+  "limitations": [],
+  "method": "fixture",
+  "provenance": {"kind": "geometry-derived"},
+  "schema": "cadharness.measurement",
+  "schema_version": "1",
+  "status": "success",
+  "type": "fixture",
+  "unit": "mm",
+  "value": 10.0
+}

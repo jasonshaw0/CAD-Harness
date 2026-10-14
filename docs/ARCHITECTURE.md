@@ -66,6 +66,24 @@ and measurement kind. Tolerance stacks report nominal and worst-case arithmetic
 bounds plus every signed contributor; they do not infer statistical distributions
 or manufacturing capability.
 
+### Geometry measurements
+
+The measurement engine operates directly on built OCCT shapes. It supports
+bounded analytic-cylinder selections, inventories of simple parallel cylindrical
+holes with pattern residuals, solid-pair minimum distance and interference volume,
+and material chords through explicit interior sample points. Reports separate
+success, no match, ambiguity, unsupported geometry, invalid input, and kernel
+failure. They carry selected components, features, methods, computational
+tolerances, limitations, and diagnostics.
+
+No empty or unresolved sample set can pass a geometry measurement check.
+Counterbores, partial cylinders, and mixed axes require an explicit supported
+selection rather than an inferred hole count. Directional thickness is sampled
+evidence, not a global minimum wall measurement. Computational tolerances are
+independent of manufacturing acceptance limits. The
+[measurement guide](MEASUREMENTS.md) defines these boundaries and the shared
+Python, CLI, and MCP interfaces.
+
 ### Revision evidence
 
 `snapshot` records deterministic project, parameter, component, geometry, and validation evidence. It intentionally omits timestamps so unchanged builds produce byte-stable JSON.
@@ -137,6 +155,7 @@ The CLI and MCP server call the same operation layer:
 - `inspect`: build and report project evidence;
 - `inspector`: generate linked, read-only HTML and SVG evidence;
 - `validate`: execute geometry and project checks;
+- `measure`: measure explicitly selected OCCT geometry without writing files;
 - `verify`: gate current geometry and requirements against policies and baselines;
 - `snapshot`: persist deterministic revision evidence;
 - `compare`: explain current-versus-baseline changes;
@@ -152,7 +171,7 @@ The Python API exposes the same model and snapshot primitives for tests and cust
 
 ### Public JSON schemas
 
-Inspection, validation, snapshot, diff, comparison-policy, and verification documents carry a
+Inspection, measurement, validation, snapshot, diff, comparison-policy, and verification documents carry a
 stable `schema` identity and `schema_version`. `cadharness schemas` and the
 `list_cad_schemas` MCP tool publish the supported versions and top-level keys.
 The v1 examples in `tests/fixtures/schema-v1` are compatibility fixtures: tests
@@ -173,8 +192,9 @@ build123d/OCCT toolchain; revision evidence should record and review that change
 - Policies classify measured evidence but do not prove geometric equivalence; an accepted fingerprint change still requires human engineering intent.
 - Surface and curve summaries describe topology, not semantic features such as a recognized counterbore or fillet chain.
 - Checks are synchronous Python callbacks. There is no dependency graph, incremental execution, or persisted history store.
-- Dimensional checks consume values or project callbacks; topology-derived wall,
-  section, and feature recognition remain the project's responsibility.
+- Geometry measurements cover bounded analytic features and explicit material
+  chords; global wall thickness and universal feature recognition remain outside
+  their scope.
 - Tolerance stacks are worst-case one-dimensional arithmetic over declared
   deviations, not RSS/statistical analysis or measured process capability.
 - SVG previews provide deterministic review evidence but no geometric picking,

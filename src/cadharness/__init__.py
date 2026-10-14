@@ -31,8 +31,32 @@ from .policy import ComparisonPolicy, NumericTolerance
 from .revision import build_snapshot, compare_snapshots
 from .schema import require_schema, schema_catalog
 from .verification import VerificationPolicy, verify_document
+from .measurements import (
+    ComputationalTolerance,
+    CylinderSelector,
+    DEFAULT_TOLERANCE,
+    MeasurementResult,
+    MeasurementStatus,
+    geometry_measurement_check,
+    measure_cylindrical_feature,
+    measure_directional_thickness,
+    measure_hole_pattern,
+    measure_shape_clearance,
+    select_cylindrical_features,
+)
 
 __all__ = [
+    "ComputationalTolerance",
+    "CylinderSelector",
+    "DEFAULT_TOLERANCE",
+    "MeasurementResult",
+    "MeasurementStatus",
+    "geometry_measurement_check",
+    "measure_cylindrical_feature",
+    "measure_directional_thickness",
+    "measure_hole_pattern",
+    "measure_shape_clearance",
+    "select_cylindrical_features",
     "CADDocument",
     "Check",
     "CheckResult",

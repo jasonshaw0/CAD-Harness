@@ -14,12 +14,21 @@ from build123d import Compound, export_step, export_stl
 
 from .inspector import render_inspector
 from .model import shape_metrics
+from .measurements import (
+    ComputationalTolerance,
+    CylinderSelector,
+    DEFAULT_TOLERANCE,
+    measure_cylindrical_feature,
+    measure_directional_thickness,
+    measure_hole_pattern,
+    measure_shape_clearance,
+)
+from .schema import MEASUREMENT_SCHEMA, require_schema
 from .policy import ComparisonPolicy
 from .preview import VIEW_NAMES, write_svg_previews
 from .project import LoadedProject, discover_projects, load_project
 from .revision import build_snapshot, compare_snapshots
 from .verification import VerificationPolicy, verify_document
-
 
 _SAFE_NAME = re.compile(r"[^a-zA-Z0-9_.-]+")
 
@@ -43,9 +52,7 @@ def _atomic_write_text(target: Path, content: str) -> None:
         raise
 
 
-def inspect_project(
-    path: str | Path, *, variant: str | None = None
-) -> dict[str, Any]:
+def inspect_project(path: str | Path, *, variant: str | None = None) -> dict[str, Any]:
     loaded = load_project(path, variant=variant)
     report = loaded.document.inspect()
     report["manifest"] = {
@@ -102,9 +109,7 @@ def inspector_project(
         "default_variant": loaded.manifest.default_variant,
         "available_variants": sorted(loaded.manifest.variants),
     }
-    verification_report = verify_document(
-        loaded.document, variant=loaded.variant
-    )
+    verification_report = verify_document(loaded.document, variant=loaded.variant)
     validation = verification_report["validation"]
     previews = [
         {
@@ -132,13 +137,108 @@ def inspector_project(
     }
 
 
-def validate_project(
-    path: str | Path, *, variant: str | None = None
-) -> dict[str, Any]:
+def validate_project(path: str | Path, *, variant: str | None = None) -> dict[str, Any]:
     loaded = load_project(path, variant=variant)
     report = loaded.document.validate().to_dict()
     report["manifest_path"] = str(loaded.manifest_path)
     report["variant"] = loaded.variant
+    return report
+
+
+def measure_project(
+    path: str | Path,
+    *,
+    measurement_type: str,
+    component_ids: Iterable[str],
+    measurement_id: str = "measurement",
+    variant: str | None = None,
+    radius_min_mm: float | None = None,
+    radius_max_mm: float | None = None,
+    axis_direction: Iterable[float] | None = None,
+    axis_location_mm: Iterable[float] | None = None,
+    axis_angular_tolerance_deg: float = 0.1,
+    location_tolerance_mm: float = 1e-4,
+    concavity: str = "concave",
+    sample_points_mm: Iterable[Iterable[float]] | None = None,
+    direction: Iterable[float] | None = None,
+    tolerance: ComputationalTolerance = DEFAULT_TOLERANCE,
+) -> dict[str, Any]:
+    """Measure explicit geometry selections in a trusted source-built project."""
+    kinds = {
+        "cylindrical-feature",
+        "hole-pattern",
+        "shape-clearance",
+        "directional-thickness",
+    }
+    if measurement_type not in kinds:
+        raise ValueError(f"unknown measurement_type: {measurement_type!r}")
+    selected = tuple(component_ids)
+    required = 2 if measurement_type == "shape-clearance" else 1
+    if len(selected) != required:
+        raise ValueError(f"{measurement_type} requires exactly {required} component(s)")
+    cylindrical = measurement_type in {"cylindrical-feature", "hole-pattern"}
+    if not cylindrical and any(
+        value is not None
+        for value in (radius_min_mm, radius_max_mm, axis_direction, axis_location_mm)
+    ):
+        raise ValueError("cylinder selector options require a cylindrical measurement")
+    if not cylindrical and (
+        concavity != "concave"
+        or axis_angular_tolerance_deg != 0.1
+        or location_tolerance_mm != 1e-4
+    ):
+        raise ValueError("cylinder selector options require a cylindrical measurement")
+    if measurement_type != "directional-thickness" and (
+        sample_points_mm is not None or direction is not None
+    ):
+        raise ValueError("sample points and direction require directional-thickness")
+    if measurement_type == "directional-thickness" and (
+        sample_points_mm is None or direction is None
+    ):
+        raise ValueError(
+            "directional-thickness requires sample_points_mm and direction"
+        )
+    selector = None
+    if cylindrical:
+        selector = CylinderSelector(
+            selected[0],
+            radius_min_mm,
+            radius_max_mm,
+            tuple(axis_direction) if axis_direction is not None else None,
+            axis_angular_tolerance_deg,
+            tuple(axis_location_mm) if axis_location_mm is not None else None,
+            location_tolerance_mm,
+            concavity,
+        )
+    loaded = load_project(path, variant=variant)
+    if measurement_type == "cylindrical-feature":
+        result = measure_cylindrical_feature(
+            loaded.document, measurement_id, selector, tolerance=tolerance
+        )
+    elif measurement_type == "hole-pattern":
+        result = measure_hole_pattern(
+            loaded.document, measurement_id, selector, tolerance=tolerance
+        )
+    elif measurement_type == "shape-clearance":
+        result = measure_shape_clearance(
+            loaded.document, measurement_id, *selected, tolerance=tolerance
+        )
+    else:
+        result = measure_directional_thickness(
+            loaded.document,
+            measurement_id,
+            selected[0],
+            sample_points_mm,
+            direction,
+            tolerance=tolerance,
+        )
+    report = result.to_dict()
+    report.update(
+        project_id=loaded.document.id,
+        revision=loaded.document.revision,
+        variant=loaded.variant,
+    )
+    require_schema(report, MEASUREMENT_SCHEMA)
     return report
 
 
@@ -341,7 +441,9 @@ def export_project(
         filename = _SAFE_NAME.sub("-", artifact_id).strip("-.")
         output_path = target_dir / f"{filename}.{normalized_format}"
         if output_path.exists() and not overwrite:
-            raise FileExistsError(f"refusing to overwrite existing export: {output_path}")
+            raise FileExistsError(
+                f"refusing to overwrite existing export: {output_path}"
+            )
         descriptor, temporary_name = tempfile.mkstemp(
             dir=target_dir,
             prefix=f".{filename}.",
@@ -377,6 +479,7 @@ def export_project(
 
 
 __all__ = [
+    "measure_project",
     "compare_project",
     "discover_projects",
     "export_project",

@@ -17,6 +17,7 @@ from .operations import (
     export_project,
     inspect_project,
     inspector_project,
+    measure_project,
     preview_project,
     snapshot_project,
     validate_project,
@@ -24,6 +25,7 @@ from .operations import (
 )
 from .schema import schema_catalog
 from .verification import VerificationPolicy
+from .measurements import ComputationalTolerance
 
 
 def _configured_roots(cli_roots: Iterable[str] | None = None) -> tuple[Path, ...]:
@@ -55,7 +57,9 @@ def _parser() -> argparse.ArgumentParser:
 
 def _resolve_in_roots(path: str, roots: Iterable[Path]) -> Path:
     candidate = Path(path).expanduser()
-    attempts = [candidate] if candidate.is_absolute() else [root / candidate for root in roots]
+    attempts = (
+        [candidate] if candidate.is_absolute() else [root / candidate for root in roots]
+    )
     for attempt in attempts:
         resolved = attempt.resolve()
         if any(resolved == root or root in resolved.parents for root in roots):
@@ -78,10 +82,7 @@ mcp = MCPServer(
 @mcp.tool()
 def get_cadharness_status() -> dict[str, Any]:
     """Report server version, configured trust roots, and discovered projects."""
-    root_status = [
-        {"path": str(root), "exists": root.is_dir()}
-        for root in ROOTS
-    ]
+    root_status = [{"path": str(root), "exists": root.is_dir()} for root in ROOTS]
     projects = sum((discover_projects(root) for root in ROOTS if root.is_dir()), [])
     return {
         "version": package_version(),
@@ -141,6 +142,49 @@ def validate_cad_project(
 ) -> dict[str, Any]:
     """Run geometry checks and source-defined engineering assertions."""
     return validate_project(_resolve_in_roots(project_path, ROOTS), variant=variant)
+
+
+@mcp.tool()
+def measure_cad_project(
+    project_path: str,
+    measurement_type: str,
+    component_ids: list[str],
+    measurement_id: str = "measurement",
+    variant: str | None = None,
+    radius_min_mm: float | None = None,
+    radius_max_mm: float | None = None,
+    axis_direction: list[float] | None = None,
+    axis_location_mm: list[float] | None = None,
+    axis_angular_tolerance_deg: float = 0.1,
+    location_tolerance_mm: float = 1e-4,
+    concavity: str = "concave",
+    sample_points_mm: list[list[float]] | None = None,
+    direction: list[float] | None = None,
+    tolerance: dict[str, float] | None = None,
+) -> dict[str, Any]:
+    """Measure cylindrical features, hole patterns, solid clearance, or directional chords."""
+    project = _resolve_in_roots(project_path, ROOTS)
+    return measure_project(
+        project,
+        measurement_type=measurement_type,
+        component_ids=component_ids,
+        measurement_id=measurement_id,
+        variant=variant,
+        radius_min_mm=radius_min_mm,
+        radius_max_mm=radius_max_mm,
+        axis_direction=axis_direction,
+        axis_location_mm=axis_location_mm,
+        axis_angular_tolerance_deg=axis_angular_tolerance_deg,
+        location_tolerance_mm=location_tolerance_mm,
+        concavity=concavity,
+        sample_points_mm=sample_points_mm,
+        direction=direction,
+        tolerance=(
+            ComputationalTolerance(**tolerance)
+            if tolerance is not None
+            else ComputationalTolerance()
+        ),
+    )
 
 
 @mcp.tool()

@@ -5,6 +5,23 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
+- Richer assembly metadata exchange without duplicating build123d.
+
+## 0.9.0 — 2026-10-14
+
+- Added independent OCCT geometry measurements: analytic cylindrical features,
+  simple hole patterns, solid clearance/interference, and sampled directional
+  thickness, with explicit provenance, tolerances, diagnostics, and limitations.
+- Added `geometry_measurement_check`, shared `measure_project` operations,
+  `cadharness measure`, `measure_cad_project`, and the seventh public v1 schema.
+- Reject nonfinite inputs, partial sample success, empty passing measurement
+  lists, mixed axes, and ambiguous coaxial/split faces. Preserve measurement
+  errors and enforce requirement units and measurement-spec drift.
+- Added an illustrative NEMA 17 mount with missing-hole, shifted-hole,
+  wrong-diameter, and tight-clearance regression variants.
+- Require build123d 0.13.x and test the published minimum in CI; fresh 0.10
+  dependency resolution can mix incompatible OCCT bindings.
+
 - Fixed verification gate exceptions being overridden by validation-result
   additions/removals, and made check-error outcomes and CLI exit codes consistent.
 - Included built-in geometry criteria in requirement drift and rejected check-ID
@@ -12,11 +29,6 @@ versioning while its public schemas remain experimental.
 - Recursively validate saved evidence and corrected invalid schema fixtures.
 - Avoid labeling validation-only inspector reports as verified; show warnings
   and skipped checks in review colors, and preserve artifacts on exporter failure.
-
-### Planned
-
-- Independent geometric measurement engine for actual OCCT geometry.
-- Richer assembly metadata exchange without duplicating build123d.
 
 ## 0.8.0 — 2026-10-14
 

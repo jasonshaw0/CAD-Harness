@@ -9,6 +9,7 @@ from typing import Any, Mapping
 import OCP
 
 from .model import CADDocument, ValidationReport
+from .measurements import DEFAULT_TOLERANCE
 from .policy import ComparisonPolicy
 from .schema import (
     DIFF_SCHEMA,
@@ -41,7 +42,9 @@ def build_snapshot(
             "build123d": _package_version("build123d"),
             "occt": getattr(OCP, "__version__", "unknown"),
             "brep_fingerprint": "build123d.export_brep/sha256",
-            "measurement_tolerance_mm": 1e-6,
+            "measurement_tolerance_mm": DEFAULT_TOLERANCE.linear_mm,
+            "measurement_defaults": DEFAULT_TOLERANCE.to_dict(),
+            "measurement_tolerance_scope": "Defaults only; each measurement records its own tolerances.",
         },
     }
 
@@ -223,9 +226,7 @@ def _geometry_delta(
             topology[name] = {
                 "baseline": before,
                 "current": after,
-                "assessment": _decision(
-                    policy, decisions, path, "topology"
-                ),
+                "assessment": _decision(policy, decisions, path, "topology"),
             }
 
     geometry_types = {}
@@ -297,9 +298,7 @@ def _component_changes(
     for component_id in sorted(baseline_keys & current_keys):
         before = baseline[component_id]
         after = current[component_id]
-        geometry = _geometry_delta(
-            component_id, before, after, policy, decisions
-        )
+        geometry = _geometry_delta(component_id, before, after, policy, decisions)
         metadata = {}
         for field in ("role", "material", "source", "tags", "metadata"):
             if before.get(field) != after.get(field):
@@ -492,7 +491,10 @@ def _snapshot_requirements(snapshot: Mapping[str, Any]) -> list[Mapping[str, Any
     requirements = list(snapshot["checks"])
     for result in snapshot["validation"]["results"]:
         check_id = result["id"]
-        if check_id.startswith("geometry.") and check_id.removeprefix("geometry.") in snapshot["components"]:
+        if (
+            check_id.startswith("geometry.")
+            and check_id.removeprefix("geometry.") in snapshot["components"]
+        ):
             requirements.append(
                 {
                     "id": check_id,

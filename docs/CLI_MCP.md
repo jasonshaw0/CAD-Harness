@@ -64,6 +64,7 @@ records the errors. A gate exception never rewrites the underlying evidence.
 | `schemas` | List public JSON document contracts | No |
 | `inspect <project>` | Build and return measured geometry evidence | No |
 | `validate <project>` | Run geometry and project engineering checks | No |
+| `measure <project>` | Measure explicitly selected geometry | No |
 | `verify <project>` | Gate current evidence and optional revision changes | No |
 | `inspector <project>` | Create a linked HTML/SVG review report | `.cadharness/inspector/` |
 | `snapshot <project>` | Save deterministic revision evidence | `.cadharness/baseline.json` |
@@ -115,10 +116,16 @@ Pass multiple trusted roots when required:
 .\.venv\Scripts\python.exe -m cadharness mcp-config C:\CAD\project-a D:\CAD\project-b
 ```
 
-The server exposes discovery, schema, inspection, validation, verification,
+The server exposes discovery, schema, inspection, measurement, validation, verification,
 inspector, snapshot, comparison, preview, and export tools. Call
 `get_cadharness_status` first to confirm the version, trusted roots, and
 discovered projects visible to the host.
+
+`measure_cad_project` shares its operation with `cadharness measure`. Measurement
+CLI exits are 0 for success, 1 for no match, ambiguity, or unsupported geometry,
+and 2 for invalid input or a kernel error. A successful measurement reports facts;
+use `verify` to evaluate engineering acceptance criteria. See the
+[measurement guide](MEASUREMENTS.md) for selectors, examples, and status meanings.
 
 `cadharness-mcp` is a stdio server, not an interactive shell. Starting it
 directly appears to wait silently because it is expecting an MCP client. Use
