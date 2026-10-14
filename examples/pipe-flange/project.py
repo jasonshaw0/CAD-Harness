@@ -7,7 +7,14 @@ from math import cos, radians, sin
 
 from build123d import Align, Cylinder, Part, Pos
 
-from cadharness import CADDocument, Component, Parameter, equals_check, minimum_check
+from cadharness import (
+    CADDocument,
+    Component,
+    Parameter,
+    equals_check,
+    minimum_check,
+    wall_thickness_check,
+)
 
 
 Z_MIN = (Align.CENTER, Align.CENTER, Align.MIN)
@@ -119,7 +126,7 @@ def create_project(params: PipeFlangeParameters = DEFAULTS) -> CADDocument:
             absolute_tolerance=1e-7,
             unit="mm",
         ),
-        minimum_check(
+        wall_thickness_check(
             "geometry.hub-wall",
             "radial hub wall",
             params.hub_wall,

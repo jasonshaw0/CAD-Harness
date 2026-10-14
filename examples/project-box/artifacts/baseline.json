@@ -6,12 +6,12 @@
       "id": "assembly.base-lid-interference"
     },
     {
-      "category": "engineering",
+      "category": "clearance",
       "description": "nominal lid skirt clearance per side",
       "id": "fit.lid-clearance"
     },
     {
-      "category": "engineering",
+      "category": "section",
       "description": "minimum modeled wall thickness",
       "id": "manufacturing.minimum-wall"
     },
@@ -284,26 +284,28 @@
       {
         "actual": 0.3,
         "evidence": {
-          "classification": "configurable-default, not physically verified"
+          "classification": "configurable-default, not physically verified",
+          "measurement_kind": "clearance"
         },
         "expected": {
           "minimum": 0.2
         },
         "id": "fit.lid-clearance",
-        "message": "nominal lid skirt clearance per side: 0.3mm meets minimum 0.2mm",
+        "message": "nominal lid skirt clearance per side: 0.3mm is within minimum 0.2mm",
         "status": "pass",
         "unit": "mm"
       },
       {
         "actual": 2.0,
         "evidence": {
-          "classification": "example design rule"
+          "classification": "example design rule",
+          "measurement_kind": "wall-thickness"
         },
         "expected": {
           "minimum": 1.6
         },
         "id": "manufacturing.minimum-wall",
-        "message": "minimum modeled wall thickness: 2mm meets minimum 1.6mm",
+        "message": "minimum modeled wall thickness: 2mm is within minimum 1.6mm",
         "status": "pass",
         "unit": "mm"
       },

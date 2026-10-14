@@ -10,9 +10,10 @@ from cadharness import (
     CADDocument,
     Component,
     Parameter,
+    clearance_check,
     equals_check,
     interference_check,
-    minimum_check,
+    wall_thickness_check,
 )
 
 
@@ -142,7 +143,7 @@ def create_project(params: ProjectBoxParameters = DEFAULTS) -> CADDocument:
             maximum_volume_mm3=1e-5,
             description="assembled base and lid have no solid interference",
         ),
-        minimum_check(
+        clearance_check(
             "fit.lid-clearance",
             "nominal lid skirt clearance per side",
             params.lid_clearance_per_side,
@@ -150,7 +151,7 @@ def create_project(params: ProjectBoxParameters = DEFAULTS) -> CADDocument:
             unit="mm",
             evidence={"classification": "configurable-default, not physically verified"},
         ),
-        minimum_check(
+        wall_thickness_check(
             "manufacturing.minimum-wall",
             "minimum modeled wall thickness",
             min(params.wall, params.floor, params.lid_thickness, params.locating_skirt_wall),
