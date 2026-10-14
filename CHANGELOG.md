@@ -5,7 +5,18 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
-- Build a read-only project inspector linking evidence and preview artifacts.
+- Define richer assembly metadata exchange without duplicating build123d.
+
+## 0.6.0 — 2026-10-14
+
+- Added a self-contained, read-only HTML inspector linking preview, component,
+  parameter, and validation evidence.
+- Added passing/review filters and component anchors without external web
+  dependencies.
+- Added bounded inspector generation through Python operations, CLI, and MCP.
+- Added a deterministic project-box inspector bundle with two SVG views.
+- Verified the inspector in a real browser at desktop and mobile widths using
+  stateful Playwriter checks; linked SVGs, filters, anchors, and logs passed.
 
 ## 0.5.0 — 2026-10-14
 

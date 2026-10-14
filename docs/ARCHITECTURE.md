@@ -1,4 +1,4 @@
-# cadHarness architecture — typed variants and revision policy
+# cadHarness architecture — source-backed engineering evidence
 
 ## Product boundary
 
@@ -85,7 +85,16 @@ claim of geometric identity or physical suitability.
 
 ### Visualization and exchange
 
-`preview` generates headless hidden-line SVG views (`iso`, `top`, `front`, and `right`) for review artifacts and future interfaces. It is intentionally not a modeling UI. `export` writes STEP or STL only when explicitly requested. Both operations confine outputs to the project root and refuse overwrite by default.
+`preview` generates headless hidden-line SVG views (`iso`, `top`, `front`, and `right`) for review artifacts. `inspector` combines those views with component metrics, parameters, validation results, evidence, and cross-links in a portable HTML document. It is read-only and intentionally not a modeling UI.
+
+The inspector has no external runtime dependencies. Its passing/review filter is
+local JavaScript, linked SVG files sit beside the HTML artifact, and all project
+text is escaped during rendering. Browser verification covers desktop and mobile
+layouts, filters, component anchors, image loading, and console errors.
+
+`export` writes STEP or STL only when explicitly requested. Preview, inspector,
+and export operations confine outputs to the project root and refuse overwrite
+by default.
 
 ## Interfaces
 
@@ -93,6 +102,7 @@ The CLI and MCP server call the same operation layer:
 
 - `list`: discover manifests;
 - `inspect`: build and report project evidence;
+- `inspector`: generate linked, read-only HTML and SVG evidence;
 - `validate`: execute geometry and project checks;
 - `snapshot`: persist deterministic revision evidence;
 - `compare`: explain current-versus-baseline changes;
@@ -124,13 +134,15 @@ build123d/OCCT toolchain; revision evidence should record and review that change
   section, and feature recognition remain the project's responsibility.
 - Tolerance stacks are worst-case one-dimensional arithmetic over declared
   deviations, not RSS/statistical analysis or measured process capability.
-- SVG previews provide deterministic review evidence but no picking, annotations, section planes, or interactive component linking.
+- SVG previews provide deterministic review evidence but no geometric picking,
+  annotations, or section planes. Inspector links are report-level anchors, not
+  topology selection.
 - STEP/STL export does not yet preserve a rich assembly/product metadata model.
 - No physical test, material certificate, solver result, or manufacturing measurement is implied by framework validation.
 
 ## Next priorities
 
-1. Build a read-only inspector linking components, variants, policy decisions, previews, and failed checks.
+1. Define richer assembly metadata exchange without duplicating build123d or XDE.
 2. Add topology-derived measurement helpers only where OCCT evidence can be made explicit and robust.
 3. Add typed command-line overrides and variant inheritance only if real projects demonstrate a need beyond named configurations.
 4. Add review/sign-off metadata without turning cadHarness into a full PLM system.
