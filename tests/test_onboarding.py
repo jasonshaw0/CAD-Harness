@@ -114,7 +114,12 @@ class OnboardingTests(unittest.TestCase):
             code, output, errors = cli(["inspector", str(root), "--summary"])
             target = root / ".cadharness" / "inspector" / "index.html"
             self.assertEqual(code, 0)
-            self.assertIn(str(target), output)
+            reported = next(
+                line.removeprefix("Report: ")
+                for line in output.splitlines()
+                if line.startswith("Report: ")
+            )
+            self.assertTrue(target.samefile(reported))
             self.assertIn("Verification passed: my-plate", output)
             self.assertTrue(target.is_file())
             self.assertFalse(errors)
