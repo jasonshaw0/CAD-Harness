@@ -3,14 +3,43 @@
 Source-backed CAD engineering workflows for build123d: inspect, validate,
 snapshot, compare, preview, and explicitly export trusted Python projects.
 
+## Quickstart
+
+Requires Git and Python 3.11–3.14. Clone the repository and install the MCP
+extra into a project-local virtual environment.
+
+### Windows PowerShell
+
 ```powershell
+git clone https://github.com/jasonshaw0/cadHarness.git
+cd cadHarness
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e ".[mcp]"
 .\.venv\Scripts\python.exe -m cadharness doctor .
 .\.venv\Scripts\python.exe -m cadharness list examples
 .\.venv\Scripts\python.exe -m cadharness validate examples/project-box --variant standard
+.\.venv\Scripts\python.exe -m cadharness inspector examples/project-box --variant standard
 .\.venv\Scripts\python.exe -m cadharness mcp-config .
 ```
+
+### macOS and Linux
+
+```bash
+git clone https://github.com/jasonshaw0/cadHarness.git
+cd cadHarness
+python3 -m venv .venv
+./.venv/bin/python -m pip install -e ".[mcp]"
+./.venv/bin/python -m cadharness doctor .
+./.venv/bin/python -m cadharness list examples
+./.venv/bin/python -m cadharness validate examples/project-box --variant standard
+./.venv/bin/python -m cadharness inspector examples/project-box --variant standard
+./.venv/bin/python -m cadharness mcp-config .
+```
+
+`doctor` confirms which checkout and interpreter are active. The inspector is
+written to `examples/project-box/.cadharness/inspector/index.html`. To connect
+an MCP host, copy the generated `cadharness` entry into its `mcpServers`
+configuration and reload the host.
 
 Projects declare a trusted Python factory, a parameter dataclass, and bounded
 named variants in `cadharness.toml`. Commands return JSON; generated artifacts
