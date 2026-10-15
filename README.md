@@ -18,21 +18,21 @@ the design authority.
 
 ## Start with Studio
 
-Requires Python 3.11–3.14, Node.js 22.12+ (for the canvas build), and an MCP host
-with an assistant. From a fresh checkout in Windows PowerShell:
+Install Python 3.11–3.14 and Node.js 22.12+, then clone the repo and run one setup
+command. In Windows PowerShell:
 
 ```powershell
 git clone https://github.com/jasonshaw0/cadHarness.git
 cd cadHarness
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e ".[mcp,studio]"
-npm --prefix studio/web ci
-npm --prefix studio/web run build
-.\.venv\Scripts\python.exe -m cadharness mcp-config . --studio
+python bootstrap.py
 ```
 
-Add the generated `cadharness` entry to your host's MCP configuration and reload
-the host. It starts the CAD tools and Studio together. Call `studio_status` for
+Setup creates/reuses `.venv`, installs dependencies, builds Studio, checks an
+example, and saves **`.cadharness/mcp.json`**. On macOS/Linux, use `python3 bootstrap.py`.
+Rerun the same command after pulling updates.
+
+Add the generated `cadharness` entry to your MCP host's configuration and reload
+the host once. It starts the CAD tools and Studio together. Call `studio_status` for
 the viewer URL, normally **http://127.0.0.1:8741**, then ask your assistant:
 
 > Use cadHarness Studio to create a 60 × 60 × 4 mm plate with four 3.5 mm
@@ -46,8 +46,8 @@ assistant receives that selection and the measured results for its next edit.
 
 ## Use the framework directly
 
-The framework works without Studio, Node.js, or MCP. After creating a virtual
-environment, install with `python -m pip install -e .`, then run:
+The framework works without Studio, Node.js, or MCP. Run
+`python bootstrap.py --framework-only`, then:
 
 ```powershell
 .\.venv\Scripts\python.exe -m cadharness verify examples/nema17-mount --summary

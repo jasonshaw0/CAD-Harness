@@ -30,16 +30,13 @@ designworkflow/                                         # legacy CLI shim / old 
 Use a checkout-local virtual environment. In Windows PowerShell:
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e ".[mcp,studio]"
-npm --prefix studio/web ci
-npm --prefix studio/web run build
+python bootstrap.py
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 .\.venv\Scripts\python.exe scripts/smoke_mcp.py
 ```
 
-On macOS/Linux, substitute `python3` for environment creation and
-`./.venv/bin/python` for the interpreter. One discovery command includes all
+On macOS/Linux, use `python3 bootstrap.py` for setup and
+`./.venv/bin/python` for subsequent commands. One discovery command includes all
 workflow and Studio tests. The real stdio integration exercises a failed
 measurement, repair under a frozen brief, follow-up turn, and STL export.
 

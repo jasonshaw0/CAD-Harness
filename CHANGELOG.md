@@ -5,9 +5,16 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
+- Added `python bootstrap.py` to create/reuse the environment, install Studio,
+  build its canvas, verify the example, and generate a local MCP configuration.
+  Includes prerequisite checks, framework-only setup, and explicit root/workspace
+  options without editing host settings or saved designs.
+
 - Retry brief Windows access denials when reading atomically replaced Studio
   records, preventing intermittent MCP job-poll failures. Permanent denials and
   malformed JSON still surface as errors.
+- Allow the next Studio operation to wait for a terminal worker's brief cleanup
+  instead of rejecting a repair/export after polling has reported completion.
 
 - Unified the framework and Studio as one installable `cadharness` package.
   Added `cadharness studio`, `cadharness design`, and Studio-aware `mcp-config`.

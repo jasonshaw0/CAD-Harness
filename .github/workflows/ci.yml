@@ -67,14 +67,10 @@ jobs:
           node-version: "22"
           cache: npm
           cache-dependency-path: studio/web/package-lock.json
-      - run: npm ci
-        working-directory: studio/web
-      - run: npm run build
-        working-directory: studio/web
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: One-command onboarding
+        run: python bootstrap.py
       - name: Check installed Studio distribution
-        run: |
-          python -m pip install -e ".[mcp,studio]"
-          python scripts/smoke_distribution.py
+        run: .venv/bin/python scripts/smoke_distribution.py

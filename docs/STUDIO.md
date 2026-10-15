@@ -5,10 +5,43 @@ assistant writes parametric Python through MCP; Studio builds revisions,
 displays the actual geometry, and returns measured acceptance evidence to the
 same conversation. Source remains editable and every attempt retains its report.
 
-## Install and build
+## One-command setup
 
 Use Python 3.11–3.14 and Node.js 22.12+. Installation includes build123d 0.13.x.
 From the repository root on Windows:
+
+```powershell
+python bootstrap.py
+```
+
+On macOS or Linux:
+
+```bash
+python3 bootstrap.py
+```
+
+Setup creates or reuses `.venv`, installs the Python extras and frontend
+dependencies, builds the canvas, verifies the example CAD project, and writes
+`.cadharness/mcp.json`. It works from any current directory; paths are resolved
+from the script's checkout. Rerun it after updates. No activation is required.
+
+`python bootstrap.py --check` checks prerequisites without changing files.
+For framework-only use without Node.js, run `python bootstrap.py --framework-only`.
+Missing Python/Node.js versions need to be installed first; the script reports
+what is missing and does not install system software.
+
+Select trust roots, workspace, and port in the same setup command:
+
+```powershell
+python bootstrap.py --root D:/CAD/my-project --workspace D:/CAD/my-project/workspace --port 8742
+```
+
+Roots default to this checkout; `--root` can be repeated. A workspace cannot
+expand those roots. Existing differing config files are preserved; select a new
+`--config PATH` or explicitly use `--overwrite-config` to regenerate one.
+The script never edits the MCP host's own settings or rewrites saved designs.
+
+For manual installation or frontend-only work, the individual commands remain:
 
 ```powershell
 python -m venv .venv
@@ -18,23 +51,13 @@ npm --prefix studio/web run build
 .\.venv\Scripts\python.exe -m cadharness mcp-config . --studio
 ```
 
-On macOS or Linux:
-
-```bash
-python3 -m venv .venv
-./.venv/bin/python -m pip install -e '.[mcp,studio]'
-npm --prefix studio/web ci
-npm --prefix studio/web run build
-./.venv/bin/python -m cadharness mcp-config . --studio
-```
-
 The canvas builds into `src/cadharness/studio/web/`, where Python serves it.
-Rebuild after frontend edits. Node.js is needed for that build; the running
-application serves static files.
+Node.js is needed to build it; the running application serves static files.
 
 ## Connect your assistant
 
-Copy the generated `cadharness` entry into your MCP host's `mcpServers` object.
+Copy the `cadharness` entry from `.cadharness/mcp.json` into your MCP host's
+`mcpServers` object. For manual setup, use the printed `mcp-config` output.
 It uses this environment's absolute interpreter, explicit trusted roots, and
 `--studio`. Hosts with stdio configuration can use the same command and
 arguments. Reload the host after configuration changes.

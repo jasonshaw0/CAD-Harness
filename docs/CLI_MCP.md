@@ -9,6 +9,12 @@ Run commands from the repository checkout unless you pass absolute paths.
 Use a project-local virtual environment so another editable checkout cannot
 silently replace the version you intend to run.
 
+For the included workbench, `python bootstrap.py` handles the environment,
+dependencies, canvas build, example verification, and local MCP configuration.
+Use `python bootstrap.py --framework-only` for the core without Node.js or MCP.
+See [Studio onboarding](STUDIO.md#one-command-setup). The manual steps below
+remain available for framework-only MCP and custom development environments.
+
 The [README](../README.md#use-the-framework-directly) covers a first report.
 Install `[mcp]` for framework-only MCP, or `[mcp,studio]` for the integrated
 design workbench. See [Studio setup](STUDIO.md) for its canvas build.
