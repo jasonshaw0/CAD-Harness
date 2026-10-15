@@ -8,8 +8,8 @@ import sys
 import threading
 import time
 
-from ..brief import read_json, validate_brief
-from ..runner import ROOT, _child_environment, assert_current, check_revision, source_files, write_json
+from ..workflow.brief import read_json, validate_brief
+from ..workflow.runner import ROOT, _child_environment, assert_current, check_revision, source_files, write_json
 from .codex import design_prompt, generate
 from .processes import Cancelled, run_process
 from .store import contained, new_id, now
@@ -126,7 +126,7 @@ class Jobs:
 
     def evaluate(self, revision, session_id, cancel, *, timeout=120):
         def runner(action, path, *, timeout):
-            args = [sys.executable, "-m", "designworkflow", "_worker", action, str(path),
+            args = [sys.executable, "-m", "cadharness", "design", "_worker", action, str(path),
                     "studio", str(self.store.root / "mesh-cache")]
             return run_process(args, cwd=ROOT, cancel=cancel, timeout=timeout, env=_child_environment())
         return check_revision(revision, execution_mode="trusted-session", session_id=session_id,
@@ -145,7 +145,7 @@ class Jobs:
         self.store.put(design)
 
     def open_design(self, design, job, example, import_path, session_id, cancel, emit):
-        from ..benchmarks.cases import get_case
+        from ..workflow.benchmarks.cases import get_case
         if example:
             fixture = get_case(example)
             brief = deepcopy(fixture["brief"])
@@ -156,7 +156,7 @@ class Jobs:
             prompt = fixture["prompt"]
         else:
             original = Path(import_path)
-            from ..runner import context
+            from ..workflow.runner import context
             _, _, _, _, brief = context(original)
             brief = deepcopy(brief)
             brief.update(id=design["id"], revision=1)
@@ -274,7 +274,7 @@ class Jobs:
             assert_current(revision, read_json(revision / "run.json"))
             return read_json(receipt)
         # Run the public export command in an owned cancellable process.
-        result = run_process([sys.executable, "-m", "designworkflow", "export", str(revision), "--format", file_format],
+        result = run_process([sys.executable, "-m", "cadharness", "design", "export", str(revision), "--format", file_format],
                              cwd=ROOT, env=_child_environment(), cancel=cancel, timeout=120)
         if result.returncode:
             raise RuntimeError(result.stderr[-2500:])

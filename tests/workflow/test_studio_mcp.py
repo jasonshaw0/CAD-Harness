@@ -13,18 +13,18 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from starlette.testclient import TestClient
 
-from designworkflow.benchmarks.cases import get_case
-from designworkflow.brief import read_json
-from designworkflow.runner import ROOT
-from designworkflow.studio.assistant import IDEAssistant
-from designworkflow.studio.jobs import Jobs
-from designworkflow.studio.server import create_app
-from designworkflow.studio.store import Store
+from cadharness.workflow.benchmarks.cases import get_case
+from cadharness.workflow.brief import read_json
+from cadharness.workflow.runner import ROOT
+from cadharness.studio.assistant import IDEAssistant
+from cadharness.studio.jobs import Jobs
+from cadharness.studio.server import create_app
+from cadharness.studio.store import Store
 
 
 class StudioMCPTests(unittest.TestCase):
     def test_mcp_mode_has_no_nested_cli_calls(self):
-        with TemporaryDirectory() as directory, patch('designworkflow.studio.server.cli_command') as cli:
+        with TemporaryDirectory() as directory, patch('cadharness.studio.server.cli_command') as cli:
             with TestClient(create_app(directory, designer="mcp")) as client:
                 session = client.get('/api/session').json()
                 self.assertEqual(session['designer'], 'mcp')
@@ -99,7 +99,7 @@ class StudioMCPTests(unittest.TestCase):
                         altered['requirements'][0]['criteria']['expected'] = 999
                         await call('studio_submit_candidate', {'turn_id': turn['id'], 'files': files, 'brief': altered}, error=True)
                         repaired = await build(files)
-                        self.assertEqual(repaired['job']['status'], 'ready')
+                        self.assertEqual(repaired['job']['status'], 'ready', repaired)
                         self.assertEqual(repaired['report']['brief_sha256'], failed['report']['brief_sha256'])
                         self.assertEqual(repaired['displayed_revision'], 'r002')
                         await call('studio_submit_candidate', {'turn_id': turn['id'], 'files': files}, error=True)

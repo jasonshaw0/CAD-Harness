@@ -1,7 +1,7 @@
-# Design workflow
+# Manual design workflow
 
-For a live 3D canvas and conversational designer, start with
-[cadHarness Studio](studio/README.md). The manual CLI below remains available
+For a live 3D canvas driven by your IDE assistant, start with
+[cadHarness Studio](STUDIO.md). The manual CLI below remains available
 for explicit source review and independent evidence collection.
 
 Turn a prompt into reviewed parametric source, independent CAD checks, and a
@@ -9,15 +9,15 @@ portable review package. The assistant interprets language and edits Python;
 the manual commands invoke no model or AI backend. Python source is the
 editable authority. STEP/STL are explicit delivery artifacts.
 
-Use this checkout's installed environment (see the root README). No extra
+Use the installed environment from [CLI setup](CLI_MCP.md#install-from-a-checkout). No extra
 dependency is required. Run commands from the repository root.
 
 ## Try the bounded example
 
 ```powershell
 $python = ".\.venv\Scripts\python.exe"
-& $python -m designworkflow init --id my-mount --prompt-file designworkflow/benchmarks/prompts/square-mount.txt --case square-mount
-& $python -m designworkflow check designworkflow/runs/my-mount/revisions/r001 --review-hashes
+& $python -m cadharness design init --id my-mount --prompt-file src/cadharness/workflow/benchmarks/prompts/square-mount.txt --case square-mount
+& $python -m cadharness design check runs/my-mount/revisions/r001 --review-hashes
 ```
 
 Read `prompt.txt`, `brief-v001.json`, the manifest, and **every candidate input**
@@ -27,8 +27,8 @@ Python. The template dimensions and hardware envelopes are illustrative.
 After reviewing the source and accepting the brief, paste the two actual hashes:
 
 ```powershell
-& $python -m designworkflow check designworkflow/runs/my-mount/revisions/r001 --reviewed-source SOURCE_HASH --accepted-brief BRIEF_HASH --active-seconds 60
-Invoke-Item designworkflow/runs/my-mount/revisions/r001/review.html
+& $python -m cadharness design check runs/my-mount/revisions/r001 --reviewed-source SOURCE_HASH --accepted-brief BRIEF_HASH --active-seconds 60
+Invoke-Item runs/my-mount/revisions/r001/review.html
 ```
 
 `--active-seconds` records authoring and source-review time for this attempt;
@@ -39,7 +39,7 @@ For a real prompt, omit `--case`. The scaffold deliberately starts **blocked**.
 The IDE assistant must extract requirements, ask blocking questions, complete the
 brief, and generate appropriate source. Copying a benchmark brief does not
 establish that a different prompt has been understood. Follow
-[the IDE instructions](prompts/workflow.md) and [the contracts](CONTRACTS.md).
+[the IDE instructions](../src/cadharness/workflow/prompts/workflow.md) and [the contracts](../src/cadharness/workflow/CONTRACTS.md).
 
 ## Repair from evidence
 
@@ -48,7 +48,7 @@ before reviewing/executing it. The independent requirement still expects four.
 Read `run.json`, `review.html`, and the validation evidence, then:
 
 ```powershell
-& $python -m designworkflow revise designworkflow/runs/my-mount/revisions/r001
+& $python -m cadharness design revise runs/my-mount/revisions/r001
 ```
 
 Edit only the new `r002/project/` source, restoring the missing hole. Review its
@@ -67,14 +67,14 @@ the loop. Failures, ambiguity, and timeouts retain a review package.
 ## Review and export
 
 The package contains ordinary Python, a manifest, original prompt and frozen
-brief copies, a four-state requirement ledger, CADHarness JSON evidence, SVG
+brief copies, a four-state requirement ledger, cadHarness JSON evidence, SVG
 previews, an HTML inspector, and source/artifact hashes. Success means **ready
-for user review**, not physical validation. A CADHarness pass alone cannot
+for user review**, not physical validation. A cadHarness pass alone cannot
 override missing mandatory evidence or blocking questions.
 
 ```powershell
-& $python -m designworkflow export designworkflow/runs/my-mount/revisions/r002 --format step
-& $python -m designworkflow export designworkflow/runs/my-mount/revisions/r002 --format stl --component plate
+& $python -m cadharness design export runs/my-mount/revisions/r002 --format step
+& $python -m cadharness design export runs/my-mount/revisions/r002 --format stl --component plate
 ```
 
 Exports require current, ready-for-review evidence and a matching rebuilt
@@ -101,7 +101,7 @@ They can access files and the network. Project paths and output restrictions do
 not isolate code. Only use reviewed imports and trusted installed dependencies.
 
 The workflow does not change MCP roots or configuration. Configure narrow,
-explicit roots for any existing CADHarness MCP use. The CLI/Python runner uses
+explicit roots for any existing cadHarness MCP use. The CLI/Python runner uses
 the same measurement and check implementation; it adds orchestration and a
 coverage ledger, not another geometry kernel or validation system.
 
@@ -112,8 +112,7 @@ checks. The manual workflow itself still needs no extra dependency.
 
 ```powershell
 & $python -m unittest discover -s tests -v
-& $python -m unittest discover -s designworkflow/tests -v
-& $python -m designworkflow.benchmarks --output designworkflow/runs/benchmark-001
+& $python -m cadharness.workflow.benchmarks --output runs/benchmark-001
 ```
 
 The repeatable benchmark preserves six baseline trials, realistic seeded
@@ -126,17 +125,17 @@ runner's detection and provenance, not a model's ability to interpret prompts.
 For AI evaluation, conduct three fresh IDE trials per plate prompt; capture
 first/final correctness, actual repair count, authoring/review time, clarification
 answers, unresolved assumptions, and a timed manual baseline. Do not claim AI
-success or speed improvement from scripted trials. [Evaluation details](benchmarks/README.md).
+success or speed improvement from scripted trials. [Evaluation details](EVALUATION.md).
 
-Browser QA uses Playwriter exclusively. [The browser check](benchmarks/review-browser.js)
+Browser QA uses Playwriter exclusively. [The browser check](../scripts/verify_workflow_browser.js)
 opens a saved review package, exercises inspector filters/anchors, checks SVG
 loading, and saves desktop/mobile screenshots. Read the Playwriter skill before
 using it.
 
-## Optional Studio and deferred interfaces
+## Studio and deferred interfaces
 
-The optional [Studio application](studio/README.md) exposes source-backed design
+The optional [Studio application](STUDIO.md) exposes source-backed design
 tools to the IDE assistant through MCP, with no separate model calls. Its previous
 Codex CLI designer is opt-in. Both use trusted local execution. Hosted/local model adapters,
 untrusted-code isolation, and unattended deployment remain deferred. Existing
-CADHarness public schemas remain unchanged.
+cadHarness public schemas remain unchanged.

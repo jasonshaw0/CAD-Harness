@@ -3,8 +3,8 @@
 from copy import deepcopy
 from pathlib import Path
 
-from ..brief import digest, read_json
-from ..runner import write_json
+from ..workflow.brief import digest, read_json
+from ..workflow.runner import write_json
 
 SETTINGS = {"linear_mm": 0.05, "angular": 0.1}
 

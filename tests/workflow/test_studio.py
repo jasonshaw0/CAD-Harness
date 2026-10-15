@@ -14,14 +14,14 @@ from starlette.testclient import TestClient
 from cadharness import CADDocument, Component
 from build123d import Box, Pos
 
-from designworkflow.benchmarks.cases import get_case
-from designworkflow.brief import read_json
-from designworkflow.runner import ROOT, check_revision, init_run, revise
-from designworkflow.studio.jobs import ACTIVE, Jobs
-from designworkflow.studio.processes import Cancelled, run_process
-from designworkflow.studio.scene import write_scene
-from designworkflow.studio.server import create_app
-from designworkflow.studio.store import Store, contained, save, write_candidate
+from cadharness.workflow.benchmarks.cases import get_case
+from cadharness.workflow.brief import read_json
+from cadharness.workflow.runner import ROOT, check_revision, init_run, revise
+from cadharness.studio.jobs import ACTIVE, Jobs
+from cadharness.studio.processes import Cancelled, run_process
+from cadharness.studio.scene import write_scene
+from cadharness.studio.server import create_app
+from cadharness.studio.store import Store, contained, save, write_candidate
 
 
 class StudioTests(unittest.TestCase):

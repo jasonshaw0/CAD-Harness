@@ -6,13 +6,13 @@ import time
 from functools import wraps
 from typing import Any
 
-from ..brief import read_json
-from ..runner import ROOT
+from ..workflow.brief import read_json
+from ..paths import STUDIO_WEB
 from .server import create_app
 
 
 class StudioService:
-    def __init__(self, workspace=None, *, port=8741):
+    def __init__(self, workspace=None, *, port=8741, library_root=None):
         import uvicorn
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
@@ -21,7 +21,7 @@ class StudioService:
             self.socket.close()
             raise RuntimeError(f"Studio port {port} is occupied. Close the standalone Studio instance or choose --studio-port.") from exc
         self.url = f"http://127.0.0.1:{self.socket.getsockname()[1]}"
-        self.app = create_app(workspace, designer="mcp")
+        self.app = create_app(workspace, designer="mcp", library_root=library_root)
         self.app.state.authorize(True, via="mcp-stdio-launch")
         self.assistant = self.app.state.assistant
         self.server = uvicorn.Server(uvicorn.Config(self.app, host="127.0.0.1", log_level="warning", access_log=False))
@@ -63,7 +63,7 @@ def register_tools(server, service):
     def studio_status() -> dict[str, Any]:
         """Get the Studio URL and current selection. This MCP host is the designer; no nested model is called."""
         return {"viewer_url": service.url, "workspace": str(store.root), "designer": "IDE assistant via MCP",
-                "model_calls": False, "frontend_available": (ROOT / "designworkflow/studio/web/dist/index.html").is_file(),
+                "model_calls": False, "frontend_available": (STUDIO_WEB / "index.html").is_file(),
                 "viewer": assistant.viewer(),
                 "workflow": "Create/open a design, start one turn per user instruction, get context with include_contract=True, submit Python/TOML files and a brief, then poll studio_get_job. Repair source with the same turn_id and omit brief; at most two repairs. Unsupported evidence remains unknown. Use studio_message for explanations/clarifications. Never start a new turn merely to evade a failed check or repair budget."}
 

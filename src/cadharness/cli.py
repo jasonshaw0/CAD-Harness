@@ -32,7 +32,7 @@ from .verification import VerificationPolicy
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="cadharness",
-        description="Inspect and validate trusted source-backed build123d projects.",
+        description="Design with Studio and verify source-backed build123d projects.",
         epilog=(
             "examples:\n"
             "  cadharness doctor .\n"
@@ -50,6 +50,14 @@ def _parser() -> argparse.ArgumentParser:
         "--version", action="version", version=f"%(prog)s {package_version()}"
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
+
+    studio = subparsers.add_parser("studio", help="serve the local CAD workbench (connect your assistant through MCP)")
+    studio.add_argument("--workspace", type=Path)
+    studio.add_argument("--port", type=int, default=8741)
+    studio.add_argument("--designer", choices=("mcp", "codex"), default="mcp")
+    studio.add_argument("--model", help="model override for the opt-in Codex CLI designer")
+    from .workflow.cli import add_arguments
+    add_arguments(subparsers.add_parser("design", help="scaffold, review, revise, and export a design"))
 
     subparsers.add_parser("schemas", help="list supported public JSON schemas")
 
@@ -72,6 +80,9 @@ def _parser() -> argparse.ArgumentParser:
     mcp_config_parser.add_argument(
         "--name", default="cadharness", help="server name in the generated config"
     )
+    mcp_config_parser.add_argument("--studio", action="store_true", help="include Studio and its design tools")
+    mcp_config_parser.add_argument("--studio-workspace", type=Path, help="workspace inside a configured root (default: first root/runs/studio)")
+    mcp_config_parser.add_argument("--studio-port", type=int, default=8741)
 
     list_parser = subparsers.add_parser("list", help="find projects beneath a root")
     list_parser.add_argument(
@@ -293,12 +304,20 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.compact and getattr(args, "summary", False):
         parser.error("--summary and --compact cannot be used together")
     try:
+        if args.command == "studio":
+            from .studio.server import serve
+            serve(workspace=args.workspace, port=args.port, model=args.model, designer=args.designer)
+            return 0
+        if args.command == "design":
+            from .workflow.cli import run
+            return run(args)
         if args.command == "schemas":
             result = schema_catalog()
         elif args.command == "doctor":
             result = doctor_report(args.root)
         elif args.command == "mcp-config":
-            result = mcp_client_config(args.roots, name=args.name)
+            result = mcp_client_config(args.roots, name=args.name, studio=args.studio,
+                                       studio_workspace=args.studio_workspace, studio_port=args.studio_port)
         elif args.command == "list":
             result = {"projects": discover_projects(Path(args.root))}
         elif args.command == "inspect":

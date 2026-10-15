@@ -1,6 +1,6 @@
 # IDE design loop
 
-Use `designworkflow` from this checkout. It calls no model. Never infer hardware
+Use `cadharness design` for the manual review workflow. Studio provides the same evidence engine through MCP with session authorization; follow its tool contract in that mode. It calls no model. Never infer hardware
 dimensions from a family name alone. Read the prompt, brief, source, and existing
 evidence before editing.
 

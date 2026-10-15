@@ -5,8 +5,9 @@ from pathlib import Path
 import shutil
 
 from .processes import run_process
-from ..brief import read_json
-from ..runner import ROOT, write_json
+from ..workflow.brief import read_json
+from ..workflow.runner import ROOT, write_json
+from ..paths import WORKFLOW_ROOT
 
 SCHEMA = {
     "type": "object", "additionalProperties": False,
@@ -88,10 +89,10 @@ def generate(prompt, *, directory: Path, cancel, emit, model=None, timeout=420):
 
 def design_prompt(*, instruction, design_id, brief_revision, history, source,
                   current_brief, selected, repair_failure=None):
-    contracts = (ROOT / "designworkflow" / "CONTRACTS.md").read_text(encoding="utf-8")
+    contracts = (WORKFLOW_ROOT / "CONTRACTS.md").read_text(encoding="utf-8")
     # Include a compact reference for correct source/API usage, not an answer
     # template selected by the user's prose.
-    sample = (ROOT / "designworkflow" / "templates" / "mounting-plate" / "project.py").read_text(encoding="utf-8")
+    sample = (WORKFLOW_ROOT / "templates" / "mounting-plate" / "project.py").read_text(encoding="utf-8")
     manifest = '[project]\nid = "' + design_id + '"\nname = "My design"\nentrypoint = "project.py:create_project"\n'
     context = {"instruction": instruction, "design_id": design_id, "brief_revision": brief_revision,
                "selected_components": selected, "conversation": history,

@@ -10,11 +10,11 @@ import unittest
 from unittest.mock import patch
 
 from cadharness import load_project, verify_document
-from designworkflow.__main__ import main
-from designworkflow.acceptance import bind_requirements, update_coverage
-from designworkflow.benchmarks.cases import get_case
-from designworkflow.brief import read_json, validate_brief
-from designworkflow.runner import (
+from cadharness.workflow.cli import main
+from cadharness.workflow.acceptance import bind_requirements, update_coverage
+from cadharness.workflow.benchmarks.cases import get_case
+from cadharness.workflow.brief import read_json, validate_brief
+from cadharness.workflow.runner import (
     ROOT, _child_environment, init_run, review_hashes, check_revision,
     revise, export_revision, assert_current,
 )
@@ -154,7 +154,7 @@ class WorkflowTests(unittest.TestCase):
     def test_blocking_prompt_ambiguity_does_not_execute(self):
         for prompt in ("Make a NEMA 17 mount", "Make a plate 2 inches / 60 mm wide"):
             revision = Path(init_run("ambiguous-" + str(len(list(self.root.iterdir()))), prompt, root=self.root)["revision"])
-            with patch("designworkflow.runner._run_worker", side_effect=AssertionError("must not execute")):
+            with patch("cadharness.workflow.runner._run_worker", side_effect=AssertionError("must not execute")):
                 report = self.check(revision)
             self.assertEqual(report["outcome"], "blocked")
             self.assertIn(prompt, (revision.parent.parent / "prompt.txt").read_text())
@@ -196,7 +196,7 @@ class WorkflowTests(unittest.TestCase):
 
     def test_worker_timeout_and_execution_error_preserve_failures(self):
         revision = self.create()
-        with patch("designworkflow.runner._run_worker", side_effect=subprocess.TimeoutExpired("worker", 0.1)):
+        with patch("cadharness.workflow.runner._run_worker", side_effect=subprocess.TimeoutExpired("worker", 0.1)):
             report = self.check(revision)
         self.assertEqual(report["outcome"], "error")
         self.assertTrue((revision / "review.md").is_file())
@@ -211,7 +211,7 @@ class WorkflowTests(unittest.TestCase):
         self.edit(revision / "project" / "project.py", lambda s: s.replace("modeled_hole_count: int = -1", "modeled_hole_count: int = 3"))
         self.check(revision)
         repair = Path(revise(revision)["revision"])
-        with patch("designworkflow.runner._run_worker", side_effect=AssertionError("must not execute")):
+        with patch("cadharness.workflow.runner._run_worker", side_effect=AssertionError("must not execute")):
             report = self.check(repair)
         self.assertEqual(report["outcome"], "blocked")
         self.assertTrue(any("unchanged" in reason for reason in report["blocking_reasons"]))
@@ -263,7 +263,7 @@ class WorkflowTests(unittest.TestCase):
             self.assertEqual(self.check(revision)["outcome"], "needs-revision")
         revision = Path(revise(revision)["revision"])
         self.edit(revision / "project/project.py", lambda s: s + "\n# fourth attempt\n")
-        with patch("designworkflow.runner._run_worker", side_effect=AssertionError("must not execute")):
+        with patch("cadharness.workflow.runner._run_worker", side_effect=AssertionError("must not execute")):
             report = self.check(revision)
         self.assertEqual(report["outcome"], "blocked")
         self.assertIn("initial candidate plus two repairs exhausted", report["blocking_reasons"])

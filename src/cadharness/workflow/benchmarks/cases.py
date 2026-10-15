@@ -1,6 +1,7 @@
 """Expected geometry is deliberately independent of candidate parameters/checks."""
 
 from math import cos, sin, radians, sqrt
+from ...paths import WORKFLOW_ROOT
 
 
 PROMPTS = {
@@ -64,7 +65,7 @@ def get_case(name):
              "physical_validation_gaps": ["Physical fit, process suitability, material capability, and performance have not been tested."],
              "requirements": []}
     reqs = brief["requirements"]
-    template = "designworkflow/templates/mounting-plate"
+    template = WORKFLOW_ROOT / "templates/mounting-plate"
     values = {}
     if name in {"square-mount", "circular-plate", "flange"}:
         component = "flange" if name == "flange" else "plate"
@@ -103,13 +104,13 @@ def get_case(name):
                           "pattern": "circle", "hole_count": 6, "hole_diameter": 5.5,
                           "bore_diameter": 20.0, "reference_envelopes": False}
             else:
-                template = "designworkflow/templates/flange"
+                template = WORKFLOW_ROOT / "templates/flange"
                 # The selected outer convex cylinder independently establishes the hub.
                 reqs.append(requirement("hub.diameter", {"type": "cylinder", "component": "flange",
                     "selector": {"concavity": "convex", "radius_min_mm": 17, "radius_max_mm": 19},
                     "value_path": "diameter_mm"}, expected=36))
     else:
-        template = "designworkflow/templates/enclosure"
+        template = WORKFLOW_ROOT / "templates/enclosure"
         reqs += [requirement("assembly.printable-count", {"type": "printable-count"}, expected=2, unit=None, tolerance=0),
                  requirement("assembly.interference", {"type": "interference", "components": ["base", "lid"]}, maximum=1e-5, unit="mm^3")]
         for c, dims in (("base", (64.8, 44.8, 22.4)), ("lid", (64.8, 44.8, 5.4))):

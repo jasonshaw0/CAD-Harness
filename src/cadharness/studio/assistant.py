@@ -4,8 +4,8 @@ from copy import deepcopy
 import re
 import threading
 
-from ..brief import digest, read_json, validate_brief
-from ..runner import ROOT
+from ..workflow.brief import digest, read_json, validate_brief
+from ..paths import WORKFLOW_ROOT
 from .store import contained, new_id, now, save
 
 
@@ -70,8 +70,8 @@ class IDEAssistant:
             if stderr.exists():
                 result["worker_stderr"] = stderr.read_text(encoding="utf-8")[-6000:]
         if include_contract:
-            result["contract"] = (ROOT / "designworkflow/CONTRACTS.md").read_text(encoding="utf-8")
-            result["source_api_reference"] = (ROOT / "designworkflow/templates/mounting-plate/project.py").read_text(encoding="utf-8")
+            result["contract"] = (WORKFLOW_ROOT / "CONTRACTS.md").read_text(encoding="utf-8")
+            result["source_api_reference"] = (WORKFLOW_ROOT / "templates/mounting-plate/project.py").read_text(encoding="utf-8")
             result["manifest_reference"] = '[project]\nid="my-design"\nname="My design"\nentrypoint="project.py:create_project"\n'
         return result
 

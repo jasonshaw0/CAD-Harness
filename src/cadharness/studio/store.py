@@ -7,7 +7,7 @@ import re
 import secrets
 import time
 
-from ..brief import read_json
+from ..workflow.brief import read_json
 
 
 def save(path, data):

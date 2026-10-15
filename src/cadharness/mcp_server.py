@@ -292,14 +292,11 @@ def main(argv: Iterable[str] | None = None) -> None:
     studio = None
     try:
         if args.studio:
-            checkout = Path(__file__).resolve().parents[2]
-            if not (checkout / "designworkflow/studio").is_dir():
-                raise RuntimeError("Studio requires the cadHarness repository checkout")
-            sys.path.insert(0, str(checkout))
-            from designworkflow.studio.mcp import StudioService, register_tools
-            workspace = args.studio_workspace or checkout / "designworkflow/runs/studio"
+            from .studio.mcp import StudioService, register_tools
+            workspace = args.studio_workspace or ROOTS[0] / "runs/studio"
             workspace = _resolve_in_roots(str(workspace), ROOTS)
-            studio = StudioService(workspace, port=args.studio_port)
+            library_root = next(root for root in ROOTS if workspace.is_relative_to(root))
+            studio = StudioService(workspace, port=args.studio_port, library_root=library_root)
             register_tools(mcp, studio)
         mcp.run(transport="stdio")
     finally:

@@ -14,8 +14,8 @@ import sys
 import time
 
 from .brief import digest, identifier, load_brief, read_json, validate_brief
+from ..paths import PACKAGE_ROOT, ROOT, RUNS_ROOT, WORKFLOW_ROOT
 
-ROOT = Path(__file__).resolve().parent.parent
 OUTPUTS = {"evidence", "previews", "inspector", "exports", ".cadharness", "__pycache__"}
 ENVIRONMENT = {"SYSTEMROOT", "WINDIR", "PATH", "TEMP", "TMP", "COMSPEC", "PATHEXT", "LANG", "LC_ALL",
                "USERPROFILE", "HOMEDRIVE", "HOMEPATH"}
@@ -88,11 +88,11 @@ def review_hashes(revision: Path):
 
 def init_run(run_id: str, prompt: str, *, root: Path | None = None, case: str | None = None):
     identifier(run_id)
-    root = (root or ROOT / "designworkflow" / "runs").resolve()
+    root = (root or RUNS_ROOT).resolve()
     run = root / run_id
     if run.exists():
         raise FileExistsError(f"refusing to overwrite run: {run}")
-    template = ROOT / "designworkflow" / "templates" / "mounting-plate"
+    template = WORKFLOW_ROOT / "templates" / "mounting-plate"
     if case:
         identifier(case, "benchmark case")
         from .benchmarks.cases import get_case
@@ -151,12 +151,14 @@ def revise(revision: Path, *, brief_name: str | None = None):
 
 def _repo_state():
     def git(*args):
-        result = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, timeout=10)
+        try:
+            result = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, timeout=10)
+        except (OSError, subprocess.TimeoutExpired):
+            return "unavailable"
         return result.stdout.strip() if result.returncode == 0 else "unavailable"
     return {"commit": git("rev-parse", "HEAD"), "working_tree": git("status", "--porcelain"),
-            "workflow_files_sha256": digest({p.relative_to(ROOT).as_posix(): file_hash(p)
-                                             for folder in (ROOT / "designworkflow", ROOT / "designworkflow/studio", ROOT / "src" / "cadharness")
-                                             for p in folder.glob("*.py")})}
+            "workflow_files_sha256": digest({p.relative_to(PACKAGE_ROOT).as_posix(): file_hash(p)
+                                             for p in PACKAGE_ROOT.rglob("*.py")})}
 
 
 def _child_environment():
@@ -165,7 +167,7 @@ def _child_environment():
 
 
 def _run_worker(action: str, revision: Path, *, timeout: float, extra=()):
-    args = [sys.executable, "-m", "designworkflow", "_worker", action, str(revision), *extra]
+    args = [sys.executable, "-m", "cadharness", "design", "_worker", action, str(revision), *extra]
     return subprocess.run(args, cwd=ROOT, env=_child_environment(), capture_output=True,
                           text=True, encoding="utf-8", errors="replace", timeout=timeout)
 
@@ -311,7 +313,7 @@ def write_review(revision, report):
             lines.append(f"- {row['id']}: {row['reason']}")
     if "inspector/index.html" in report["artifacts"]:
         lines += ["", "[CAD inspector](project/inspector/index.html) · [Snapshot](project/evidence/snapshot.json) · [Verification](project/evidence/verification.json)"]
-    lines += ["", "Exports are explicit: use `python -m designworkflow export <revision> --format step|stl`.",
+    lines += ["", "Exports are explicit: use `python -m cadharness design export <revision> --format step|stl`.",
               "", f"Source SHA-256: `{report['source_sha256']}`", f"Brief SHA-256: `{report['brief_sha256']}`", ""]
     (revision / "review.md").write_text("\n".join(lines), encoding="utf-8")
     def text(value):
@@ -435,7 +437,7 @@ def worker(action, revision: Path, extra):
                        ("validation", verification["validation"]), ("inspection", inspection)):
         write_json(evidence / f"{name}.json", data)
     if "studio" in extra:
-        from .studio.scene import write_scene
+        from ..studio.scene import write_scene
         cache = Path(extra[extra.index("studio") + 1])
         write_scene(document, inspection, evidence / "scene.json", cache)
     else:

@@ -1,10 +1,10 @@
 # Evaluation
 
-`cases.py` contains fixed prompt/acceptance fixtures independent of generated
+[`cases.py`](../src/cadharness/workflow/benchmarks/cases.py) contains fixed prompt/acceptance fixtures independent of generated
 candidate parameters. Prompt files are provided for CLI use. Templates are
 ordinary editable projects, adapted from existing repository examples.
 
-Run `python -m designworkflow.benchmarks --output <new-directory>`. The scripted
+Run `python -m cadharness.workflow.benchmarks --output <new-directory>`. The scripted
 suite preserves every failed and repaired revision, plus `benchmark.json`:
 
 - Three square and three circular baseline plate trials.
@@ -45,7 +45,7 @@ Read the Playwriter skill, create a task-specific session, and run:
 cmd /d /s /c npx -y playwriter@latest session new --tab-group cadharness
 # Set state.reviewRevision to the absolute saved revision path in that session
 # with a Playwriter -e snippet or an initialization .js file.
-cmd /d /s /c npx -y playwriter@latest -s SESSION_ID --timeout 30000 -f designworkflow/benchmarks/review-browser.js
+cmd /d /s /c npx -y playwriter@latest -s SESSION_ID --timeout 30000 -f scripts/verify_workflow_browser.js
 ```
 
 Repeat the file invocation until it reports `done`; each invocation performs one

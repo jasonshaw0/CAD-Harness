@@ -16,17 +16,17 @@ from starlette.responses import FileResponse, JSONResponse, StreamingResponse, R
 from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
 
-from ..brief import read_json
-from ..runner import ROOT
+from ..workflow.brief import read_json
+from ..paths import RUNS_ROOT, STUDIO_WEB
 from .codex import cli_command
 from .jobs import ACTIVE, Jobs
 from .store import Store, contained, now, save
 
 
-def create_app(workspace=None, *, model=None, generator=None, designer="mcp"):
+def create_app(workspace=None, *, model=None, generator=None, designer="mcp", library_root=None):
     if designer not in {"mcp", "codex"}:
         raise ValueError("designer must be mcp or codex")
-    store = Store(workspace or ROOT / "designworkflow/runs/studio")
+    store = Store(workspace or RUNS_ROOT / "studio")
     jobs = Jobs(store, model=model, **({"generator": generator} if generator else {}))
     from .assistant import IDEAssistant
     assistant = IDEAssistant(store, jobs)
@@ -39,7 +39,7 @@ def create_app(workspace=None, *, model=None, generator=None, designer="mcp"):
     library = {}
     # Discovery reads saved records only. Imports are explicit, copied, and run
     # after trusted-session authorization; MCP roots are never modified.
-    for path in (ROOT / "designworkflow/runs").rglob("run.json"):
+    for path in Path(library_root or store.root).rglob("run.json"):
         if path.is_relative_to(store.root):
             continue
         try:
@@ -193,7 +193,7 @@ def create_app(workspace=None, *, model=None, generator=None, designer="mcp"):
         root = store.design_root(request.path_params["design_id"])
         revision = contained(root / "revisions", request.path_params["revision_id"])
         buffer = BytesIO()
-        from ..runner import source_files
+        from ..workflow.runner import source_files
         with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED) as archive:
             for name in source_files(revision / "project"):
                 archive.write(contained(revision / "project", name), name)
@@ -268,7 +268,7 @@ def create_app(workspace=None, *, model=None, generator=None, designer="mcp"):
               Route("/api/designs/{design_id}/revisions/{revision_id}/files/{path:path}", file),
               Route("/api/jobs/{job_id}", job), Route("/api/jobs/{job_id}/events", events),
               Route("/api/jobs/{job_id}/cancel", cancel, methods=["POST"])]
-    dist = Path(__file__).parent / "web/dist"
+    dist = STUDIO_WEB
     if dist.is_dir():
         routes.append(Mount("/", StaticFiles(directory=dist, html=True)))
     app = Starlette(routes=routes, lifespan=lifespan,
@@ -282,8 +282,8 @@ def create_app(workspace=None, *, model=None, generator=None, designer="mcp"):
 
 def serve(*, workspace=None, port=8741, model=None, designer="mcp"):
     import uvicorn
-    dist = Path(__file__).parent / "web/dist/index.html"
+    dist = STUDIO_WEB / "index.html"
     if not dist.exists():
-        raise RuntimeError("Build the Studio frontend first: cd designworkflow/studio/web && npm ci && npm run build")
+        raise RuntimeError("Build the Studio frontend first: cd studio/web && npm ci && npm run build")
     print(f"cadHarness Studio: http://127.0.0.1:{port}", flush=True)
     uvicorn.run(create_app(workspace, model=model, designer=designer), host="127.0.0.1", port=port, log_level="warning")

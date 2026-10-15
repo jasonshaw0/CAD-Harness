@@ -1,0 +1,137 @@
+# cadHarness Studio
+
+Studio is the included application for the cadHarness framework. Your IDE
+assistant writes parametric Python through MCP; Studio builds revisions,
+displays the actual geometry, and returns measured acceptance evidence to the
+same conversation. Source remains editable and every attempt retains its report.
+
+## Install and build
+
+Use Python 3.11–3.14 and Node.js 22.12+. Installation includes build123d 0.13.x.
+From the repository root on Windows:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[mcp,studio]"
+npm --prefix studio/web ci
+npm --prefix studio/web run build
+.\.venv\Scripts\python.exe -m cadharness mcp-config . --studio
+```
+
+On macOS or Linux:
+
+```bash
+python3 -m venv .venv
+./.venv/bin/python -m pip install -e '.[mcp,studio]'
+npm --prefix studio/web ci
+npm --prefix studio/web run build
+./.venv/bin/python -m cadharness mcp-config . --studio
+```
+
+The canvas builds into `src/cadharness/studio/web/`, where Python serves it.
+Rebuild after frontend edits. Node.js is needed for that build; the running
+application serves static files.
+
+## Connect your assistant
+
+Copy the generated `cadharness` entry into your MCP host's `mcpServers` object.
+It uses this environment's absolute interpreter, explicit trusted roots, and
+`--studio`. Hosts with stdio configuration can use the same command and
+arguments. Reload the host after configuration changes.
+
+The host starts the framework CAD tools and Studio design tools together, plus
+the loopback viewer at **http://127.0.0.1:8741**. Call `studio_status` to confirm
+the exact URL and `frontend_available`. Do not start another viewer on the same port.
+
+Use a dedicated trusted root for real projects. Studio's default workspace is
+`runs/studio/` beneath the **first explicit MCP root**. For a different location:
+
+```powershell
+.\.venv\Scripts\python.exe -m cadharness mcp-config D:/CAD/my-project --studio --studio-workspace D:/CAD/my-project/workspace --studio-port 8742
+```
+
+The workspace must stay inside a configured root; configuration never adds
+roots implicitly. With multiple roots, specify the workspace if the first root
+is not its intended home. The saved-run library reads only the configured root
+containing that workspace and imports source by explicit action.
+
+## First design and iteration
+
+Ask your assistant for a Studio design with explicit dimensions, units, hole
+positions, and printable components. For example:
+
+> Create a centered 60 × 60 × 4 mm plate, bottom at Z=0, with four diameter
+> 3.5 mm through-holes at (±15.5, ±15.5) mm. Keep the source parametric and
+> measure the plate dimensions and hole pattern before presenting it.
+
+The assistant uses these tools in order:
+
+1. `studio_status`, then `studio_create_design` or `studio_open_design`.
+2. `studio_start_turn` for the user's instruction, and `studio_get_context`
+   with `include_contract=True` before first authoring.
+3. `studio_submit_candidate` with complete Python/TOML files and a structured
+   brief. Submission returns a job, not a passing design verdict.
+4. `studio_get_job` until the build finishes. Read actual/expected measurements
+   and requirement coverage before presenting or repairing it.
+5. Repair in the same turn with its frozen brief, with at most two repairs.
+   A further user instruction starts a new turn and brief revision.
+
+The browser updates as revisions and assistant messages arrive. Click a part
+to give the assistant selection context; continue the conversation in your IDE.
+Studio makes no separate model calls in MCP mode and needs no browser model
+login. Unknown mandatory evidence cannot produce a ready verdict.
+
+## Controls and outputs
+
+| Control | Behavior |
+| --- | --- |
+| Canvas | Drag to orbit, right-drag to pan, scroll to zoom; use Fit or a standard view. |
+| Components | Select geometry or a row; eye buttons hide parts, and the selection card isolates one. Reference envelopes appear ghosted. |
+| Revisions | Open earlier geometry. Overlay shows changed prior components in amber; it is not an exact solid difference. |
+| Checks | Inspect actual/expected values, assumptions, and requirement changes. |
+| Rebuild | Copy current source to a new revision and evaluate without a model call. |
+| Source / Report | Download Python, manifest, and frozen brief as ZIP, or the recorded evidence. |
+| STEP / STL | Explicitly export current, passing printable components; references are excluded. |
+
+Failed builds and cancellation retain the labeled previous scene. Designs,
+turns, sessions, source, checks, meshes, and exports stay in the workspace.
+One CAD job runs at a time, builds time out after 120 seconds, and each turn
+allows three candidates. Restart marks interrupted jobs and restores designs.
+
+The MCP launch authorizes trusted local execution. Generated Python is not
+sandboxed or labeled human-reviewed. Workers receive no model credentials;
+root restrictions, hashes, frozen requirements, and cancellation still apply.
+Readiness does not establish physical fit or manufacturing performance.
+
+## Standalone and development modes
+
+`python -m cadharness studio` serves the viewer/API without an MCP transport.
+It defaults to `<checkout>/runs/studio/` for an editable install and
+`<cwd>/runs/studio/` for a wheel. Use `--workspace PATH` to choose explicitly.
+Use the MCP-host launch above for the integrated assistant experience.
+
+The earlier separate Codex CLI designer remains opt-in:
+
+```powershell
+.\.venv\Scripts\python.exe -m cadharness studio --designer codex
+```
+
+Only that mode requires a signed-in `codex` executable and supports `--model NAME`.
+For frontend development, run the backend on port 8741 and
+`npm --prefix studio/web run dev`; Vite proxies `/api` to that backend.
+
+## Troubleshooting
+
+- **No canvas:** check `frontend_available`, rebuild the frontend, then restart
+  the MCP host so its static mount is refreshed.
+- **Port occupied:** close the duplicate instance or configure `--studio-port`.
+  A standalone viewer is not the host's MCP session.
+- **No Studio tools:** install `.[mcp,studio]`, confirm `--studio` in the host's
+  actual arguments, and reload it.
+- **Workspace rejected:** keep it within an explicit root; correct the path
+  instead of adding an unrelated parent directory.
+- **Old designs missing:** follow [migration](MIGRATION.md) to reopen the prior
+  workspace without rewriting its evidence.
+
+[Manual workflow](DESIGN_WORKFLOW.md) · [CLI/MCP](CLI_MCP.md) ·
+[Historical prototype acceptance](STUDIO_ACCEPTANCE.md)

@@ -1,4 +1,8 @@
-# Prototype acceptance — 2026-10-14
+# Historical prototype acceptance — 2026-10-14
+
+This record predates repository unification. Paths below identify the original
+local artifacts; current setup and package locations are in [Studio](STUDIO.md)
+and [migration](MIGRATION.md). The counts below describe that prototype run.
 
 ## IDE/MCP authoring update
 

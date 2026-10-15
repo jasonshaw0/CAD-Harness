@@ -21,15 +21,11 @@ Thumbs.db
 
 exports
 freecad_analysis.md
-docs
-!docs/
-docs/*
-!docs/ARCHITECTURE.md
-!docs/CLI_MCP.md
-!docs/MEASUREMENTS.md
-!docs/GETTING_STARTED.md
 
 build123d-source
 
 # Generated workflow runs retain source and evidence locally.
 /designworkflow/runs/
+/runs/
+# Vite bundles the canvas into the Python package for distribution.
+/src/cadharness/studio/web/
