@@ -5,6 +5,11 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
+- Share one Studio canvas and job queue across MCP connections with matching
+  workspaces and trust roots. Additional clients no longer lose all tools when
+  the first MCP connection already owns the viewer port. Session-token and
+  same-origin protection also apply to forwarded Studio calls.
+
 - Rebuilt Studio around floating Explorer/detail panels and a compact viewport
   dock, following the v2 design reference. Added measured component properties,
   source previews, command search, persisted light/dark/system display settings,

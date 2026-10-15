@@ -292,11 +292,11 @@ def main(argv: Iterable[str] | None = None) -> None:
     studio = None
     try:
         if args.studio:
-            from .studio.mcp import StudioService, register_tools
+            from .studio.mcp import connect_studio, register_tools
             workspace = args.studio_workspace or ROOTS[0] / "runs/studio"
             workspace = _resolve_in_roots(str(workspace), ROOTS)
             library_root = next(root for root in ROOTS if workspace.is_relative_to(root))
-            studio = StudioService(workspace, port=args.studio_port, library_root=library_root)
+            studio = connect_studio(workspace, port=args.studio_port, library_root=library_root, trusted_roots=ROOTS)
             register_tools(mcp, studio)
         mcp.run(transport="stdio")
     finally:

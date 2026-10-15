@@ -1,29 +1,58 @@
 """Local Studio tools for the MCP host's existing assistant, with no model client."""
 
+import inspect
+import json
+from pathlib import Path
 import socket
 import threading
 import time
 from functools import wraps
 from typing import Any
+from urllib.error import HTTPError, URLError
+from urllib.request import ProxyHandler, Request, build_opener
+
+from starlette.concurrency import run_in_threadpool
+from starlette.responses import JSONResponse
+from starlette.routing import Route
 
 from ..workflow.brief import read_json
 from ..paths import STUDIO_WEB
 from .server import create_app
 
 
+class StudioPortOccupied(RuntimeError):
+    """A listener already owns the requested Studio port."""
+
+
+def _identity(workspace, library_root, trusted_roots):
+    workspace = Path(workspace).resolve()
+    library_root = Path(library_root or workspace).resolve()
+    return {"protocol": "cadharness-studio-mcp/1", "workspace": str(workspace),
+            "library_root": str(library_root),
+            "trusted_roots": sorted(str(Path(root).resolve()) for root in (trusted_roots or [library_root]))}
+
+
 class StudioService:
-    def __init__(self, workspace=None, *, port=8741, library_root=None):
+    def __init__(self, workspace=None, *, port=8741, library_root=None, trusted_roots=None):
         import uvicorn
+        self.remote = False
+        self.handlers = {}
+        self.tool_lock = threading.RLock()
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             self.socket.bind(("127.0.0.1", port))
         except OSError as exc:
             self.socket.close()
-            raise RuntimeError(f"Studio port {port} is occupied. Close the standalone Studio instance or choose --studio-port.") from exc
+            if exc.errno not in {98, 48, 10048}:
+                raise
+            raise StudioPortOccupied(f"Studio port {port} is occupied") from exc
         self.url = f"http://127.0.0.1:{self.socket.getsockname()[1]}"
         self.app = create_app(workspace, designer="mcp", library_root=library_root)
+        self.identity = _identity(self.app.state.store.root, library_root, trusted_roots)
         self.app.state.authorize(True, via="mcp-stdio-launch")
         self.assistant = self.app.state.assistant
+        self.app.router.routes[:0] = [Route("/api/mcp/identity", self.bridge_identity),
+                                     Route("/api/mcp/call", self.bridge_call, methods=["POST"])]
         self.server = uvicorn.Server(uvicorn.Config(self.app, host="127.0.0.1", log_level="warning", access_log=False))
         self.thread = threading.Thread(target=self.server.run, kwargs={"sockets": [self.socket]}, daemon=True)
         self.thread.start()
@@ -33,6 +62,30 @@ class StudioService:
         if not self.server.started:
             self.close()
             raise RuntimeError("Studio HTTP server failed to start")
+
+    async def bridge_identity(self, request):
+        return JSONResponse({**self.identity, "ready": bool(self.handlers)})
+
+    async def bridge_call(self, request):
+        body = await request.json()
+        if not isinstance(body, dict):
+            raise ValueError("Studio tool request must be an object")
+        if body.get("identity") != self.identity:
+            raise PermissionError("Studio workspace or trusted roots do not match this MCP client")
+        name, arguments = body.get("tool"), body.get("arguments")
+        if not isinstance(name, str) or name not in self.handlers or not isinstance(arguments, dict):
+            raise ValueError("Unknown Studio tool or invalid arguments")
+        try:
+            inspect.signature(self.handlers[name]).bind(**arguments)
+        except TypeError as exc:
+            raise ValueError(str(exc)) from exc
+        return JSONResponse(await run_in_threadpool(self.invoke, name, arguments))
+
+    def invoke(self, name, arguments):
+        # All clients use this owner's Store, Jobs and IDEAssistant, including
+        # their active-job gate. Never open a second Store over a live workspace.
+        with self.tool_lock:
+            return self.handlers[name](**arguments)
 
     def close(self):
         if self.app.state.jobs.cancel_event:
@@ -45,16 +98,79 @@ class StudioService:
         self.socket.close()
 
 
+class RemoteStudioService:
+    """Forward Studio tools to the same trusted workspace's existing owner."""
+
+    remote = True
+
+    def __init__(self, url, identity):
+        self.url, self.identity = url, identity
+        self.opener = build_opener(ProxyHandler({}))
+        self.token = None
+
+    def request(self, path, body=None):
+        headers = {"Content-Type": "application/json"}
+        if self.token:
+            headers["X-Studio-Token"] = self.token
+        request = Request(self.url + path, data=json.dumps(body).encode() if body is not None else None,
+                          headers=headers)
+        try:
+            with self.opener.open(request, timeout=10) as response:
+                return json.load(response)
+        except HTTPError as exc:
+            try:
+                message = json.load(exc).get("error", str(exc))
+            except (ValueError, AttributeError):
+                message = str(exc)
+            raise ValueError(message) from exc
+        except (URLError, TimeoutError, OSError) as exc:
+            raise ValueError("Studio's owning MCP connection closed. Reconnect the MCP server to restore the shared canvas.") from exc
+
+    def invoke(self, name, arguments):
+        return self.request("/api/mcp/call", {"identity": self.identity, "tool": name, "arguments": arguments})
+
+    def close(self):
+        pass  # A secondary client must not cancel the owner's jobs or viewer.
+
+
+def connect_studio(workspace, *, port=8741, library_root=None, trusted_roots=None):
+    """Own the viewer, or attach only to an identical Studio MCP service."""
+    try:
+        return StudioService(workspace, port=port, library_root=library_root, trusted_roots=trusted_roots)
+    except StudioPortOccupied as exc:
+        remote = RemoteStudioService(f"http://127.0.0.1:{port}", _identity(workspace, library_root, trusted_roots))
+        # Another MCP process can have bound the socket but not finished startup.
+        deadline = time.monotonic() + 8
+        while True:
+            try:
+                identity = remote.request("/api/mcp/identity")
+                ready = identity.pop("ready", False)
+                if identity != remote.identity:
+                    raise RuntimeError(f"Studio port {port} belongs to a different workspace, trust roots, or protocol; choose --studio-port.") from exc
+                if ready:
+                    remote.token = remote.request("/api/session")["token"]
+                    return remote
+            except (ValueError, KeyError):
+                pass
+            if time.monotonic() >= deadline:
+                raise RuntimeError(f"Studio port {port} is occupied by an incompatible or older service. Restart its owning MCP connection or choose --studio-port.") from exc
+            time.sleep(.1)
+
+
 def register_tools(server, service):
-    assistant, store, jobs = service.assistant, service.app.state.store, service.app.state.jobs
-    authorize = service.app.state.execution_session
+    if not service.remote:
+        assistant, store, jobs = service.assistant, service.app.state.store, service.app.state.jobs
+        authorize = service.app.state.execution_session
 
     def tool(function):
         from mcp.server.mcpserver.exceptions import ToolError
+        if not service.remote:
+            service.handlers[function.__name__] = function
         @wraps(function)
         def call(*args, **kwargs):
             try:
-                return function(*args, **kwargs)
+                arguments = inspect.signature(function).bind(*args, **kwargs).arguments
+                return service.invoke(function.__name__, arguments)
             except (ValueError, PermissionError, FileNotFoundError) as exc:
                 raise ToolError(str(exc)) from exc
         return server.tool()(call)

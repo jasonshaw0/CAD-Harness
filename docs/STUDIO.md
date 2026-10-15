@@ -66,6 +66,13 @@ The host starts the framework CAD tools and Studio design tools together, plus
 the loopback viewer at **http://127.0.0.1:8741**. Call `studio_status` to confirm
 the exact URL and `frontend_available`. Do not start another viewer on the same port.
 
+Multiple MCP connections using the same port, workspace, and trusted roots share
+the first connection's Studio canvas and job queue. Each connection still has
+its own stdio transport and framework tools. Closing a secondary connection
+leaves Studio running; closing the owning connection stops its viewer and jobs.
+Reconnect MCP clients after restarting that owner. Different workspaces or trust
+roots must use different ports; they are never attached implicitly.
+
 Use a dedicated trusted root for real projects. Studio's default workspace is
 `runs/studio/` beneath the **first explicit MCP root**. For a different location:
 
@@ -158,8 +165,10 @@ For frontend development, run the backend on port 8741 and
 
 - **No canvas:** check `frontend_available`, rebuild the frontend, then restart
   the MCP host so its static mount is refreshed.
-- **Port occupied:** close the duplicate instance or configure `--studio-port`.
-  A standalone viewer is not the host's MCP session.
+- **Port occupied / tools disappear:** an older MCP host or standalone viewer may
+  own port 8741 without supporting shared MCP connections. Restart that owner
+  after updating cadHarness, then reconnect the other MCP clients. For a separate
+  workspace use `--studio-port`. A standalone viewer is not an MCP session.
 - **No Studio tools:** install `.[mcp,studio]`, confirm `--studio` in the host's
   actual arguments, and reload it.
 - **Workspace rejected:** keep it within an explicit root; correct the path

@@ -11,6 +11,7 @@ from unittest.mock import patch
 import anyio
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
+from mcp.server import MCPServer
 from starlette.testclient import TestClient
 
 from cadharness.workflow.benchmarks.cases import get_case
@@ -18,11 +19,104 @@ from cadharness.workflow.brief import read_json
 from cadharness.workflow.runner import ROOT
 from cadharness.studio.assistant import IDEAssistant
 from cadharness.studio.jobs import Jobs
+from cadharness.studio.mcp import StudioService, connect_studio, register_tools
 from cadharness.studio.server import create_app
 from cadharness.studio.store import Store
 
 
 class StudioMCPTests(unittest.TestCase):
+    def test_shared_studio_requires_matching_workspace_roots_and_session(self):
+        with TemporaryDirectory() as directory:
+            workspace = Path(directory) / 'studio'
+            owner = StudioService(workspace, port=0, library_root=directory, trusted_roots=[directory])
+            try:
+                register_tools(MCPServer('owner'), owner)
+                port = int(owner.url.rsplit(':', 1)[1])
+                owner.app.state.store.put_job({'id': 'job-1234abcd', 'status': 'building'})
+                remote = connect_studio(workspace, port=port, library_root=directory, trusted_roots=[directory])
+                self.assertTrue(remote.remote)
+                self.assertEqual(remote.invoke('studio_status', {})['viewer_url'], owner.url)
+                self.assertEqual(owner.app.state.store.job('job-1234abcd')['status'], 'building')
+                for options in ({'workspace': Path(directory) / 'other', 'trusted_roots': [directory]},
+                                {'workspace': workspace, 'trusted_roots': [workspace]}):
+                    with self.assertRaisesRegex(RuntimeError, 'different workspace, trust roots'):
+                        connect_studio(port=port, library_root=directory, **options)
+                # Existing HTTP session and origin protection also apply to the bridge.
+                with TestClient(owner.app) as client:
+                    body = {'identity': owner.identity, 'tool': 'studio_list_designs', 'arguments': {}}
+                    self.assertEqual(client.post('/api/mcp/call', json=body).status_code, 403)
+                    token = client.get('/api/session').json()['token']
+                    headers = {'X-Studio-Token': token}
+                    altered = {**body, 'identity': {**owner.identity, 'trusted_roots': []}}
+                    self.assertEqual(client.post('/api/mcp/call', json=altered, headers=headers).status_code, 403)
+                    self.assertEqual(client.post('/api/mcp/call', json=body,
+                                                headers={**headers, 'Origin': 'https://example.com'}).status_code, 403)
+                    body['tool'] = 'not_a_studio_tool'
+                    self.assertEqual(client.post('/api/mcp/call', json=body, headers=headers).status_code, 400)
+                    body.update(tool='studio_create_design', arguments={})
+                    self.assertEqual(client.post('/api/mcp/call', json=body, headers=headers).status_code, 400)
+                owner.app.state.authorize(False)
+                with self.assertRaisesRegex(ValueError, 'Enable a trusted local session'):
+                    remote.invoke('studio_create_design', {'title': 'locked'})
+                remote.close()
+                self.assertTrue(owner.thread.is_alive())
+            finally:
+                owner.close()
+
+    def test_real_stdio_second_client_shares_viewer_and_build_queue(self):
+        with TemporaryDirectory() as directory:
+            workspace = Path(directory) / 'studio'
+            fixture = get_case('square-mount')
+            template = ROOT / fixture['template']
+            files = [{'path': p.name, 'content': p.read_text(encoding='utf-8')}
+                     for p in template.iterdir() if p.suffix in {'.py', '.toml'}]
+
+            async def exercise():
+                args = ['-m', 'cadharness.mcp_server', '--root', directory, '--studio',
+                        '--studio-workspace', str(workspace), '--studio-port']
+                async def call(session, name, arguments=None):
+                    result = await session.call_tool(name, arguments or {})
+                    self.assertFalse(result.is_error, result)
+                    return result.structured_content
+
+                params = StdioServerParameters(command=sys.executable, args=args + ['0'], cwd=directory)
+                async with stdio_client(params) as streams:
+                    async with ClientSession(*streams) as first:
+                        await first.initialize()
+                        status = await call(first, 'studio_status')
+                        port = status['viewer_url'].rsplit(':', 1)[1]
+                        second_params = StdioServerParameters(command=sys.executable, args=args + [port], cwd=directory)
+                        async with stdio_client(second_params) as second_streams:
+                            async with ClientSession(*second_streams) as second:
+                                await second.initialize()
+                                first_tools = {t.name for t in (await first.list_tools()).tools}
+                                second_tools = {t.name for t in (await second.list_tools()).tools}
+                                self.assertEqual(first_tools, second_tools)
+                                self.assertEqual(len(second_tools), 24)
+                                self.assertEqual((await call(second, 'studio_status'))['viewer_url'], status['viewer_url'])
+                                design = (await call(second, 'studio_create_design', {'title': 'Shared MCP regression'}))['design']
+                                context = await call(first, 'studio_get_context', {'include_contract': True})
+                                self.assertEqual(context['design']['id'], design['id'])
+                                turn = (await call(first, 'studio_start_turn', {'design_id': design['id'],
+                                                                             'instruction': fixture['prompt']}))['turn']
+                                submitted = await call(second, 'studio_submit_candidate', {
+                                    'turn_id': turn['id'], 'files': files, 'brief': fixture['brief']})
+                                for _ in range(300):
+                                    output = await call(first, 'studio_get_job', {'job_id': submitted['job']['id']})
+                                    if output['job']['status'] not in {'queued', 'building'}:
+                                        break
+                                    await anyio.sleep(.1)
+                                self.assertEqual(output['job']['status'], 'ready', output)
+                                remote_context = await call(second, 'studio_get_context')
+                                self.assertEqual(remote_context['displayed_revision'], 'r001')
+                                self.assertTrue(remote_context['report']['ready_for_review'])
+                                error = await second.call_tool('studio_start_turn', {'design_id': 'missing', 'instruction': 'test'})
+                                self.assertTrue(error.is_error)
+                        # Closing an attached stdio client must leave the original owner alive.
+                        self.assertEqual((await call(first, 'studio_status'))['viewer']['design_id'], design['id'])
+                        self.assertEqual((await call(first, 'studio_get_context'))['displayed_revision'], 'r001')
+            anyio.run(exercise)
+
     def test_mcp_mode_has_no_nested_cli_calls(self):
         with TemporaryDirectory() as directory, patch('cadharness.studio.server.cli_command') as cli:
             with TestClient(create_app(directory, designer="mcp")) as client:
