@@ -101,6 +101,15 @@ class Jobs:
             raise ValueError("This job is no longer active")
         self.cancel_event.set()
 
+    def is_active(self):
+        active = self.active_id
+        if not active:
+            return False
+        try:
+            return self.store.job(active).get("status") in ACTIVE
+        except FileNotFoundError:
+            return True
+
     def revision(self, design, brief, files, job_id):
         root = self.store.design_root(design["id"])
         existing = [int(path.name[1:]) for path in (root / "revisions").glob("r[0-9]*")]
