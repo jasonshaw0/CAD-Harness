@@ -1,0 +1,26 @@
+[project]
+id = "mounting-plate"
+name = "Editable mounting plate"
+entrypoint = "project.py:create_project"
+parameter_type = "project.py:PlateParameters"
+default_variant = "standard"
+
+[variants.standard]
+
+[variants.missing-hole]
+modeled_hole_count = 3
+
+[variants.shifted-hole]
+last_hole_shift = 3.0
+
+[variants.wrong-diameter]
+diameter_offset = 0.5
+
+[variants.tight-clearance]
+cable_gap = 2.0
+
+[variants.rotated-pattern]
+rotation_offset_deg = 45.0
+
+[variants.blind-bore]
+blind_bore = true

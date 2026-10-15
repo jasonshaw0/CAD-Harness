@@ -5,6 +5,9 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
+- Added a checkout-local, IDE-assisted `designworkflow` CLI with reviewed source
+  execution, independent acceptance checks, revision evidence, explicit exports,
+  mounting-plate/flange/enclosure fixtures, and scripted repair benchmarks.
 - Export results retain pre-export `source_geometry` evidence alongside existing
   post-export metrics, preserving source identity when exporters update OCCT state.
 - Simplified first-run setup around a browser report, with optional MCP setup

@@ -30,3 +30,6 @@ docs/*
 !docs/GETTING_STARTED.md
 
 build123d-source
+
+# Generated workflow runs retain source and evidence locally.
+/designworkflow/runs/

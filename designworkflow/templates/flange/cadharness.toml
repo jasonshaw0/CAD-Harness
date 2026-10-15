@@ -1,0 +1,12 @@
+[project]
+id = "pipe-flange"
+name = "Parametric Pipe Flange"
+description = "Independent rotational example for geometry diagnostics and revision comparison."
+entrypoint = "project.py:create_project"
+parameter_type = "project.py:PipeFlangeParameters"
+default_variant = "standard"
+
+[variants.standard]
+
+[variants.eight-hole]
+bolt_count = 8

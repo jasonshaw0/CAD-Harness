@@ -1,0 +1,1 @@
+Create an illustrative flange: outside diameter 70 mm, flange thickness 8 mm, concentric hub diameter 36 mm with overall height 18 mm, and diameter 20 mm through-bore. Six diameter 5.5 mm holes lie on a diameter 50 mm bolt circle, first on +X. This is not a pressure-rated part.

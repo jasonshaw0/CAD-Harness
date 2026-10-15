@@ -1,0 +1,1 @@
+Create a circular diameter 70 mm, thickness 8 mm plate, bottom Z=0. Add a centered diameter 20 mm through-bore and six diameter 5.5 mm through-holes on a centered diameter 50 mm bolt circle; first hole on +X. Keep the parametric source editable.

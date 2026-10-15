@@ -1,0 +1,1 @@
+Create a 60 x 60 x 4 mm plate with four diameter 3.5 mm through-holes at (plus/minus 15.5, plus/minus 15.5) mm. Bottom is Z=0. A centered 42.3 x 42.3 x 40 mm motor envelope starts at Z=4 mm; a 4 x 20 x 10 mm cable keepout starts at X=25.15 mm, Y=-10 mm, Z=4 mm. Minimum motor-to-keepout clearance is 3 mm. These are illustrative interface dimensions, not a NEMA certification.

@@ -1,0 +1,1 @@
+Create a base and lid with usable cavity 60 x 40 x 20 mm, explicitly excluding the 2.4 mm floor. Walls and lid are 2.4 mm; skirt depth is 3 mm, skirt wall 2 mm, skirt clearance 0.30 mm per side. Bottom is Z=0; centered XY. This nominal fit allowance is not physically validated.
