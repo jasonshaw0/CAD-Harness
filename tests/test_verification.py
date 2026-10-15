@@ -196,6 +196,31 @@ class VerificationIntegrityTests(unittest.TestCase):
             self.assertEqual(target.read_bytes(), b"existing artifact")
             self.assertEqual(list(target.parent.iterdir()), [target])
 
+    def test_export_preserves_pre_export_geometry_identity(self):
+        from types import SimpleNamespace
+        from build123d import Pos
+
+        def mutating_export(shape, target):
+            # Exercise the exporter-mutation boundary independently of a
+            # particular OCCT version's tessellation/serialization behavior.
+            shape.move(Pos(1, 0, 0))
+            target.write_bytes(b"exported geometry")
+            return True
+
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            candidate = document()
+            before = candidate.inspect()["components"]["block"]["geometry"]
+            loaded = SimpleNamespace(root=root, document=candidate, variant=None)
+            with (
+                patch("cadharness.operations.load_project", return_value=loaded),
+                patch("cadharness.operations.export_step", side_effect=mutating_export),
+            ):
+                output = export_project(root, component_ids=["block"])["outputs"][0]
+            self.assertEqual(output["source_geometry"], before)
+            self.assertNotEqual(output["geometry"]["fingerprint"], before["fingerprint"])
+            self.assertTrue(Path(output["path"]).is_file())
+
     def test_existing_requirement_regression_fails(self):
         baseline = build_snapshot(document(size=10))
         report = verify_document(document(size=4), baseline=baseline)

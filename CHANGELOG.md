@@ -5,6 +5,8 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
+- Export results retain pre-export `source_geometry` evidence alongside existing
+  post-export metrics, preserving source identity when exporters update OCCT state.
 - Simplified first-run setup around a browser report, with optional MCP setup
   and a copyable guide for wrapping an existing build123d model.
 - Added readable `--summary` output for verification and inspector commands,

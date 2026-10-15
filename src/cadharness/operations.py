@@ -437,6 +437,11 @@ def export_project(
     outputs = []
     exporter = export_step if normalized_format == "step" else export_stl
     for item_id, shape in export_items:
+        # Exporters may add triangulation or update OCCT serialization state.
+        # Preserve the source geometry identity before invoking them as well as
+        # the existing post-export metrics, so callers can link evaluated shapes
+        # to an export without mistaking exporter mutation for design drift.
+        source_geometry = shape_metrics(shape)
         artifact_id = f"{item_id}-{loaded.variant}" if loaded.variant else item_id
         filename = _SAFE_NAME.sub("-", artifact_id).strip("-.")
         output_path = target_dir / f"{filename}.{normalized_format}"
@@ -467,6 +472,7 @@ def export_project(
             {
                 "component_id": item_id,
                 "path": str(output_path),
+                "source_geometry": source_geometry,
                 "geometry": shape_metrics(shape),
             }
         )
