@@ -1,60 +1,81 @@
 # cadHarness Studio
 
-A local 3D workbench with an installed Codex CLI as its designer. Source stays
-editable Python; OCCT geometry and CADHarness checks remain authoritative.
+Your IDE assistant designs through MCP; Studio displays the actual CAD, builds
+revisions, and measures requirements. Studio makes no separate model calls in
+MCP mode. Python remains editable and OCCT/CADHarness remains authoritative.
 
-From this checkout, install Python's Studio extra and build the frontend. Node
-22.12+ and a signed-in `codex` on PATH are required for the designer. Example
-projects work without a model account.
+## Start through your MCP host
+
+Install the Python extras and build the canvas once (Node 22.12+):
 
 ```powershell
-.\.venv\Scripts\python.exe -m pip install -e ".[studio]"
+.\.venv\Scripts\python.exe -m pip install -e ".[mcp,studio]"
 cd designworkflow/studio/web
 npm ci
 npm run build
 cd ../../..
-.\.venv\Scripts\python.exe -m designworkflow studio
 ```
 
-Open **http://127.0.0.1:8741**. Enable the trusted local session once, choose an
-example or describe a part with dimensions, and send a follow-up to change it.
-Use `--model NAME` to override the Codex CLI default; Studio never switches
-providers. Authentication/usage failures appear in the conversation. Sign in
-with `codex login` outside Studio if necessary.
+Register the server in Codex with this checkout's absolute interpreter and root:
 
-- Drag to orbit; right-drag to pan; scroll to zoom. Fit and standard views are
-  above the canvas. Click geometry or its component row to select it.
+```powershell
+codex mcp add cadharness -- D:/Projects/cadharness/.venv/Scripts/python.exe -m cadharness.mcp_server --root D:/Projects/cadharness --studio
+```
+
+Adjust paths for another checkout. Other MCP hosts use the same command and
+arguments in their stdio configuration. Reload/restart the host after adding
+the server. The host starts both MCP and the canvas at **http://127.0.0.1:8741**;
+do not start a separate Studio instance on that port. `studio_status` returns
+the exact URL and whether the frontend is built. The original 12 CAD tools
+remain available alongside 12 Studio tools.
+
+Ask your IDE assistant to create a design. It can create/open a Studio design,
+start a turn for your instruction, obtain source/requirements/selection context,
+and submit complete Python/TOML files plus a structured brief. Studio builds
+those files and returns measured results. The assistant repairs from those
+results using the same turn and frozen brief, with at most two repair attempts.
+A further user instruction starts a new turn and brief revision.
+
+Selection flows back to `studio_get_context`. New revisions and assistant
+messages appear automatically in the browser. Continue the conversation in the
+IDE; the browser has no second model conversation or model login.
+
+## Controls and artifacts
+
+- Drag to orbit; right-drag to pan; scroll to zoom. Fit and standard views sit
+  above the canvas. Click geometry or a component row to select it.
 - Eye buttons hide/show parts; the selection card isolates a part. Reference
-  envelopes appear ghosted. Selection accompanies the next design request.
-- Rebuild copies the current source into another revision and repeats checks
-  without a model call. Use it after an evaluator upgrade before exporting.
-- The revision strip opens earlier geometry. Overlay shows changed prior
-  components in amber; it does not calculate an exact solid difference.
-- Checks expands measured actual/expected values, assumptions, and requirement
-  changes. Unknown mandatory evidence prevents a ready verdict.
-- Source downloads a ZIP of Python, manifest, and frozen brief. Report is the
-  evidence record. STEP/STL buttons explicitly export printable components from
-  the current evaluated source; download links appear when complete.
-- Cancel stops the owned Codex/CAD process tree. A failed build retains the last
-  good scene and labels its revision. Restart recovers saved designs, marks
-  interrupted jobs, and requires fresh session authorization.
+  envelopes appear ghosted. The revision strip opens earlier geometry.
+- Overlay shows changed prior components in amber, not an exact solid difference.
+  Checks expands actual/expected values, assumptions, and requirement changes.
+- Rebuild copies current source into another revision without a model call.
+  Failed builds and cancellation retain the labeled previous scene.
+- Source downloads Python, manifest, and frozen brief as a ZIP. Report downloads
+  evidence. Explicit STEP/STL exports contain printable components only and
+  require current, passing CAD evidence; physical validation stays separate.
 
-Runs, raw Codex JSONL transcripts, requests, proposals, usage when reported,
-session authorization, source hashes, checks, meshes, and exports are local under
-ignored `designworkflow/runs/studio/`. `--workspace PATH` selects another store;
-`--port PORT` changes the loopback port. There is one active job. Each instruction
-gets one candidate plus two repairs with frozen requirements; a new user turn
-gets a fresh budget and brief revision. CAD workers have a 120-second timeout;
-Codex calls have a 420-second timeout and turns a 15-minute iteration budget.
+The MCP launch authorizes one trusted local execution session. Root restrictions,
+source hashes, frozen requirements, worker timeouts, and cancellation still apply.
+Generated Python is **not sandboxed** and is not labeled human-reviewed. CAD
+workers receive no model credentials. Unknown measurements cannot produce a
+ready verdict; physical fit and manufacturing performance need their own evidence.
 
-Trusted-session mode authorizes generated local Python **without isolation**;
-it does not claim a human source review. Codex receives a read-only workspace,
-while a separate local CAD worker executes proposed source without model
-credentials. This is a local prototype, not a hostile-code execution service.
-The manual reviewed-hash CLI remains available. Keep physical fit, strength,
-manufacturing suitability, and unsupported measurements unverified until their
-evidence exists. Sampled wall and clearance checks cover only recorded samples.
+Designs, turns, source, session records, checks, meshes, and exports stay under
+ignored `designworkflow/runs/studio/`. Use `--studio-workspace PATH` (inside an
+explicit trusted root) or `--studio-port PORT` on the MCP command to change them.
+There is one active CAD job, a 120-second build timeout, and three candidates per
+turn. Restart marks interrupted jobs and restores saved designs.
 
-For frontend development, `npm run dev` proxies `/api` to Studio on port 8741.
-CI uses stub proposals for deterministic tests; live model acceptance outcomes
-are recorded separately in [ACCEPTANCE.md](ACCEPTANCE.md).
+## Optional standalone mode
+
+`python -m designworkflow studio` opens an MCP-oriented viewer without starting
+an MCP transport. Prefer the MCP-host launch above for an integrated session.
+The earlier separate Codex CLI designer remains opt-in:
+
+```powershell
+.\.venv\Scripts\python.exe -m designworkflow studio --designer codex
+```
+
+Only that opt-in mode requires a signed-in `codex` and supports `--model NAME`.
+Frontend development uses `npm run dev` with the backend on port 8741.
+The manual reviewed-hash CLI remains available. See [acceptance evidence](ACCEPTANCE.md).

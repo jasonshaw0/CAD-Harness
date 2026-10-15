@@ -12,7 +12,7 @@ import './style.css';
 
 
 
-type Session = { token: string; authorized: boolean; codex_available: boolean; model: string; active_job: string | null };
+type Session = { designer: 'mcp' | 'codex'; token: string; authorized: boolean; codex_available: boolean; model: string; active_job: string | null };
 
 const activeStates = new Set(['queued', 'generating', 'building', 'checking', 'repairing', 'exporting']);
 
@@ -64,7 +64,9 @@ function App() {
 
   const bottom = useRef<HTMLDivElement>(null);
 
-  const current = useRef({design, revision}); current.current = {design, revision};
+  const current = useRef({design, revision, job}); current.current = {design, revision, job};
+
+  const mcpMode = session?.designer === 'mcp';
 
   const busy = !!job && activeStates.has(job.status);
 
@@ -130,11 +132,43 @@ function App() {
 
   useEffect(() => { void run(async () => { const s = await api('/api/session'); setSession(s); const list = await api('/api/designs'); setDesigns(list.designs); const preferred = localStorage.getItem('studio-design'); const initial = list.designs.find((d: Design) => d.id === preferred) || list.designs[0]; if (initial) await refresh(initial.id); if (list.active_job) watch(await api(`/api/jobs/${list.active_job}`)); }); return () => stream.current?.close(); }, []);
 
+  useEffect(() => {
+    if (!mcpMode) return;
+    let closed = false, cursor = '', sequence: string | null = null;
+    let timer: ReturnType<typeof setTimeout>;
+    const poll = async () => {
+      try {
+        const view = await api('/api/viewer');
+        if (closed) return;
+        const next = `${view.sequence}/${view.design_updated}`;
+        if (view.design_id && next !== cursor) {
+          const changedDesign = current.current.design?.id !== view.design_id;
+          if (changedDesign) {
+            setSelected(null); setHidden(new Set()); setIsolated(null); setOverlay(false);
+            setData(null); setLatestData(null); setPrevious(null); setRevision(null);
+          }
+          await refresh(view.design_id);
+          if (view.sequence !== sequence && view.revision_id) await loadRevision(view.design_id, view.revision_id);
+          cursor = next; sequence = view.sequence;
+        }
+        if (view.active_job && current.current.job?.id !== view.active_job) watch(await api(`/api/jobs/${view.active_job}`));
+      } catch (err) { if (!closed) setError((err as Error).message); }
+      if (!closed) timer = setTimeout(poll, 800);
+    };
+    void poll();
+    return () => { closed = true; clearTimeout(timer); };
+  }, [mcpMode]);
+
+  useEffect(() => {
+    if (!mcpMode || !design || !revision || !scene) return;
+    void run(async () => { await api('/api/viewer', {design_id: design.id, selected: selected ? [selected] : [], revision_id: revision}); });
+  }, [mcpMode, design?.id, revision, selected]);
+
   useEffect(() => { bottom.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, [design?.messages.length, progress]);
 
   useEffect(() => { if (design) localStorage.setItem('studio-design', design.id); }, [design?.id]);
 
-  const openDesign = (d: Design) => run(async () => { if (busy) return; setHidden(new Set()); setSelected(null); setIsolated(null); setOverlay(false); setLatestData(null); setData(null); setPrevious(null); setRevision(null); await refresh(d.id); });
+  const openDesign = (d: Design) => run(async () => { if (busy) return; if (mcpMode) await api('/api/viewer', {design_id:d.id}); setHidden(new Set()); setSelected(null); setIsolated(null); setOverlay(false); setLatestData(null); setData(null); setPrevious(null); setRevision(null); await refresh(d.id); });
 
   const create = (example?: string, savedId?: string) => run(async () => { const response = await api('/api/designs', { prompt, example, saved: savedId }); setDesign(response.design); setLatestData(null); setData(null); setPrevious(null); setRevision(null); setPrompt(''); setSelected(null); setHidden(new Set()); setIsolated(null); setShowOpen(false); watch(response.job); });
 
@@ -202,9 +236,9 @@ function App() {
 
     </main>
 
-    <aside className="designer-panel"><div className="designer-heading"><span className="designer-icon"><Sparkles size={16}/></span><strong>Designer</strong><span className="model-tag">CODEX</span></div><div className="conversation">
+    <aside className="designer-panel"><div className="designer-heading"><span className="designer-icon"><Sparkles size={16}/></span><strong>Designer</strong><span className="model-tag">{mcpMode ? 'MCP' : 'CODEX'}</span></div><div className="conversation">
 
-      {!design?.messages.length && <div className="conversation-intro"><h2>What are we making?</h2><p>Describe the geometry, dimensions, and what it needs to fit. I'll build it and check the result.</p><div className="prompt-suggestion" onClick={() => setPrompt('Create a 70 × 40 × 5 mm mounting plate with four Ø4.5 mm through-holes on a centered 50 × 20 mm rectangle.')} role="button" tabIndex={0} onKeyDown={event => {if(event.key === 'Enter') setPrompt('Create a 70 × 40 × 5 mm mounting plate with four Ø4.5 mm through-holes on a centered 50 × 20 mm rectangle.');}}><span>TRY A FIRST DESIGN</span><p>A mounting plate with four holes and precise dimensions.</p><ArrowUp size={14}/></div><div className="capability"><FileCode2 size={14}/><p>Real build123d Python.<br/><span>Source stays yours to edit.</span></p></div></div>}
+      {!design?.messages.length && <div className="conversation-intro"><h2>{mcpMode ? 'Design from your IDE' : 'What are we making?'}</h2><p>{mcpMode ? 'Talk to your IDE assistant. Its source-backed designs and measured results appear here through MCP.' : "Describe the geometry, dimensions, and what it needs to fit. I’ll build it and check the result."}</p>{!mcpMode && <div className="prompt-suggestion" onClick={() => setPrompt('Create a 70 × 40 × 5 mm mounting plate with four Ø4.5 mm through-holes on a centered 50 × 20 mm rectangle.')} role="button" tabIndex={0} onKeyDown={event => {if(event.key === 'Enter') setPrompt('Create a 70 × 40 × 5 mm mounting plate with four Ø4.5 mm through-holes on a centered 50 × 20 mm rectangle.');}}><span>TRY A FIRST DESIGN</span><p>A mounting plate with four holes and precise dimensions.</p><ArrowUp size={14}/></div>}<div className="capability"><FileCode2 size={14}/><p>Real build123d Python.<br/><span>Source stays yours to edit.</span></p></div></div>}
 
       {design?.messages.map((message,index) => <article className={`message ${message.role} ${message.kind || ''}`} key={index}>{message.role === 'assistant' && <span className="message-author"><Sparkles size={12}/>DESIGNER{message.revision && <b>{message.revision}</b>}</span>}<p>{message.text}</p>{message.questions?.length ? <ul>{message.questions.map(q => <li key={q}>{q}</li>)}</ul> : null}</article>)}
 
@@ -216,7 +250,7 @@ function App() {
 
       {selected && <div className="selection-context"><Box size={12}/>{selected}<button aria-label="Clear selection" onClick={() => setSelected(null)}><X size={12}/></button></div>}
 
-      <div className="composer"><textarea aria-label="Describe your design" placeholder={historical ? 'Return to the current revision to continue' : design ? 'Describe a change…' : 'Describe a part. Include dimensions…'} value={prompt} disabled={busy || historical || !session?.authorized} onChange={event => setPrompt(event.target.value)} onKeyDown={event => { if(event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {event.preventDefault();void submit();} }}/><div className="composer-bottom"><span>{busy ? 'Building your design' : 'Ctrl ↵ to send'}</span>{busy ? <button aria-label="Cancel job" title="Cancel" className="send cancel" onClick={() => void run(async () => {await api(`/api/jobs/${job!.id}/cancel`, {});setProgress('Cancelling…');})}><Square size={12}/></button> : <button className="send" aria-label="Send design request" disabled={!prompt.trim() || !session?.authorized || historical} onClick={() => void submit()}><ArrowUp size={17}/></button>}</div></div>
+      {mcpMode ? <div className="mcp-composer"><strong>Continue in your IDE</strong><p>Your assistant sends designs and repairs through MCP. Studio builds and measures them locally.</p>{busy && <button aria-label="Cancel job" onClick={() => void run(async () => {await api(`/api/jobs/${job!.id}/cancel`, {});})}><Square size={12}/>Cancel build</button>}</div> : <div className="composer"><textarea aria-label="Describe your design" placeholder={historical ? 'Return to the current revision to continue' : design ? 'Describe a change…' : 'Describe a part. Include dimensions…'} value={prompt} disabled={busy || historical || !session?.authorized} onChange={event => setPrompt(event.target.value)} onKeyDown={event => { if(event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {event.preventDefault();void submit();} }}/><div className="composer-bottom"><span>{busy ? 'Building your design' : 'Ctrl ↵ to send'}</span>{busy ? <button aria-label="Cancel job" title="Cancel" className="send cancel" onClick={() => void run(async () => {await api(`/api/jobs/${job!.id}/cancel`, {});setProgress('Cancelling…');})}><Square size={12}/></button> : <button className="send" aria-label="Send design request" disabled={!prompt.trim() || !session?.authorized || historical} onClick={() => void submit()}><ArrowUp size={17}/></button>}</div></div>}
 
       <div className="designer-footer"><span className="local-dot"/>{session?.model || 'Connecting to local workspace'}</div>
 

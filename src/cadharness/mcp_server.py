@@ -52,6 +52,9 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--version", action="version", version=f"%(prog)s {package_version()}"
     )
+    parser.add_argument("--studio", action="store_true", help="serve the local Studio canvas and IDE authoring tools")
+    parser.add_argument("--studio-port", type=int, default=8741)
+    parser.add_argument("--studio-workspace", type=Path, help="Studio store within a configured trusted root")
     return parser
 
 
@@ -286,7 +289,22 @@ def main(argv: Iterable[str] | None = None) -> None:
     global ROOTS
     args = _parser().parse_args(list(sys.argv[1:] if argv is None else argv))
     ROOTS = _configured_roots(args.roots)
-    mcp.run(transport="stdio")
+    studio = None
+    try:
+        if args.studio:
+            checkout = Path(__file__).resolve().parents[2]
+            if not (checkout / "designworkflow/studio").is_dir():
+                raise RuntimeError("Studio requires the cadHarness repository checkout")
+            sys.path.insert(0, str(checkout))
+            from designworkflow.studio.mcp import StudioService, register_tools
+            workspace = args.studio_workspace or checkout / "designworkflow/runs/studio"
+            workspace = _resolve_in_roots(str(workspace), ROOTS)
+            studio = StudioService(workspace, port=args.studio_port)
+            register_tools(mcp, studio)
+        mcp.run(transport="stdio")
+    finally:
+        if studio:
+            studio.close()
 
 
 if __name__ == "__main__":

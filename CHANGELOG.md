@@ -5,6 +5,11 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
+- Studio now defaults to IDE authoring through MCP: 12 new tools for source
+  submission, frozen-brief repairs, context/selection, revision display, jobs,
+  and exports. `cadharness-mcp --studio` serves the canvas beside the stdio
+  transport. Separate Codex CLI generation is opt-in with `--designer codex`.
+
 - Added cadHarness Studio: a loopback 3D workbench with installed Codex CLI
   generation, conversational revisions, bounded repairs, independent checks,
   component meshes, comparison overlays, cancellable workers, and explicit exports.

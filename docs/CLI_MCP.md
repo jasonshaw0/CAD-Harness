@@ -129,6 +129,11 @@ inspector, snapshot, comparison, preview, and export tools. Call
 `get_cadharness_status` first to confirm the version, trusted roots, and
 discovered projects visible to the host.
 
+To let the IDE assistant author source and update the live 3D canvas, append
+`--studio` to the server arguments and install `.[mcp,studio]`. The MCP process
+serves Studio on loopback and adds 12 `studio_*` tools; it calls no model itself.
+See [Studio setup and controls](../designworkflow/studio/README.md).
+
 `measure_cad_project` shares its operation with `cadharness measure`. Measurement
 CLI exits are 0 for success, 1 for no match, ambiguity, or unsupported geometry,
 and 2 for invalid input or a kernel error. A successful measurement reports facts;

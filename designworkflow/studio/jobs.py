@@ -24,11 +24,13 @@ class Jobs:
         self.cancel_event = None
         self.active_id = None
 
-    def submit(self, design_id, instruction="", selected=(), *, example=None, import_path=None, export_format=None, rebuild=False, session_id):
+    def submit(self, design_id, instruction="", selected=(), *, example=None, import_path=None, export_format=None, rebuild=False, candidate=None, session_id):
         if not self.lock.acquire(blocking=False):
             raise ValueError("Another design job is active. Cancel it or wait for it to finish.")
         job = {"id": new_id("job"), "design_id": design_id, "status": "queued", "created": now(),
-               "instruction": instruction, "error": None, "requested_model": self.model or "CLI default"}
+               "instruction": instruction, "error": None,
+               "requested_model": "IDE assistant via MCP" if candidate else
+                   None if example or import_path or export_format or rebuild else self.model or "CLI default"}
         self.store.put_job(job)
         cancel = threading.Event()
         self.cancel_event, self.active_id = cancel, job["id"]
@@ -43,11 +45,25 @@ class Jobs:
                 self.store.put(design)
                 emit("status", {"status": status, "text": text})
             try:
-                if rebuild:
+                if candidate:
+                    state("building", "Building source supplied by the IDE assistant")
+                    revision = self.revision(design, candidate["brief"], candidate["files"], candidate["turn_id"])
+                    job["revision"] = revision.name
+                    self.store.put_job(job)
+                    report = self.evaluate(revision, session_id, cancel)
+                    self.evaluated(design, revision, report, candidate["summary"])
+                    design["messages"].append({"role": "assistant", "text": candidate["summary"],
+                                               "time": now(), "revision": revision.name})
+                    self.store.put(design)
+                    emit("revision", {"revision": revision.name, "outcome": report["outcome"]})
+                    state(design["status"], "CAD evaluation finished; evidence returned to the IDE assistant")
+                elif rebuild:
                     state("building", "Rebuilding current source and frozen requirements")
                     previous = self.store.design_root(design_id) / "revisions" / design["latest_revision"]
                     brief = read_json(self.store.design_root(design_id) / read_json(previous / "revision.json")["brief"])
                     revision = self.revision(design, brief, self.read_source(previous), job["id"])
+                    job["revision"] = revision.name
+                    self.store.put_job(job)
                     report = self.evaluate(revision, session_id, cancel)
                     self.evaluated(design, revision, report, "Rebuilt current source")
                     emit("revision", {"revision": revision.name, "outcome": report["outcome"]})

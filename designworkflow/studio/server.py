@@ -23,9 +23,17 @@ from .jobs import ACTIVE, Jobs
 from .store import Store, contained, now, save
 
 
-def create_app(workspace=None, *, model=None, generator=None):
+def create_app(workspace=None, *, model=None, generator=None, designer="mcp"):
+    if designer not in {"mcp", "codex"}:
+        raise ValueError("designer must be mcp or codex")
     store = Store(workspace or ROOT / "designworkflow/runs/studio")
     jobs = Jobs(store, model=model, **({"generator": generator} if generator else {}))
+    from .assistant import IDEAssistant
+    assistant = IDEAssistant(store, jobs)
+    if designer == "mcp" and not assistant.viewer()["design_id"]:
+        saved_designs = store.listing()
+        if saved_designs:
+            assistant.open(saved_designs[0]["id"])
     token = secrets.token_urlsafe(32)
     authorization = {"id": None}
     library = {}
@@ -43,35 +51,51 @@ def create_app(workspace=None, *, model=None, generator=None):
         except (ValueError, OSError):
             continue
 
+    def authorize(enabled, via="browser"):
+        previous = authorization["id"]
+        if previous:
+            record = store.root / "sessions" / f"{previous}.json"
+            saved = read_json(record)
+            saved["ended"] = now()
+            save(record, saved)
+        authorization["id"] = secrets.token_hex(16) if enabled else None
+        if authorization["id"]:
+            save(store.root / "sessions" / f"{authorization['id']}.json", {
+                "id": authorization["id"], "mode": "trusted-session", "created": now(), "via": via,
+                "workspace": str(store.root), "source_review": "not-human-reviewed",
+                "scope": "IDE MCP proposals and CAD Python execution" if designer == "mcp" else "Local Codex proposals and CAD Python execution"})
+        elif jobs.cancel_event:
+            jobs.cancel_event.set()
+        return authorization["id"]
+
     async def session(request):
-        available = True
-        try:
-            cli_command()
-        except RuntimeError:
-            available = False
+        available = False
+        if designer == "codex":
+            try:
+                cli_command()
+                available = True
+            except RuntimeError:
+                pass
         if request.method == "POST":
             body = await request.json()
-            previous = authorization["id"]
-            if previous:
-                record = store.root / "sessions" / f"{previous}.json"
-                saved = read_json(record)
-                saved["ended"] = now()
-                save(record, saved)
-            authorization["id"] = secrets.token_hex(16) if body.get("authorize") is True else None
-            if authorization["id"]:
-                save(store.root / "sessions" / f"{authorization['id']}.json", {
-                    "id": authorization["id"], "mode": "trusted-session", "created": now(),
-                    "workspace": str(store.root), "source_review": "not-human-reviewed",
-                    "scope": "Local Codex proposals and CAD Python execution during this Studio process."})
-            if authorization["id"] is None and jobs.cancel_event:
-                jobs.cancel_event.set()
+            authorize(body.get("authorize") is True)
         return JSONResponse({"token": token, "authorized": authorization["id"] is not None,
-                             "codex_available": available, "model": model or "Codex CLI default",
+                             "designer": designer, "codex_available": available,
+                             "model": "IDE assistant · MCP" if designer == "mcp" else model or "Codex CLI default",
                              "workspace": str(store.root), "active_job": jobs.active_id})
 
     def require_session():
         if not authorization["id"]:
             raise PermissionError("Enable a trusted local session before generating or building Python.")
+        return authorization["id"]
+
+    async def viewer(request):
+        if request.method == "POST":
+            body = await request.json()
+            if "selected" in body:
+                return JSONResponse(assistant.select(body["design_id"], body["selected"], body.get("revision_id")))
+            return JSONResponse(assistant.open(body["design_id"], body.get("revision_id")))
+        return JSONResponse(assistant.viewer())
 
     async def designs(request):
         if request.method == "GET":
@@ -89,7 +113,11 @@ def create_app(workspace=None, *, model=None, generator=None):
             raise ValueError("unknown saved design")
         if not instruction and not example and not saved:
             raise ValueError("Describe a design or choose an example")
+        if designer == "mcp" and not example and not saved:
+            raise ValueError("Describe the design to your IDE assistant and use studio_start_turn through MCP")
         design = store.create(examples.get(example) or (library[saved]["title"] if saved else instruction))
+        if designer == "mcp":
+            assistant.open(design["id"])
         job = jobs.submit(design["id"], instruction, example=example,
                           import_path=library[saved]["path"] if saved else None,
                           session_id=authorization["id"])
@@ -100,6 +128,8 @@ def create_app(workspace=None, *, model=None, generator=None):
 
     async def turn(request):
         require_session()
+        if designer == "mcp":
+            raise ValueError("Continue the conversation in your IDE; Studio makes no model calls in MCP mode")
         body = await request.json()
         instruction = str(body.get("prompt", "")).strip()
         if not instruction:
@@ -228,6 +258,7 @@ def create_app(workspace=None, *, model=None, generator=None):
             jobs.cancel_event.set()
 
     routes = [Route("/api/session", session, methods=["GET", "POST"]),
+              Route("/api/viewer", viewer, methods=["GET", "POST"]),
               Route("/api/designs", designs, methods=["GET", "POST"]), Route("/api/library", listing),
               Route("/api/designs/{design_id}", design), Route("/api/designs/{design_id}/turns", turn, methods=["POST"]),
               Route("/api/designs/{design_id}/revisions/{revision_id}", revision),
@@ -245,13 +276,14 @@ def create_app(workspace=None, *, model=None, generator=None):
     app.add_middleware(LocalRequests)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "testserver"])
     app.state.store, app.state.jobs = store, jobs
+    app.state.assistant, app.state.authorize, app.state.execution_session = assistant, authorize, require_session
     return app
 
 
-def serve(*, workspace=None, port=8741, model=None):
+def serve(*, workspace=None, port=8741, model=None, designer="mcp"):
     import uvicorn
     dist = Path(__file__).parent / "web/dist/index.html"
     if not dist.exists():
         raise RuntimeError("Build the Studio frontend first: cd designworkflow/studio/web && npm ci && npm run build")
     print(f"cadHarness Studio: http://127.0.0.1:{port}", flush=True)
-    uvicorn.run(create_app(workspace, model=model), host="127.0.0.1", port=port, log_level="warning")
+    uvicorn.run(create_app(workspace, model=model, designer=designer), host="127.0.0.1", port=port, log_level="warning")

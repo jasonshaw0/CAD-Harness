@@ -135,8 +135,8 @@ using it.
 
 ## Optional Studio and deferred interfaces
 
-The optional [Studio application](studio/README.md) calls an installed, signed-in
-Codex CLI and explicitly authorizes trusted local execution per session. It does
-not assume access to the IDE's selected model. Hosted/local model adapters,
+The optional [Studio application](studio/README.md) exposes source-backed design
+tools to the IDE assistant through MCP, with no separate model calls. Its previous
+Codex CLI designer is opt-in. Both use trusted local execution. Hosted/local model adapters,
 untrusted-code isolation, and unattended deployment remain deferred. Existing
 CADHarness public schemas remain unchanged.

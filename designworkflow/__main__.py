@@ -15,6 +15,7 @@ def main(argv=None):
     studio.add_argument("--workspace", type=Path)
     studio.add_argument("--port", type=int, default=8741)
     studio.add_argument("--model", help="optional Codex model override; otherwise use CLI default")
+    studio.add_argument("--designer", choices=("mcp", "codex"), default="mcp", help="use the IDE assistant via MCP (default), or opt into a separate Codex CLI session")
     init = commands.add_parser("init", help="preserve prompt and create a source/brief scaffold")
     init.add_argument("--id", required=True)
     init.add_argument("--prompt-file", type=Path, required=True)
@@ -43,7 +44,7 @@ def main(argv=None):
     try:
         if args.command == "studio":
             from .studio.server import serve
-            serve(workspace=args.workspace, port=args.port, model=args.model)
+            serve(workspace=args.workspace, port=args.port, model=args.model, designer=args.designer)
             return 0
         if args.command == "_worker":
             worker(args.action, args.revision, args.extra)

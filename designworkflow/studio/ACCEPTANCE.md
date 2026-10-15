@@ -1,5 +1,33 @@
 # Prototype acceptance — 2026-10-14
 
+## IDE/MCP authoring update
+
+The server now exposes 24 tools: the original 12 CAD operations plus 12 Studio
+tools. A real stdio client created `design-7f3cbf8b`, submitted Python authored
+in the existing IDE conversation, and displayed a 68 × 42 × 5 mm plate with
+four through-holes and a reference envelope. All 13 requirements passed.
+Playwriter selected `plate` in the browser and `studio_get_context` returned
+that component ID. A further MCP turn increased thickness to 7 mm; the browser
+updated to r002 with all 13 requirements passing. STEP export succeeded with
+only the printable plate. These dimensions are demonstration inputs, not a
+user-specified manufacturing design.
+
+No nested Codex/model session was used. The frontend identifies MCP mode and
+directs conversation to the IDE. Requests, tool responses, source, evidence,
+server logs, and the inspected screenshot are preserved under ignored
+`designworkflow/runs/mcp-live/`. The stdio integration test also seeds a missing
+hole, repairs it under a frozen brief, rejects requirement changes, continues
+with another user turn, and exports STL. API tests verify MCP mode never
+resolves or launches the separate Codex client.
+
+The 95 core tests passed. The 37 workflow/Studio/MCP tests were checked, with the
+native integration test rerun after an in-progress evaluator edit correctly
+triggered stale-evidence rejection. TypeScript and the production frontend build
+passed. The prior separate-CLI acceptance below is retained as history; that
+designer now requires explicit `--designer codex`.
+
+## Original separate-CLI prototype
+
 Executed in the Windows checkout with the installed, ChatGPT-authenticated Codex
 CLI default model. These were fresh model requests and follow-ups, not replayed
 artifact proposals. Raw requests, JSONL transcripts, proposals, and reported token
