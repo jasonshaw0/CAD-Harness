@@ -1,6 +1,7 @@
 # CLI and MCP guide
 
-cadHarness operates on trusted source projects containing `cadharness.toml`.
+The framework and Studio share the `cadharness` CLI and MCP server. Framework
+commands operate on trusted source projects containing `cadharness.toml`.
 Run commands from the repository checkout unless you pass absolute paths.
 
 ## Install from a checkout
@@ -8,8 +9,9 @@ Run commands from the repository checkout unless you pass absolute paths.
 Use a project-local virtual environment so another editable checkout cannot
 silently replace the version you intend to run.
 
-The [README](../README.md#quickstart) covers a first report without MCP.
-Install the `[mcp]` extra below when connecting an assistant or MCP client.
+The [README](../README.md#use-the-framework-directly) covers a first report.
+Install `[mcp]` for framework-only MCP, or `[mcp,studio]` for the integrated
+design workbench. See [Studio setup](STUDIO.md) for its canvas build.
 
 ```powershell
 git clone https://github.com/jasonshaw0/cadharness.git
@@ -80,6 +82,8 @@ records the errors. A gate exception never rewrites the underlying evidence.
 | `preview <project>` | Create hidden-line SVG views | `.cadharness/previews/` |
 | `export <project>` | Explicitly write STEP or STL geometry | `exports/cadharness/` |
 | `mcp-config [roots...]` | Generate portable MCP client JSON | No |
+| `studio` | Serve the standalone viewer/API | Selected workspace |
+| `design init/check/revise/export` | Run the manual source/brief workflow | Selected design run |
 
 Generated paths are relative to the project directory, remain inside that
 directory, and refuse to overwrite existing files unless `--overwrite` is
@@ -93,6 +97,11 @@ Generate the client entry instead of hand-writing interpreter and root paths:
 ```powershell
 .\.venv\Scripts\python.exe -m cadharness mcp-config .
 ```
+
+Add `--studio` for the integrated workbench. `--studio-workspace PATH` must
+remain within an explicit root; it defaults to `<first-root>/runs/studio/`.
+Use `--studio-port PORT` to change the loopback port. These options generate
+server arguments and do not launch the server themselves.
 
 The result has this shape, with absolute paths filled in for the current
 machine:
@@ -132,7 +141,7 @@ discovered projects visible to the host.
 To let the IDE assistant author source and update the live 3D canvas, append
 `--studio` to the server arguments and install `.[mcp,studio]`. The MCP process
 serves Studio on loopback and adds 12 `studio_*` tools; it calls no model itself.
-See [Studio setup and controls](../designworkflow/studio/README.md).
+See [Studio setup and controls](STUDIO.md).
 
 `measure_cad_project` shares its operation with `cadharness measure`. Measurement
 CLI exits are 0 for success, 1 for no match, ambiguity, or unsupported geometry,

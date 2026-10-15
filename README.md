@@ -1,103 +1,76 @@
 # cadHarness
 
-**cadHarness** is a flexible Python framework for inspecting, validating, and comparing source-defined build123d projects.
+**A Python CAD framework and a ready-to-use workbench for designing with your AI assistant.**
 
-It organizes a model into named components, parameters, and engineering checks, then builds the geometry and records the results. Each check includes acceptance criteria and evidence, distinguishing values declared in the source from measurements of the resulting shapes. Python, the command line, and an optional MCP interface expose the same underlying operations, thus making this a flexible tool for design verification and regression testing.
+cadHarness keeps parametric Python source, built geometry, and engineering evidence
+together. **Studio** puts that framework to work: your IDE assistant authors designs
+through MCP, a local 3D canvas displays the result, and the framework measures it
+against explicit requirements. Revisions retain their source, checks, and reports.
 
-Use it to:
+| | What you get |
+| --- | --- |
+| **Studio** | Live 3D viewing, component selection, assistant context, design revisions, measured feedback, and STEP/STL export. |
+| **Framework** | A build123d project contract, geometry measurements, engineering checks, revision comparison, and portable HTML reports through Python, CLI, or MCP. |
 
-- Review a model, its measurements, and check results in an HTML report.
-- Run pass/fail checks from Python or the command line.
-- Compare revisions, export STEP or STL files, or connect an assistant through MCP.
+Both use the same `CADDocument` and build123d/OCCT geometry. Studio uses the assistant
+already in your IDE; MCP mode makes no separate model calls. Editable Python stays
+the design authority.
 
-## Quickstart 
-[Or skip to docs](docs/)
+## Start with Studio
 
-
-You'll need Git and Python 3.11–3.14. Installation includes build123d 0.13.x.
-
-Start by generating a report for an example stepper motor-mount.
-
-### Windows PowerShell
+Requires Python 3.11–3.14, Node.js 22.12+ (for the canvas build), and an MCP host
+with an assistant. From a fresh checkout in Windows PowerShell:
 
 ```powershell
 git clone https://github.com/jasonshaw0/cadHarness.git
 cd cadHarness
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e .
-.\.venv\Scripts\python.exe -m cadharness inspector examples/nema17-mount --summary
-Invoke-Item .\examples\nema17-mount\.cadharness\inspector\index.html
+.\.venv\Scripts\python.exe -m pip install -e ".[mcp,studio]"
+npm --prefix studio/web ci
+npm --prefix studio/web run build
+.\.venv\Scripts\python.exe -m cadharness mcp-config . --studio
 ```
 
-### macOS and Linux
+Add the generated `cadharness` entry to your host's MCP configuration and reload
+the host. It starts the CAD tools and Studio together. Call `studio_status` for
+the viewer URL, normally **http://127.0.0.1:8741**, then ask your assistant:
 
-```bash
-git clone https://github.com/jasonshaw0/cadHarness.git
-cd cadHarness
-python3 -m venv .venv
-./.venv/bin/python -m pip install -e .
-./.venv/bin/python -m cadharness inspector examples/nema17-mount --summary
-```
+> Use cadHarness Studio to create a 60 × 60 × 4 mm plate with four 3.5 mm
+> through-holes centered at X/Y = ±15.5 mm. Measure those requirements and
+> show me the result before exporting.
 
-Open `examples/nema17-mount/.cadharness/inspector/index.html` in your browser.
+Select a component in Studio and continue the conversation in your IDE. The
+assistant receives that selection and the measured results for its next edit.
 
-The report shows geometry previews, measured values, and check results. The standard example should show **Verified**, with **3 components** and **10 checks**. MCP is optional; it is not needed to run commands or view reports.
+[Studio setup, other platforms, and controls](docs/STUDIO.md)
 
-To regenerate an existing report, add `--overwrite` to the inspector command.
+## Use the framework directly
 
-## Run checks
-
-Use `verify` when you need a pass/fail result, such as in a script or CI job:
+The framework works without Studio, Node.js, or MCP. After creating a virtual
+environment, install with `python -m pip install -e .`, then run:
 
 ```powershell
 .\.venv\Scripts\python.exe -m cadharness verify examples/nema17-mount --summary
+.\.venv\Scripts\python.exe -m cadharness inspector examples/nema17-mount --summary
 ```
 
-On macOS and Linux, replace `.\.venv\Scripts\python.exe` with `./.venv/bin/python`.
+Open the report path printed by `inspector`. The standard example has three
+components and ten checks. Add `--variant missing-hole` to `verify` to see a
+measured failure. Commands return JSON by default; `verify` exits 0 for a pass,
+1 for a failed gate, and 2 for usage or execution errors.
 
-With the default verification policy:
+Wrap your own shapes in a `CADDocument` and point a `cadharness.toml` manifest at
+the factory. [Create a project](docs/GETTING_STARTED.md), or use
+[`cadharness design`](docs/DESIGN_WORKFLOW.md) for a manual source-review loop.
 
-- **0** — verification passed.
-- **1** — verification failed.
-- **2** — a check execution error, command execution error, or usage error occurred.
+## Documentation and development
 
-Generating a report can succeed even when verification fails. Use `verify` to gate an automated workflow.
+- [Documentation map](docs/README.md) — setup, authoring, measurements, and operations.
+- [Architecture](docs/ARCHITECTURE.md) — how Studio, orchestration, and the framework fit together.
+- [Contributing](CONTRIBUTING.md) — repository layout, tests, frontend builds, and packaging.
+- [Migration guide](docs/MIGRATION.md) — previous `designworkflow` paths and saved workspaces.
+- [Changelog](CHANGELOG.md).
 
-To see a failure, add `--variant missing-hole` to the verification command. This variant builds three mounting holes while retaining the requirement for four.
-
-## Use your own model
-
-For a local 3D workbench driven by your IDE assistant through MCP, see [Studio setup](designworkflow/studio/README.md).
-The [manual design workflow](designworkflow/README.md) also supports reviewed source and measured repairs.
-
-A cadHarness project contains a `cadharness.toml` manifest pointing to a Python function that returns a `CADDocument`: your build123d shapes, named components, parameters, and checks.
-
-Follow the [project guide](docs/GETTING_STARTED.md) to create a project or wrap an existing model.
-
-## Documentation
-
-| Topic | Reference |
-| --- | --- |
-| Create a project and add checks | [Project guide](docs/GETTING_STARTED.md) |
-| Configure the MCP server | [MCP setup](docs/CLI_MCP.md#connect-an-mcp-client) |
-| Measure holes, clearances, and sampled thickness | [Geometry measurements](docs/MEASUREMENTS.md) |
-| Use commands and compare revisions | [CLI workflow](docs/CLI_MCP.md#cli-workflow) |
-| Diagnose installation and project discovery | [Troubleshooting](docs/CLI_MCP.md#troubleshooting) |
-
-Commands return JSON by default. Use `--summary` with `verify` or `inspector` for readable terminal output.
-
-## Development
-
-Install the MCP extra to run the full test suite and the stdio integration check. From the repository checkout:
-
-```powershell
-.\.venv\Scripts\python.exe -m pip install -e ".[mcp]"
-.\.venv\Scripts\python.exe -m unittest discover -s tests -v
-.\.venv\Scripts\python.exe scripts/smoke_mcp.py
-```
-
-On macOS and Linux, use `./.venv/bin/python` instead.
-
-Only run projects whose Python source you trust. Project loading executes that source without sandboxing. Passing checks does not establish physical fit or manufacturing suitability.
-
-[Architecture](docs/ARCHITECTURE.md) · [Changelog](CHANGELOG.md)
+cadHarness executes trusted local Python without sandboxing. Keep MCP roots
+explicit. Passing CAD checks establishes computational evidence; physical fit
+and manufacturing performance require their own validation.

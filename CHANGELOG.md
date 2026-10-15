@@ -5,6 +5,13 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
+- Unified the framework and Studio as one installable `cadharness` package.
+  Added `cadharness studio`, `cadharness design`, and Studio-aware `mcp-config`.
+  Moved editable frontend source to `studio/web`, tests under `tests/`, and
+  operational guides into `docs/`. Built wheels include templates/contracts
+  and, after the frontend build, the canvas. Existing evidence schema IDs and
+  saved workspaces are preserved; see `docs/MIGRATION.md`.
+
 - Studio now defaults to IDE authoring through MCP: 12 new tools for source
   submission, frozen-brief repairs, context/selection, revision display, jobs,
   and exports. `cadharness-mcp --studio` serves the canvas beside the stdio

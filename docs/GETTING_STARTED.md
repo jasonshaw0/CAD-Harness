@@ -1,11 +1,14 @@
-# Create your first project
+# Author a cadHarness project
 
 cadHarness wraps ordinary build123d shapes with stable component IDs and
 engineering checks. Start with a small project, then replace the example geometry
 with your existing shape factory.
 
-Install using the [README quickstart](../README.md#quickstart). The commands
-below assume you are in that checkout and use its virtual environment.
+Studio creates projects using this same contract. This guide covers writing or
+wrapping a project yourself; it requires only the framework, without Studio.
+Create a virtual environment and install with `python -m pip install -e .`
+as described in [CLI setup](CLI_MCP.md#install-from-a-checkout). Commands below
+assume that checkout and its virtual environment.
 
 ## Create two files
 

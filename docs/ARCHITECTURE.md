@@ -1,8 +1,13 @@
-# cadHarness architecture — source-backed engineering evidence
+# cadHarness architecture
 
 ## Product boundary
 
-cadHarness is a general-purpose, source-backed engineering workflow for build123d projects. It is not a geometric kernel, an assembly replacement, a sketch editor, or an embedded autonomous agent.
+cadHarness combines a reusable framework for build123d projects with Studio,
+an included MCP design workbench. The framework owns project semantics and
+engineering evidence; design orchestration owns briefs and retained attempts;
+Studio provides assistant tools and a live 3D interface. build123d/OCCT builds
+and measures geometry. The IDE assistant interprets instructions and authors
+source; MCP mode embeds no model client.
 
 The authoritative artifact remains ordinary Python that creates build123d/OCCT shapes. A project factory returns a `CADDocument`, which attaches stable identity and engineering meaning to those native shapes.
 
@@ -25,6 +30,50 @@ trusted Python project source
 ```
 
 Keeping native `Shape` instances avoids a second topology model and retains direct access to OCCT booleans, joints, measurements, traversal, and exchange. The framework owns project semantics and workflow evidence instead.
+
+## One product, three layers
+
+```text
+IDE assistant <------- MCP -------> cadHarness Studio <----> browser canvas
+   |                                | selection, jobs, revisions
+   +--- Python/TOML + brief ---------+
+                                    v
+                         cadharness.workflow
+                         frozen requirements, attempts,
+                         source hashes, bounded repairs
+                                    |
+                                    v
+                         cadHarness framework operations
+                         CADDocument + build123d/OCCT
+                         measurements, checks, reports, exports
+```
+
+`src/cadharness/` contains the framework and common CLI/MCP entrypoints.
+`workflow/` contains orchestration, acceptance bindings, templates, and contracts;
+`studio/` contains the application API, MCP tools, file store, scene generation,
+and job lifecycle. Editable frontend source lives in `studio/web/` at the repo
+root and builds into the Python package as static assets. Framework-only users
+do not need Studio's server dependencies or frontend.
+
+All layers use the same project manifest and `CADDocument`. Workflow acceptance
+binds the brief to independently measured geometry; it does not replace the
+framework's validator. Studio source downloads retain ordinary Python/TOML,
+so projects can also be inspected through framework commands.
+
+Each Studio instruction starts a turn with a brief revision and a three-candidate
+budget. Repairs preserve the frozen brief; later user instructions create new
+turns. Revisions retain their evidence and failed builds preserve the previously
+displayed scene. A ready verdict requires passing CAD evidence and coverage of
+mandatory requirements; unknown and external physical evidence stay explicit.
+
+The MCP host can enable both interfaces with `--studio`. Its workspace defaults
+inside the first explicit trust root, and another workspace must be contained
+by a configured root. HTTP is loopback-only; starting MCP authorizes a trusted
+local execution session, without claiming human source review or sandboxing.
+The optional separate Codex CLI designer remains an explicit opt-in.
+
+See [repository layout and packaging](../CONTRIBUTING.md),
+[Studio operations](STUDIO.md), and [design contracts](../src/cadharness/workflow/CONTRACTS.md).
 
 ## Project contract
 
@@ -193,7 +242,9 @@ build123d/OCCT toolchain; revision evidence should record and review that change
 - Variants are source-declared and bounded; ad-hoc typed overrides and composed variant inheritance are not yet supported.
 - Policies classify measured evidence but do not prove geometric equivalence; an accepted fingerprint change still requires human engineering intent.
 - Surface and curve summaries describe topology, not semantic features such as a recognized counterbore or fillet chain.
-- Checks are synchronous Python callbacks. There is no dependency graph, incremental execution, or persisted history store.
+- Framework checks are synchronous Python callbacks, without a dependency graph
+  or incremental execution. Studio retains file-backed design history; standalone
+  framework operations do not maintain an application history store.
 - Geometry measurements cover bounded analytic features and explicit material
   chords; global wall thickness and universal feature recognition remain outside
   their scope.
