@@ -103,13 +103,79 @@ The assistant uses these tools in order:
    brief. Submission returns a job, not a passing design verdict.
 4. `studio_get_job` until the build finishes. Read actual/expected measurements
    and requirement coverage before presenting or repairing it.
-5. Repair in the same turn with its frozen brief, with at most two repairs.
+5. Repair or refine in the same turn with its frozen brief, with at most two
+   further candidates, including after a passing candidate or visual finding.
    A further user instruction starts a new turn and brief revision.
 
 The browser updates as revisions and assistant messages arrive. Click a part
 to give the assistant selection context; continue the conversation in your IDE.
 Studio makes no separate model calls in MCP mode and needs no browser model
 login. Unknown mandatory evidence cannot produce a ready verdict.
+
+## Packaged guidance and visual inspection
+
+MCP initialization includes essential workflow instructions. Call
+`get_cad_authoring_guide` for the versioned guide, also included in
+`studio_get_context(include_contract=True)`. It covers editable source, units,
+dimensional contradictions, exact checks, frozen intent and adaptive visual
+inspection. It ships with the package; no personal skill or external viewer is
+needed. MCP session authorization is separate from the manual source-review
+hash workflow.
+
+Use `studio_render_view` when an image resolves uncertainty about shape or
+placement. Exact checks may suffice for simple primitives or minor dimensional
+edits. Rounded transitions, sweeps, hollow parts, complex cutouts, assemblies and
+obscured interfaces often benefit from inspection. Start with one informative
+view; add angles, isolated components or close-ups for specific questions, and
+reinspect affected features after meaningful changes. Images supplement
+measurements and do not establish accuracy or manufacturing suitability.
+
+Example MCP arguments:
+
+```json
+{
+  "design_id": "design-…",
+  "revision_id": "r002",
+  "view": "front",
+  "component_ids": ["handle"],
+  "focus_bounds_mm": [[40, -10, 14], [85, 10, 84]],
+  "width": 1024,
+  "height": 768
+}
+```
+
+Only `design_id` is required. Defaults select the latest revision with built
+geometry, all components, an isometric view, and a 1024 × 768 PNG. Supported
+views are `iso`, `front` (looking along +Y), `right`, `left`, `top` and `bottom`;
+image dimensions range from 256 to 2048 pixels. Component IDs must exist in that
+revision. Focus bounds are model-space millimeter coordinates with positive
+extents intersecting the selected bounds; they frame a close-up without cutting
+the solid. Failed builds without geometry cannot be captured; request an older
+revision explicitly if that is the scene you intend to inspect.
+
+The result includes PNG image content directly, design/revision IDs, the retained
+scene's SHA-256 fingerprint, selection, orthographic camera settings and artifact
+metadata. PNGs and metadata live in `<design>/renders/`, separately from immutable
+revision evidence. Capturing does not mark a design reviewed, change readiness,
+consume build attempts or authorize exports. Use ordinary assistant messages for
+useful observations. Text-only models may obtain images for others but must not
+claim visual inspection.
+
+An open Studio tab handles authenticated requests using a lazy private renderer
+with its own scene, camera, lighting and neutral background. It loads the saved
+revision independently, preserving the user's displayed model, camera, selection,
+visibility and theme. No browser extension, desktop control, screen sharing or
+specific user camera placement is required. Multiple tabs can register; one tab
+claims each request. Normal builds generate no images.
+
+`studio_status` and `studio_get_context` expose renderer availability. A recent
+tab heartbeat indicates a connected renderer; WebGL is tested when capture is
+requested. Closed Studio, WebGL failure or a 10-second capture deadline returns
+`status: unavailable` with a reason and preserves the build. Background-tab
+throttling can also cause a timeout. cadHarness does not retry or launch a browser.
+Report a needed visual check honestly when unavailable; there is no screenshot
+quota, review form or extra completion gate. A headless production renderer is
+outside the current implementation.
 
 ## Controls and outputs
 

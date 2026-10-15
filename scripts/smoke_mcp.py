@@ -56,6 +56,7 @@ async def smoke() -> dict:
                 structured = validation.structured_content or {}
                 tool_names = [tool.name for tool in tools.tools]
                 expected_tools = {
+                    "get_cad_authoring_guide",
                     "get_cadharness_status",
                     "build_cad_inspector",
                     "list_cad_schemas",

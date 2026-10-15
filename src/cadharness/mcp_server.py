@@ -11,6 +11,7 @@ from typing import Any, Iterable
 from mcp.server import MCPServer
 
 from .diagnostics import package_version
+from .guidance import SERVER_INSTRUCTIONS, authoring_guide
 from .operations import (
     compare_project,
     discover_projects,
@@ -75,11 +76,14 @@ ROOTS = _configured_roots()
 mcp = MCPServer(
     "cadHarness",
     version=package_version(),
-    instructions=(
-        "Inspect and validate trusted source-backed build123d projects. "
-        "Project factories execute local Python and are restricted to configured roots."
-    ),
+    instructions=SERVER_INSTRUCTIONS,
 )
+
+
+@mcp.tool()
+def get_cad_authoring_guide() -> dict[str, Any]:
+    """Read packaged workflow and adaptive visual-review guidance before first authoring. No personal skills required."""
+    return authoring_guide()
 
 
 @mcp.tool()

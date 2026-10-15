@@ -88,6 +88,11 @@ execute. All candidate input files and revision settings contribute to source
 identity; generated output/cache directories are excluded. Studio instead records
 explicit `trusted-session` authorization and leaves `reviewed_source` null. Each
 user turn has its own `turn_id` and numbered brief; repairs freeze that brief.
+In MCP mode, changed source may also refine a passing candidate within that
+turn's existing three-candidate budget. Cancellation, superseding turns, source
+identity and frozen requirements still apply. Optional Studio images consume no
+build attempts, live outside verification evidence, and never set review status
+or change readiness/export rules. See `AUTHORING.md` for adaptive usage.
 Prompt and
 clarification file hashes also contribute. Links are rejected. This is
 provenance, not an execution security boundary.

@@ -5,6 +5,14 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
+- Package versioned authoring guidance through MCP initialization, tool
+  descriptions and `get_cad_authoring_guide`, including adaptive visual review.
+  Add `studio_render_view` for revision-specific PNGs through an open Studio tab,
+  independently of the user's viewport. Authenticated single-tab claims,
+  fingerprinted artifacts and bounded unavailable results preserve build
+  evidence. No automatic images or visual-review gate. Changed source can refine
+  passing MCP candidates within the existing frozen-brief attempt budget.
+
 - Share one Studio canvas and job queue across MCP connections with matching
   workspaces and trust roots. Additional clients no longer lose all tools when
   the first MCP connection already owns the viewer port. Session-token and

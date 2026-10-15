@@ -144,9 +144,17 @@ inspector, snapshot, comparison, preview, and export tools. Call
 `get_cadharness_status` first to confirm the version, trusted roots, and
 discovered projects visible to the host.
 
+Initialization includes essential authoring instructions. Use
+`get_cad_authoring_guide` for the packaged, versioned workflow, including adaptive
+visual inspection and the distinction between MCP authorization and manual
+source review. No personal skill is required.
+
 To let the IDE assistant author source and update the live 3D canvas, append
 `--studio` to the server arguments and install `.[mcp,studio]`. The MCP process
-serves Studio on loopback and adds 12 `studio_*` tools; it calls no model itself.
+serves Studio on loopback and adds 13 `studio_*` tools; it calls no model itself.
+`studio_render_view` returns PNG content from an open Studio tab using a separate
+camera, with exact revision identity and capture metadata. It preserves the
+interactive viewport and returns unavailable within 10 seconds if capture fails.
 See [Studio setup and controls](STUDIO.md).
 
 `measure_cad_project` shares its operation with `cadharness measure`. Measurement

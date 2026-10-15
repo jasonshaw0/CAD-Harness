@@ -59,6 +59,9 @@ After full setup, add the generated `cadharness` entry from
 The host starts the CAD tools and Studio together. Call `studio_status` to
 retrieve the viewer URL, normally `http://127.0.0.1:8741`.
 
+MCP includes a versioned authoring guide and on-demand Studio images for
+adaptive visual inspection, without personal skills or desktop control.
+
 See [Studio setup](docs/STUDIO.md) for workspace configuration and controls, or
 [CLI and MCP](docs/CLI_MCP.md) for framework-only MCP configuration.
 

@@ -84,6 +84,8 @@ class StudioService:
     def invoke(self, name, arguments):
         # All clients use this owner's Store, Jobs and IDEAssistant, including
         # their active-job gate. Never open a second Store over a live workspace.
+        if name == 'studio_render_view':
+            return self.handlers[name](**arguments)  # Broker owns its lock; do not stall other MCP tools.
         with self.tool_lock:
             return self.handlers[name](**arguments)
 
@@ -108,14 +110,14 @@ class RemoteStudioService:
         self.opener = build_opener(ProxyHandler({}))
         self.token = None
 
-    def request(self, path, body=None):
+    def request(self, path, body=None, *, timeout=10):
         headers = {"Content-Type": "application/json"}
         if self.token:
             headers["X-Studio-Token"] = self.token
         request = Request(self.url + path, data=json.dumps(body).encode() if body is not None else None,
                           headers=headers)
         try:
-            with self.opener.open(request, timeout=10) as response:
+            with self.opener.open(request, timeout=timeout) as response:
                 return json.load(response)
         except HTTPError as exc:
             try:
@@ -127,7 +129,8 @@ class RemoteStudioService:
             raise ValueError("Studio's owning MCP connection closed. Reconnect the MCP server to restore the shared canvas.") from exc
 
     def invoke(self, name, arguments):
-        return self.request("/api/mcp/call", {"identity": self.identity, "tool": name, "arguments": arguments})
+        return self.request("/api/mcp/call", {"identity": self.identity, "tool": name, "arguments": arguments},
+                            timeout=12 if name == 'studio_render_view' else 10)
 
     def close(self):
         pass  # A secondary client must not cancel the owner's jobs or viewer.
@@ -170,7 +173,14 @@ def register_tools(server, service):
         def call(*args, **kwargs):
             try:
                 arguments = inspect.signature(function).bind(*args, **kwargs).arguments
-                return service.invoke(function.__name__, arguments)
+                result = service.invoke(function.__name__, arguments)
+                if function.__name__ == 'studio_render_view' and result.get('status') == 'captured':
+                    from mcp.types import CallToolResult, ImageContent, TextContent
+                    metadata = {k: v for k, v in result.items() if k != '_png_base64'}
+                    return CallToolResult(content=[TextContent(type='text', text=json.dumps(metadata)),
+                                                  ImageContent(type='image', data=result['_png_base64'], mime_type='image/png')],
+                                          structured_content=metadata)
+                return result
             except (ValueError, PermissionError, FileNotFoundError) as exc:
                 raise ToolError(str(exc)) from exc
         return server.tool()(call)
@@ -181,6 +191,7 @@ def register_tools(server, service):
         return {"viewer_url": service.url, "workspace": str(store.root), "designer": "IDE assistant via MCP",
                 "model_calls": False, "frontend_available": (STUDIO_WEB / "index.html").is_file(),
                 "viewer": assistant.viewer(),
+                "rendering": service.app.state.renders.availability(),
                 "workflow": "Create/open a design, start one turn per user instruction, get context with include_contract=True, submit Python/TOML files and a brief, then poll studio_get_job. Repair source with the same turn_id and omit brief; at most two repairs. Unsupported evidence remains unknown. Use studio_message for explanations/clarifications. Never start a new turn merely to evade a failed check or repair budget."}
 
     @tool
@@ -201,8 +212,21 @@ def register_tools(server, service):
 
     @tool
     def studio_get_context(design_id: str | None = None, include_contract: bool = False) -> dict[str, Any]:
-        """Read source, brief, selected component IDs and measured failures. Include contract before authoring a first candidate."""
-        return assistant.context(design_id, include_contract=include_contract)
+        """Read source, brief and measured failures; include contract before authoring. Check rendering availability and use images adaptively."""
+        return {**assistant.context(design_id, include_contract=include_contract),
+                "rendering": service.app.state.renders.availability()}
+
+    @tool
+    def studio_render_view(design_id: str, revision_id: str | None = None, view: str = 'iso',
+                           component_ids: list[str] | None = None,
+                           focus_bounds_mm: list[list[float]] | None = None,
+                           width: int = 1024, height: int = 768) -> dict[str, Any]:
+        """Return a PNG of a retained build using Studio's separate camera; no desktop control. Default: latest built revision, one isometric view. Inspect uncertain shapes/interfaces adaptively; use component IDs or [min_xyz,max_xyz] focus bounds for detail. Preserves the user's viewport. Closed Studio/WebGL failure returns unavailable within 10 seconds. Capturing is not reviewing; text-only models must not claim visual inspection."""
+        result = service.app.state.renders.capture(design_id, revision_id, view, component_ids,
+                                                   focus_bounds_mm, width, height)
+        if result['status'] == 'captured':
+            result['artifact']['url'] = f"{service.url}/api/designs/{design_id}/renders/{result['artifact']['id']}.png"
+        return result
 
     @tool
     def studio_start_turn(design_id: str, instruction: str) -> dict[str, Any]:
@@ -213,7 +237,7 @@ def register_tools(server, service):
     @tool
     def studio_submit_candidate(turn_id: str, files: list[dict[str, str]], brief: dict[str, Any] | None = None,
                                 summary: str = "") -> dict[str, Any]:
-        """Submit complete relative Python/TOML source files for a trusted local CAD build. Initial candidate needs a brief; repairs omit it. Returns a job, not a design verdict."""
+        """Submit complete Python/TOML source for a trusted build. Initial candidate needs a brief; repairs omit it. Inspect measurements, then render uncertain features as useful. Changed source may refine a passing candidate within the same turn's existing budget. Returns a job, not a verdict."""
         return {"job": assistant.submit(turn_id, files, brief, summary, session_id=authorize()), "viewer_url": service.url}
 
     @tool

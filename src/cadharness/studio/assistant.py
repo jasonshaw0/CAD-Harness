@@ -6,6 +6,7 @@ import threading
 
 from ..workflow.brief import digest, read_json, validate_brief
 from ..paths import WORKFLOW_ROOT
+from ..guidance import authoring_guide
 from .store import contained, new_id, now, save
 
 
@@ -70,6 +71,7 @@ class IDEAssistant:
             if stderr.exists():
                 result["worker_stderr"] = stderr.read_text(encoding="utf-8")[-6000:]
         if include_contract:
+            result["authoring_guide"] = authoring_guide()
             result["contract"] = (WORKFLOW_ROOT / "CONTRACTS.md").read_text(encoding="utf-8")
             result["source_api_reference"] = (WORKFLOW_ROOT / "templates/mounting-plate/project.py").read_text(encoding="utf-8")
             result["manifest_reference"] = '[project]\nid="my-design"\nname="My design"\nentrypoint="project.py:create_project"\n'
@@ -118,7 +120,7 @@ class IDEAssistant:
                 raise ValueError("Initial candidate plus two repairs exhausted; wait for a new user instruction")
             if turn["attempts"]:
                 previous = self.store.job(turn["attempts"][-1]["job_id"])
-                if previous["status"] in {"ready", "cancelled", "interrupted"}:
+                if previous["status"] in {"cancelled", "interrupted"}:
                     raise ValueError("This turn is finished; start a new turn for a new user instruction")
             if turn["brief"] is None:
                 if not isinstance(brief, dict):
@@ -133,7 +135,7 @@ class IDEAssistant:
                     raise ValueError("Repair cannot change the frozen brief; omit brief when repairing source")
             source_hash = digest(files)
             if turn["attempts"] and turn["attempts"][-1]["source_hash"] == source_hash:
-                raise ValueError("Unchanged failed source; diagnose before retrying")
+                raise ValueError("Unchanged source; diagnose before retrying")
             candidate = {"brief": accepted, "files": files, "summary": summary or "Source supplied by the IDE assistant",
                          "turn_id": turn_id}
             job = self.jobs.submit(turn["design_id"], candidate=candidate, session_id=session_id)

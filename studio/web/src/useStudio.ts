@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Design, Job, RevisionData } from './types';
+import { connectRenderClient } from './renderClient';
 
 export type Session = { designer: 'mcp' | 'codex'; token: string; authorized: boolean; codex_available: boolean; model: string; workspace: string; active_job: string | null };
 const activeStates = new Set(['queued', 'generating', 'building', 'checking', 'repairing', 'exporting']);
@@ -131,6 +132,10 @@ export function useStudio() {
     return () => { closed = true; clearTimeout(timer); };
   }, [initialized, session?.designer]);
   useEffect(() => { if (design) localStorage.setItem('studio-design', design.id); }, [design?.id]);
+  useEffect(() => {
+    if (!initialized || !session) return;
+    return connectRenderClient(session.token);
+  }, [initialized, session?.token]);
 
   function selectComponent(id: string | null) {
     setSelected(id);

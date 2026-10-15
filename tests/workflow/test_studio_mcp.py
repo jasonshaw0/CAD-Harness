@@ -92,7 +92,7 @@ class StudioMCPTests(unittest.TestCase):
                                 first_tools = {t.name for t in (await first.list_tools()).tools}
                                 second_tools = {t.name for t in (await second.list_tools()).tools}
                                 self.assertEqual(first_tools, second_tools)
-                                self.assertEqual(len(second_tools), 24)
+                                self.assertEqual(len(second_tools), 26)
                                 self.assertEqual((await call(second, 'studio_status'))['viewer_url'], status['viewer_url'])
                                 design = (await call(second, 'studio_create_design', {'title': 'Shared MCP regression'}))['design']
                                 context = await call(first, 'studio_get_context', {'include_contract': True})
@@ -110,11 +110,26 @@ class StudioMCPTests(unittest.TestCase):
                                 remote_context = await call(second, 'studio_get_context')
                                 self.assertEqual(remote_context['displayed_revision'], 'r001')
                                 self.assertTrue(remote_context['report']['ready_for_review'])
+                                # Visual findings may refine a geometrically passing candidate
+                                # without fabricating another user instruction or changing intent.
+                                refined = deepcopy(files)
+                                for file in refined:
+                                    if file['path'] == 'project.py':
+                                        file['content'] = '# Refinement after inspecting the retained build\n' + file['content']
+                                refinement = await call(second, 'studio_submit_candidate', {
+                                    'turn_id': turn['id'], 'files': refined})
+                                for _ in range(300):
+                                    correction = await call(first, 'studio_get_job', {'job_id': refinement['job']['id']})
+                                    if correction['job']['status'] not in {'queued', 'building'}:
+                                        break
+                                    await anyio.sleep(.1)
+                                self.assertEqual(correction['job']['status'], 'ready', correction)
+                                self.assertEqual(correction['report']['brief_sha256'], output['report']['brief_sha256'])
                                 error = await second.call_tool('studio_start_turn', {'design_id': 'missing', 'instruction': 'test'})
                                 self.assertTrue(error.is_error)
                         # Closing an attached stdio client must leave the original owner alive.
                         self.assertEqual((await call(first, 'studio_status'))['viewer']['design_id'], design['id'])
-                        self.assertEqual((await call(first, 'studio_get_context'))['displayed_revision'], 'r001')
+                        self.assertEqual((await call(first, 'studio_get_context'))['displayed_revision'], 'r002')
             anyio.run(exercise)
 
     def test_mcp_mode_has_no_nested_cli_calls(self):

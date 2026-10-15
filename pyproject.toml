@@ -23,5 +23,5 @@ where = ["src"]
 namespaces = false
 
 [tool.setuptools.package-data]
-"cadharness.workflow" = ["CONTRACTS.md", "prompts/*.md", "templates/*/*.py", "templates/*/*.toml", "benchmarks/prompts/*.txt"]
+"cadharness.workflow" = ["CONTRACTS.md", "AUTHORING.md", "prompts/*.md", "templates/*/*.py", "templates/*/*.toml", "benchmarks/prompts/*.txt"]
 "cadharness.studio" = ["web/*", "web/assets/*"]

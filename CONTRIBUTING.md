@@ -12,6 +12,7 @@ src/cadharness/
   cli.py, mcp_server.py                                 # shared entrypoints
   workflow/                                            # briefs, acceptance, attempts
     templates/, prompts/, CONTRACTS.md                  # installed authoring resources
+    AUTHORING.md                                       # versioned MCP workflow guidance
     benchmarks/                                        # deterministic evaluation fixtures
   studio/                                              # API, MCP tools, jobs, scene/store
     web/                                               # generated canvas (ignored)
@@ -55,6 +56,22 @@ resulting snapshot and browser logs; it covers builds, selection, review,
 history, source, STEP export/download, themes, and mobile views. See
 [Studio UI acceptance](docs/STUDIO_UI_ACCEPTANCE.md) for setup and observations.
 
+The capture acceptance check uses Playwriter's private headless browser with an
+isolated test workspace, no personal Chrome state or extension. It drives real
+stdio MCP builds, captures single/multi-part, hollow and blended geometry,
+isolates components, frames close-ups and selects historical revisions. It also
+checks two tabs' pixels/UI state, lazy loading, WebGL failure, closed Studio and
+unchanged build evidence. Inspect the resulting PNGs in the printed run folder.
+The headless browser is a development-test dependency only:
+
+```powershell
+cmd /d /s /c npx -y playwriter@latest browser install
+.\.venv\Scripts\python.exe scripts/verify_studio_rendering.py
+```
+
+Broker tests separately cover timeouts, duplicate/mismatched results, invalid
+selections, authentication, and image content through an attached MCP client.
+
 ## Build a distributable package
 
 Build the frontend **before** creating a wheel so its static assets are
@@ -70,6 +87,11 @@ npm --prefix studio/web run build
 `python scripts/smoke_distribution.py` builds a wheel, installs it in a
 temporary environment, verifies its canvas/assets, and runs the real Studio
 stdio integration outside the checkout. CI runs this after building the frontend.
+It includes installed guidance discovery and direct/shared MCP image transport;
+the temporary environment borrows dependencies while importing cadHarness from
+the built wheel. It does not load personal skills or client configuration.
+With Chrome for Testing installed, add `--render-browser` to exercise the same
+real rendering acceptance runner against that installed wheel outside the checkout.
 
 A wheel built without the frontend supports the framework and design runner;
 Studio reports `frontend_available=False`. For a full Studio distribution,

@@ -3,6 +3,7 @@
 import asyncio
 from contextlib import asynccontextmanager
 import json
+import re
 from io import BytesIO
 from pathlib import Path
 import secrets
@@ -21,6 +22,7 @@ from ..paths import RUNS_ROOT, STUDIO_WEB
 from .codex import cli_command
 from .jobs import ACTIVE, Jobs
 from .store import Store, contained, now, save
+from .rendering import RenderBroker
 
 
 def create_app(workspace=None, *, model=None, generator=None, designer="mcp", library_root=None):
@@ -30,6 +32,7 @@ def create_app(workspace=None, *, model=None, generator=None, designer="mcp", li
     jobs = Jobs(store, model=model, **({"generator": generator} if generator else {}))
     from .assistant import IDEAssistant
     assistant = IDEAssistant(store, jobs)
+    renders = RenderBroker(store)
     if designer == "mcp" and not assistant.viewer()["design_id"]:
         saved_designs = store.listing()
         if saved_designs:
@@ -96,6 +99,32 @@ def create_app(workspace=None, *, model=None, generator=None, designer="mcp", li
                 return JSONResponse(assistant.select(body["design_id"], body["selected"], body.get("revision_id")))
             return JSONResponse(assistant.open(body["design_id"], body.get("revision_id")))
         return JSONResponse(assistant.viewer())
+
+    async def renderer_poll(request):
+        body = await request.json()
+        if not isinstance(body, dict):
+            raise ValueError("Renderer request must be an object")
+        return JSONResponse({"request": renders.poll(body.get('client_id'))})
+
+    async def renderer_result(request):
+        chunks, length = [], 0
+        async for chunk in request.stream():
+            length += len(chunk)
+            if length > 12 * 1024 * 1024:
+                raise ValueError("Capture result is too large")
+            chunks.append(chunk)
+        body = json.loads(b''.join(chunks))
+        if not isinstance(body, dict):
+            raise ValueError("Capture result must be an object")
+        renders.complete(request.path_params['request_id'], body)
+        return JSONResponse({"accepted": True})
+
+    async def render_file(request):
+        root = contained(store.design_root(request.path_params['design_id']), 'renders')
+        render_id = request.path_params['request_id']
+        if not re.fullmatch(r'render-[a-f0-9]+', render_id):
+            raise ValueError("Invalid capture ID")
+        return FileResponse(contained(root, render_id + '.png'), media_type='image/png')
 
     async def designs(request):
         if request.method == "GET":
@@ -258,6 +287,9 @@ def create_app(workspace=None, *, model=None, generator=None, designer="mcp", li
             jobs.cancel_event.set()
 
     routes = [Route("/api/session", session, methods=["GET", "POST"]),
+              Route("/api/renderers/poll", renderer_poll, methods=["POST"]),
+              Route("/api/renders/{request_id}/result", renderer_result, methods=["POST"]),
+              Route("/api/designs/{design_id}/renders/{request_id}.png", render_file),
               Route("/api/viewer", viewer, methods=["GET", "POST"]),
               Route("/api/designs", designs, methods=["GET", "POST"]), Route("/api/library", listing),
               Route("/api/designs/{design_id}", design), Route("/api/designs/{design_id}/turns", turn, methods=["POST"]),
@@ -277,6 +309,7 @@ def create_app(workspace=None, *, model=None, generator=None, designer="mcp", li
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "testserver"])
     app.state.store, app.state.jobs = store, jobs
     app.state.assistant, app.state.authorize, app.state.execution_session = assistant, authorize, require_session
+    app.state.renders = renders
     return app
 
 
