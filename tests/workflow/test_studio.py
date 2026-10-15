@@ -17,6 +17,7 @@ from build123d import Box, Pos
 from cadharness.workflow.benchmarks.cases import get_case
 from cadharness.workflow.brief import read_json
 from cadharness.workflow.runner import ROOT, check_revision, init_run, revise
+from cadharness.studio.assistant import IDEAssistant
 from cadharness.studio.jobs import ACTIVE, Jobs
 from cadharness.studio.processes import Cancelled, run_process
 from cadharness.studio.scene import write_scene
@@ -226,6 +227,28 @@ class StudioTests(unittest.TestCase):
         jobs.cancel(job["id"])
         self.assertEqual(self.wait(jobs, job)["status"], "cancelled")
         self.assertFalse(self.store.get(design["id"])["revisions"])
+
+    def test_terminal_job_status_does_not_block_new_ide_submit(self):
+        jobs = Jobs(self.store)
+        ide = IDEAssistant(self.store, jobs)
+        design = ide.create("stale active")
+        turn = ide.start_turn(design["id"], "Create a mounting plate")["turn"]
+        proposal = self.proposal()
+        stale = {"id": "job-deadbeef", "design_id": design["id"], "status": "ready"}
+        self.store.put_job(stale)
+        jobs.active_id = stale["id"]
+        self.assertFalse(jobs.is_active())
+
+        submitted = {}
+        def fake_submit(*args, **kwargs):
+            submitted["called"] = True
+            return {"id": "job-new", "status": "queued"}
+        jobs.submit = fake_submit
+
+        brief = json.loads(proposal["brief_json"])
+        result = ide.submit(turn["id"], proposal["files"], brief, "Native MCP source", session_id="test")
+        self.assertTrue(submitted["called"])
+        self.assertEqual(result["id"], "job-new")
 
     def test_owned_process_tree_cancellation(self):
         cancel = threading.Event()

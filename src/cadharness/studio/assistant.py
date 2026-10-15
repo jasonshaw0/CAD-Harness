@@ -79,7 +79,7 @@ class IDEAssistant:
         if not instruction.strip():
             raise ValueError("A user instruction is required")
         with self.lock:
-            if self.jobs.active_id:
+            if self.jobs.is_active():
                 raise ValueError("Wait for or cancel the active CAD job before starting a turn")
             design = self.store.get(design_id)
             root = self.store.design_root(design_id)
@@ -108,7 +108,7 @@ class IDEAssistant:
 
     def submit(self, turn_id, files, brief, summary, *, session_id):
         with self.lock:
-            if self.jobs.active_id:
+            if self.jobs.is_active():
                 raise ValueError("A CAD job is already active")
             path = self.turn_path(turn_id)
             turn = read_json(path)
@@ -143,7 +143,7 @@ class IDEAssistant:
             return job
 
     def message(self, design_id, text, questions=None):
-        if self.jobs.active_id:
+        if self.jobs.is_active():
             raise ValueError("Wait for the active CAD job before updating the conversation")
         design = self.store.get(design_id)
         design["messages"].append({"role": "assistant", "text": text, "questions": questions or [], "time": now()})
