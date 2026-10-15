@@ -1,0 +1,5 @@
+[project]
+id = "coffee-mug"
+name = "Parametric coffee mug"
+entrypoint = "project.py:create_project"
+parameter_type = "project.py:MugParameters"
