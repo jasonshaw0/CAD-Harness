@@ -1,8 +1,12 @@
-# IDE-assisted design workflow
+# Design workflow
+
+For a live 3D canvas and conversational designer, start with
+[cadHarness Studio](studio/README.md). The manual CLI below remains available
+for explicit source review and independent evidence collection.
 
 Turn a prompt into reviewed parametric source, independent CAD checks, and a
 portable review package. The assistant interprets language and edits Python;
-this checkout-local tool invokes no model or AI backend. Python source is the
+the manual commands invoke no model or AI backend. Python source is the
 editable authority. STEP/STL are explicit delivery artifacts.
 
 Use this checkout's installed environment (see the root README). No extra
@@ -103,6 +107,9 @@ coverage ledger, not another geometry kernel or validation system.
 
 ## Verification and evaluation
 
+Install `.[mcp,studio]` to run all tests, including Studio's API integration
+checks. The manual workflow itself still needs no extra dependency.
+
 ```powershell
 & $python -m unittest discover -s tests -v
 & $python -m unittest discover -s designworkflow/tests -v
@@ -126,10 +133,10 @@ opens a saved review package, exercises inspector filters/anchors, checks SVG
 loading, and saves desktop/mobile screenshots. Read the Playwriter skill before
 using it.
 
-## Deferred interfaces
+## Optional Studio and deferred interfaces
 
-No callable IDE model is assumed. A later unattended adapter must explicitly
-select supported credentials, model, provider, costs/limits, and isolation before
-running unreviewed source. Codex CLI, a hosted API, or a local model are options,
-not current dependencies. Add a local application only after review friction
-justifies it. Existing CADHarness public schemas remain unchanged.
+The optional [Studio application](studio/README.md) calls an installed, signed-in
+Codex CLI and explicitly authorizes trusted local execution per session. It does
+not assume access to the IDE's selected model. Hosted/local model adapters,
+untrusted-code isolation, and unattended deployment remain deferred. Existing
+CADHarness public schemas remain unchanged.

@@ -17,6 +17,8 @@ from cadharness import (
     MeasurementStatus,
     build_snapshot,
     geometry_measurement_check,
+    geometry_fingerprint,
+    interference_check,
     measure_cylindrical_feature,
     measure_directional_thickness,
     measure_hole_pattern,
@@ -63,6 +65,19 @@ def selector(axis=(0, 0, 1)) -> CylinderSelector:
 
 
 class GeometryMeasurementTests(unittest.TestCase):
+    def test_contact_measurements_preserve_source_brep_fingerprints(self):
+        outer = Box(84, 58, 34, align=Z_MIN)
+        cavity = Pos(0, 0, 3) * Box(78, 52, 32, align=Z_MIN)
+        doc = CADDocument("contact", "Contact", "1", components={
+            "base": Component("base", Part(outer - cavity).clean()),
+            "lid": Component("lid", Part(Pos(0, 0, 34) * Box(84, 58, 3, align=Z_MIN)).clean())})
+        before = {key: geometry_fingerprint(item.shape) for key, item in doc.components.items()}
+        result = measure_shape_clearance(doc, "clearance", "base", "lid")
+        self.assertEqual(result.value["state"], "contact")
+        check = interference_check("no-overlap", "base", "lid")
+        self.assertEqual(check.evaluator(doc).status.value, "pass")
+        self.assertEqual(before, {key: geometry_fingerprint(item.shape) for key, item in doc.components.items()})
+
     def test_tolerances_and_selector_reject_nonfinite_or_invalid_inputs(self):
         for value in (float("nan"), float("inf"), -1.0, True):
             with self.subTest(value=value), self.assertRaises(ValueError):

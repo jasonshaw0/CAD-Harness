@@ -430,9 +430,11 @@ class ProjectWorkflowTests(unittest.TestCase):
         report = json.loads(output.getvalue())
         self.assertEqual(Path(report["cadharness"]["checkout"]), PROJECT_ROOT)
         self.assertTrue(report["mcp"]["available"])
+        # Discovery also reports malformed, incomplete generated manifests as
+        # error records without an ID. They do not hide valid example projects.
         self.assertTrue(
             {"pipe-flange", "project-box", "nema17-mount"}
-            <= {project["id"] for project in report["workspace"]["projects"]},
+            <= {project["id"] for project in report["workspace"]["projects"] if "id" in project},
         )
 
     def test_mcp_config_uses_absolute_interpreter_and_roots(self):

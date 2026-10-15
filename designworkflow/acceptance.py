@@ -1,6 +1,7 @@
 """Bind independent brief requirements to existing CADHarness checks."""
 
 from dataclasses import replace
+from copy import deepcopy
 
 from cadharness import (
     DEFAULT_TOLERANCE, CylinderSelector, EvidenceKind,
@@ -104,7 +105,7 @@ def bind_requirements(document, brief):
                         size_x = max(abs(b.min.X) + abs(b.max.X) for b in boxes) + 2
                         size_y = max(abs(b.min.Y) + abs(b.max.Y) for b in boxes) + 2
                         clip = Pos(0, 0, sum(z_slab) / 2) * Box(2 * size_x, 2 * size_y, z_slab[1] - z_slab[0])
-                        clipped = {c: Component(c, doc.components[c].shape & clip) for c in cs}
+                        clipped = {c: Component(c, deepcopy(doc.components[c].shape) & deepcopy(clip)) for c in cs}
                         doc = replace(doc, components=clipped, checks=())
                     result = measure_shape_clearance(doc, mid, *cs)
                     if z_slab is not None:

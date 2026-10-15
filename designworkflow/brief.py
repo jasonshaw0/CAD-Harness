@@ -60,8 +60,8 @@ def validate_brief(brief: dict) -> dict:
     identifier(brief.get("id"))
     if type(brief.get("revision")) is not int or brief["revision"] < 1:
         raise ValueError("brief revision must be a positive integer")
-    if brief.get("domain") not in {"mounting-plate", "simple-enclosure"}:
-        raise ValueError("supported domains: mounting-plate, simple-enclosure")
+    if brief.get("domain") not in {"mounting-plate", "simple-enclosure", "general-mechanical"}:
+        raise ValueError("supported domains: mounting-plate, simple-enclosure, general-mechanical")
     if not isinstance(brief.get("coordinate_frame"), str) or not brief["coordinate_frame"].strip():
         raise ValueError("coordinate_frame is required")
     printable = brief.get("printable_components")

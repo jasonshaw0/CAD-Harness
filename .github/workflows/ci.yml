@@ -26,7 +26,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e ".[mcp]"
+          python -m pip install -e ".[mcp,studio]"
 
       - name: Run unit tests
         run: |
@@ -53,9 +53,23 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install minimum supported geometry stack
-        run: python -m pip install -e ".[mcp]" "build123d==0.13.0"
+        run: python -m pip install -e ".[mcp,studio]" "build123d==0.13.0"
       - name: Run unit tests and MCP smoke test
         run: |
           python -m unittest discover -s tests -v
           python -m unittest discover -s designworkflow/tests -v
           python scripts/smoke_mcp.py
+
+  studio-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: designworkflow/studio/web/package-lock.json
+      - run: npm ci
+        working-directory: designworkflow/studio/web
+      - run: npm run build
+        working-directory: designworkflow/studio/web

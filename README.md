@@ -67,8 +67,8 @@ To see a failure, add `--variant missing-hole` to the verification command. This
 
 ## Use your own model
 
-For an IDE-assisted prompt → source → measured checks → repair workflow, see
-the [design workflow guide](designworkflow/README.md).
+For a local 3D workbench with an AI designer, see [Studio setup](designworkflow/studio/README.md).
+The [manual design workflow](designworkflow/README.md) also supports reviewed source and measured repairs.
 
 A cadHarness project contains a `cadharness.toml` manifest pointing to a Python function that returns a `CADDocument`: your build123d shapes, named components, parameters, and checks.
 

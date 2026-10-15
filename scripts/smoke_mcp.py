@@ -76,7 +76,7 @@ async def smoke() -> dict:
                 if set(tool_names) != expected_tools:
                     raise RuntimeError(f"unexpected tool surface: {tool_names}")
                 project_ids = {
-                    project["id"] for project in status_content.get("projects", [])
+            project["id"] for project in status_content.get("projects", []) if "id" in project
                 }
                 if (
                     status.is_error

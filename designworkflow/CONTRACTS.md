@@ -12,7 +12,7 @@ independent of CADHarness's seven existing v1 contracts, which are validated wit
 | Field | Contract |
 | --- | --- |
 | `id`, `revision` | Lowercase design ID matching the run directory; positive integer matching the filename. |
-| `domain` | `mounting-plate` or bounded `simple-enclosure`. The flange fixture uses the mounting-plate measurement family. |
+| `domain` | `mounting-plate`, bounded `simple-enclosure`, or `general-mechanical`. Viewer support does not imply measurement support. |
 | `coordinate_frame` | Explicit description; mounting plate fixtures are centered XY, lower face Z=0. |
 | `printable_components` | Explicit expected printable IDs; the worker rejects changed roles or substituted reference components. |
 | `dimensions` | Named records with `value`, explicit original `unit`, `source`, and `prompt_ref`. |
@@ -58,7 +58,7 @@ checks are retained but cannot use the reserved `workflow.` namespace.
 | `cylinder` | `component`, `selector`, `value_path`; explicit feature dimensions, extent, and angular span. |
 | `clearance` | Two `components`, `value_path`; CADHarness unsigned distance/state. Optional `z_slab_mm: [lower, upper]` clips the actual shapes to an explicit slab before measurement. |
 | `interference` | Two `components`, maximum volume criterion, unit `mm^3`; existing CADHarness boolean-common check. |
-| `thickness` | `component`, `points_mm`, `direction`, `value_path`; existing sampled material-chord measurement. |
+| `thickness` | `component`, `points_mm`, `direction`, `value_path: minimum_mm`; existing sampled material-chord measurement. Samples must start in material. |
 | Other / `physical` / `external` | Explicitly unsupported or not-yet-verified. Mandatory unresolved requirements prevent readiness. |
 
 Cylinder `selector` fields use `CylinderSelector` names: `radius_min_mm`,
@@ -85,7 +85,10 @@ interference binding when contact is allowed but overlap is forbidden.
 owns a `project/` and immutable `run.json`. `check --review-hashes` reads inputs
 without importing candidate code. Both explicit review hashes are required to
 execute. All candidate input files and revision settings contribute to source
-identity; generated output/cache directories are excluded. Prompt and
+identity; generated output/cache directories are excluded. Studio instead records
+explicit `trusted-session` authorization and leaves `reviewed_source` null. Each
+user turn has its own `turn_id` and numbered brief; repairs freeze that brief.
+Prompt and
 clarification file hashes also contribute. Links are rejected. This is
 provenance, not an execution security boundary.
 

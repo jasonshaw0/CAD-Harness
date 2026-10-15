@@ -9,8 +9,12 @@ from .runner import init_run, review_hashes, check_revision, revise, export_revi
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="IDE-assisted CAD workflow; reviewed local Python, no sandbox or model backend")
+    parser = argparse.ArgumentParser(description="CAD design workflow and Studio; trusted local Python execution")
     commands = parser.add_subparsers(dest="command", required=True)
+    studio = commands.add_parser("studio", help="open the local 3D workbench and AI designer")
+    studio.add_argument("--workspace", type=Path)
+    studio.add_argument("--port", type=int, default=8741)
+    studio.add_argument("--model", help="optional Codex model override; otherwise use CLI default")
     init = commands.add_parser("init", help="preserve prompt and create a source/brief scaffold")
     init.add_argument("--id", required=True)
     init.add_argument("--prompt-file", type=Path, required=True)
@@ -37,6 +41,10 @@ def main(argv=None):
     internal.add_argument("extra", nargs="*")
     args = parser.parse_args(argv)
     try:
+        if args.command == "studio":
+            from .studio.server import serve
+            serve(workspace=args.workspace, port=args.port, model=args.model)
+            return 0
         if args.command == "_worker":
             worker(args.action, args.revision, args.extra)
             return 0

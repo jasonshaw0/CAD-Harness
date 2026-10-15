@@ -155,7 +155,7 @@ def _repo_state():
         return result.stdout.strip() if result.returncode == 0 else "unavailable"
     return {"commit": git("rev-parse", "HEAD"), "working_tree": git("status", "--porcelain"),
             "workflow_files_sha256": digest({p.relative_to(ROOT).as_posix(): file_hash(p)
-                                             for folder in (ROOT / "designworkflow", ROOT / "src" / "cadharness")
+                                             for folder in (ROOT / "designworkflow", ROOT / "designworkflow/studio", ROOT / "src" / "cadharness")
                                              for p in folder.glob("*.py")})}
 
 
@@ -170,16 +170,26 @@ def _run_worker(action: str, revision: Path, *, timeout: float, extra=()):
                           text=True, encoding="utf-8", errors="replace", timeout=timeout)
 
 
-def check_revision(revision: Path, *, reviewed_source: str, accepted_brief: str,
-                   timeout: float = 120, active_seconds: float = 0):
+def check_revision(revision: Path, *, reviewed_source: str | None = None, accepted_brief: str | None = None,
+                   timeout: float = 120, active_seconds: float = 0,
+                   execution_mode: str = "manual-review", session_id: str | None = None,
+                   worker_runner=None):
     revision, run, spec, brief_path, brief = context(revision)
     if not 0 < timeout <= 120 or not 0 <= active_seconds <= 900:
         raise ValueError("timeout must be 0..120 seconds; active_seconds must be 0..900")
     if (revision / "run.json").exists() or any((revision / "project" / name).exists() for name in OUTPUTS - {"__pycache__"}):
         raise FileExistsError("revision already has artifacts; use revise to preserve this attempt")
     hashes = review_hashes(revision)
-    if reviewed_source != hashes["source_sha256"] or accepted_brief != hashes["brief_sha256"]:
-        raise ValueError("source/brief review hash mismatch; review current inputs before execution")
+    if execution_mode == "manual-review":
+        if reviewed_source != hashes["source_sha256"] or accepted_brief != hashes["brief_sha256"]:
+            raise ValueError("source/brief review hash mismatch; review current inputs before execution")
+    elif execution_mode == "trusted-session":
+        if not session_id:
+            raise ValueError("trusted-session execution requires session authorization")
+        # A session authorizes execution; it does not claim a human source review.
+        reviewed_source, accepted_brief = None, hashes["brief_sha256"]
+    else:
+        raise ValueError("unknown execution mode")
     lock = run / f"{brief_path.stem}.lock.json"
     if lock.exists():
         if read_json(lock)["brief_sha256"] != hashes["brief_sha256"]:
@@ -191,7 +201,8 @@ def check_revision(revision: Path, *, reviewed_source: str, accepted_brief: str,
         if path.parent.name >= revision.name:
             raise ValueError("revisions must be evaluated in order")
         item = load_report(path)
-        if item["brief_sha256"] == hashes["brief_sha256"]:
+        if (item["brief_sha256"] == hashes["brief_sha256"]
+                and item.get("revision_spec", {}).get("turn_id") == spec.get("turn_id")):
             prior.append(item)
     reasons = []
     if len(prior) >= 3:
@@ -220,7 +231,7 @@ def check_revision(revision: Path, *, reviewed_source: str, accepted_brief: str,
     evaluation = None
     if not reasons:
         try:
-            result = _run_worker("check", revision, timeout=timeout)
+            result = (worker_runner or _run_worker)("check", revision, timeout=timeout)
             (evidence / "worker.stdout.txt").write_text(result.stdout, encoding="utf-8")
             (evidence / "worker.stderr.txt").write_text(result.stderr, encoding="utf-8")
             if result.returncode:
@@ -262,6 +273,7 @@ def check_revision(revision: Path, *, reviewed_source: str, accepted_brief: str,
     report = {"schema": "designworkflow.run", "schema_version": "1", "revision": revision.name,
               "brief": spec["brief"], **hashes, "repository": _repo_state(),
               "reviewed_source": reviewed_source, "accepted_brief": accepted_brief,
+              "execution_authorization": {"mode": execution_mode, "session_id": session_id},
               "created_utc": datetime.now(timezone.utc).isoformat(), "variant": spec.get("variant"),
               "outcome": outcome, "ready_for_review": ready, "verification_passed": passed,
               "coverage": coverage, "errors": errors, "blocking_reasons": reasons,
@@ -422,11 +434,16 @@ def worker(action, revision: Path, extra):
     for name, data in (("verification", verification), ("snapshot", verification["current_snapshot"]),
                        ("validation", verification["validation"]), ("inspection", inspection)):
         write_json(evidence / f"{name}.json", data)
-    previews = write_svg_previews(document, project / "previews", views=("iso", "top", "front"))
-    inspector = project / "inspector" / "index.html"
-    inspector.parent.mkdir()
-    inspector.write_text(render_inspector(inspection, verification["validation"],
-        verification=verification["verification"], previews=[{"view": item["view"], "href": "../previews/" + Path(item["path"]).name} for item in previews]), encoding="utf-8")
+    if "studio" in extra:
+        from .studio.scene import write_scene
+        cache = Path(extra[extra.index("studio") + 1])
+        write_scene(document, inspection, evidence / "scene.json", cache)
+    else:
+        previews = write_svg_previews(document, project / "previews", views=("iso", "top", "front"))
+        inspector = project / "inspector" / "index.html"
+        inspector.parent.mkdir()
+        inspector.write_text(render_inspector(inspection, verification["validation"],
+            verification=verification["verification"], previews=[{"view": item["view"], "href": "../previews/" + Path(item["path"]).name} for item in previews]), encoding="utf-8")
     write_json(evidence / "evaluation.json", {
         "coverage": update_coverage(coverage, verification["validation"]),
         "verification_passed": verification["verification"]["passed"],

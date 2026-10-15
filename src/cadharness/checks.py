@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from copy import deepcopy
 from math import isclose
 from typing import Any, Callable, Iterable, Mapping
 
@@ -431,7 +432,9 @@ def interference_check(
     def evaluate(document: CADDocument) -> CheckResult:
         first = document.components[first_component].shape
         second = document.components[second_component].shape
-        intersection = first & second
+        # OCCT booleans can update shared face serialization even for contact.
+        # A read-only check must preserve the authoritative source identities.
+        intersection = deepcopy(first) & deepcopy(second)
         volume = 0.0 if intersection is None else float(intersection.volume)
         passed = volume <= maximum_volume_mm3
         return CheckResult(

@@ -5,6 +5,13 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
+- Added cadHarness Studio: a loopback 3D workbench with installed Codex CLI
+  generation, conversational revisions, bounded repairs, independent checks,
+  component meshes, comparison overlays, cancellable workers, and explicit exports.
+  Trusted-session authorization is separate from manual human source review.
+- Preserve source BREP identities during interference and clearance checks by
+  running OCCT booleans on copies, including touching enclosure/lid faces.
+
 - Added a checkout-local, IDE-assisted `designworkflow` CLI with reviewed source
   execution, independent acceptance checks, revision evidence, explicit exports,
   mounting-plate/flange/enclosure fixtures, and scripted repair benchmarks.

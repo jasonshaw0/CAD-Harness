@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
+
 import json
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import asdict, dataclass, field
@@ -555,7 +557,7 @@ def measure_shape_clearance(
         distance, point_first, point_second = first.distance_to_with_closest_points(
             second
         )
-        common = first & second
+        common = deepcopy(first) & deepcopy(second)
         interference_volume = 0.0 if common is None else float(common.volume)
         state = (
             "interference"

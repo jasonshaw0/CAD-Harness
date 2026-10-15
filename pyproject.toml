@@ -12,6 +12,7 @@ dependencies = ["build123d>=0.13,<0.14"]
 
 [project.optional-dependencies]
 mcp = ["mcp>=2.3,<3"]
+studio = ["starlette>=1,<2", "uvicorn>=0.41,<1"]
 
 [project.scripts]
 cadharness = "cadharness.cli:main"
