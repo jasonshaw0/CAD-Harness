@@ -13,18 +13,46 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from mcp.server import MCPServer
 from starlette.testclient import TestClient
+from starlette.responses import JSONResponse
+from starlette.routing import Route
 
 from cadharness.workflow.benchmarks.cases import get_case
 from cadharness.workflow.brief import read_json
 from cadharness.workflow.runner import ROOT
 from cadharness.studio.assistant import IDEAssistant
 from cadharness.studio.jobs import Jobs
-from cadharness.studio.mcp import StudioService, connect_studio, register_tools
+from cadharness.studio.mcp import STUDIO_API_REVISION, StudioService, connect_studio, register_tools
+from cadharness.studio.rendering import RENDER_PROTOCOL
 from cadharness.studio.server import create_app
 from cadharness.studio.store import Store
 
 
 class StudioMCPTests(unittest.TestCase):
+    def test_new_client_rejects_stale_owner_before_advertising_render_tools(self):
+        with TemporaryDirectory() as directory:
+            workspace = Path(directory) / 'studio'
+            owner = StudioService(workspace, port=0, library_root=directory, trusted_roots=[directory])
+            try:
+                register_tools(MCPServer('owner'), owner)
+                saved = owner.app.state.store.create('Preserve this design')
+                port = int(owner.url.rsplit(':', 1)[1])
+                current = {**owner.identity, 'ready': True, 'api_revision': STUDIO_API_REVISION,
+                           'render_protocol': RENDER_PROTOCOL, 'tools': sorted(owner.handlers)}
+                legacy = {**owner.identity, 'ready': True}
+                for payload in (legacy, {**current, 'api_revision': 1},
+                                {**current, 'render_protocol': 'unknown'},
+                                {**current, 'tools': ['studio_status']}):
+                    async def stale_identity(request):
+                        return JSONResponse(payload)
+                    owner.app.router.routes[0] = Route('/api/mcp/identity', stale_identity)
+                    with self.subTest(payload=payload), self.assertRaisesRegex(
+                            RuntimeError, 'older or incompatible.*image-capture API.*Restart'):
+                        connect_studio(workspace, port=port, library_root=directory, trusted_roots=[directory])
+                self.assertEqual(owner.app.state.store.get(saved['id'])['title'], 'Preserve this design')
+                self.assertTrue(owner.thread.is_alive())
+            finally:
+                owner.close()
+
     def test_shared_studio_requires_matching_workspace_roots_and_session(self):
         with TemporaryDirectory() as directory:
             workspace = Path(directory) / 'studio'
@@ -36,6 +64,20 @@ class StudioMCPTests(unittest.TestCase):
                 remote = connect_studio(workspace, port=port, library_root=directory, trusted_roots=[directory])
                 self.assertTrue(remote.remote)
                 self.assertEqual(remote.invoke('studio_status', {})['viewer_url'], owner.url)
+                # An idle owner restart rotates the HTTP token. Refreshing a
+                # rejected request must neither lose the attachment nor replay
+                # a mutation that already executed.
+                remote.token = 'expired-owner-token'
+                created = remote.invoke('studio_create_design', {'title':'After owner restart'})
+                self.assertEqual(created['design']['title'], 'After owner restart')
+                self.assertEqual(len(owner.app.state.store.listing()), 1)
+                original_identity = remote.identity
+                remote.identity = {**original_identity, 'trusted_roots': []}
+                remote.token = 'expired-owner-token'
+                with self.assertRaisesRegex(RuntimeError, 'different workspace, trust roots'):
+                    remote.invoke('studio_create_design', {'title': 'Must not execute'})
+                self.assertEqual(len(owner.app.state.store.listing()), 1)
+                remote.identity = original_identity
                 self.assertEqual(owner.app.state.store.job('job-1234abcd')['status'], 'building')
                 for options in ({'workspace': Path(directory) / 'other', 'trusted_roots': [directory]},
                                 {'workspace': workspace, 'trusted_roots': [workspace]}):

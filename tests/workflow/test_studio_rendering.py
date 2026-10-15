@@ -21,7 +21,7 @@ from mcp.client.stdio import stdio_client
 from starlette.testclient import TestClient
 
 from cadharness.guidance import authoring_guide, SERVER_INSTRUCTIONS
-from cadharness.studio.rendering import RenderBroker, camera_settings, validate_png
+from cadharness.studio.rendering import RENDER_PROTOCOL, RenderBroker, camera_settings, validate_png
 from cadharness.studio.server import create_app
 from cadharness.studio.store import Store, save
 
@@ -151,7 +151,9 @@ class RenderingTests(unittest.TestCase):
                 validate_png(base64.b64encode(data).decode(), 256, 256)
         with TestClient(create_app(self.store.root)) as client:
             self.assertEqual(client.post('/api/renderers/poll', json={'client_id': 'renderer-one'}).status_code, 403)
-            token = client.get('/api/session').json()['token']
+            session = client.get('/api/session').json()
+            self.assertEqual(session['render_protocol'], RENDER_PROTOCOL)
+            token = session['token']
             headers = {'X-Studio-Token': token}
             self.assertEqual(client.post('/api/renderers/poll', json={'client_id': 'renderer-one'},
                                         headers={**headers, 'Origin': 'https://example.com'}).status_code, 403)

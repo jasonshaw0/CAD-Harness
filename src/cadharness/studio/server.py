@@ -22,7 +22,7 @@ from ..paths import RUNS_ROOT, STUDIO_WEB
 from .codex import cli_command
 from .jobs import ACTIVE, Jobs
 from .store import Store, contained, now, save
-from .rendering import RenderBroker
+from .rendering import RENDER_PROTOCOL, RenderBroker
 
 
 def create_app(workspace=None, *, model=None, generator=None, designer="mcp", library_root=None):
@@ -83,6 +83,7 @@ def create_app(workspace=None, *, model=None, generator=None, designer="mcp", li
             body = await request.json()
             authorize(body.get("authorize") is True)
         return JSONResponse({"token": token, "authorized": authorization["id"] is not None,
+                             "render_protocol": RENDER_PROTOCOL,
                              "designer": designer, "codex_available": available,
                              "model": "IDE assistant · MCP" if designer == "mcp" else model or "Codex CLI default",
                              "workspace": str(store.root), "active_job": jobs.active_id})

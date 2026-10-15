@@ -18,6 +18,10 @@ from starlette.routing import Route
 from ..workflow.brief import read_json
 from ..paths import STUDIO_WEB
 from .server import create_app
+from .rendering import RENDER_PROTOCOL
+
+
+STUDIO_API_REVISION = 2
 
 
 class StudioPortOccupied(RuntimeError):
@@ -32,11 +36,24 @@ def _identity(workspace, library_root, trusted_roots):
             "trusted_roots": sorted(str(Path(root).resolve()) for root in (trusted_roots or [library_root]))}
 
 
+def _validate_owner(handshake, expected, port):
+    if {key: handshake.get(key) for key in expected} != expected:
+        raise RuntimeError(f"Studio port {port} belongs to a different workspace, trust roots, or protocol; choose --studio-port.")
+    if (handshake.get('api_revision') != STUDIO_API_REVISION
+            or handshake.get('render_protocol') != RENDER_PROTOCOL
+            or 'studio_render_view' not in handshake.get('tools', [])):
+        raise RuntimeError(f"Studio port {port} is owned by an older or incompatible MCP service "
+                           "without the required image-capture API. Restart its owning MCP "
+                           "connection after updating cadHarness, then reconnect this client. "
+                           "The existing workspace and designs are preserved.")
+
+
 class StudioService:
     def __init__(self, workspace=None, *, port=8741, library_root=None, trusted_roots=None):
         import uvicorn
         self.remote = False
         self.handlers = {}
+        self.ready = False
         self.tool_lock = threading.RLock()
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
@@ -64,7 +81,10 @@ class StudioService:
             raise RuntimeError("Studio HTTP server failed to start")
 
     async def bridge_identity(self, request):
-        return JSONResponse({**self.identity, "ready": bool(self.handlers)})
+        return JSONResponse({**self.identity, "ready": self.ready,
+                             "api_revision": STUDIO_API_REVISION,
+                             "render_protocol": RENDER_PROTOCOL,
+                             "tools": sorted(self.handlers)})
 
     async def bridge_call(self, request):
         body = await request.json()
@@ -129,8 +149,20 @@ class RemoteStudioService:
             raise ValueError("Studio's owning MCP connection closed. Reconnect the MCP server to restore the shared canvas.") from exc
 
     def invoke(self, name, arguments):
-        return self.request("/api/mcp/call", {"identity": self.identity, "tool": name, "arguments": arguments},
-                            timeout=12 if name == 'studio_render_view' else 10)
+        body = {"identity": self.identity, "tool": name, "arguments": arguments}
+        timeout = 12 if name == 'studio_render_view' else 10
+        try:
+            return self.request("/api/mcp/call", body, timeout=timeout)
+        except ValueError as exc:
+            if str(exc) != 'Invalid Studio session token':
+                raise
+            # A restarted owner rotates its HTTP token. Refresh only after an
+            # identity/capability check, and retry only a request rejected by
+            # session middleware before the tool could execute.
+            handshake = self.request('/api/mcp/identity')
+            _validate_owner(handshake, self.identity, self.url.rsplit(':',1)[1])
+            self.token = self.request('/api/session')['token']
+            return self.request('/api/mcp/call', body, timeout=timeout)
 
     def close(self):
         pass  # A secondary client must not cancel the owner's jobs or viewer.
@@ -146,11 +178,13 @@ def connect_studio(workspace, *, port=8741, library_root=None, trusted_roots=Non
         deadline = time.monotonic() + 8
         while True:
             try:
-                identity = remote.request("/api/mcp/identity")
-                ready = identity.pop("ready", False)
+                handshake = remote.request("/api/mcp/identity")
+                identity = {key: handshake.get(key) for key in remote.identity}
+                ready = handshake.get("ready", False)
                 if identity != remote.identity:
                     raise RuntimeError(f"Studio port {port} belongs to a different workspace, trust roots, or protocol; choose --studio-port.") from exc
                 if ready:
+                    _validate_owner(handshake, remote.identity, port)
                     remote.token = remote.request("/api/session")["token"]
                     return remote
             except (ValueError, KeyError):
@@ -291,3 +325,6 @@ def register_tools(server, service):
         authorize()
         jobs.cancel(job_id)
         return {"cancelling": True}
+
+    if not service.remote:
+        service.ready = True

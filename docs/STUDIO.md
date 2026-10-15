@@ -235,6 +235,14 @@ For frontend development, run the backend on port 8741 and
   own port 8741 without supporting shared MCP connections. Restart that owner
   after updating cadHarness, then reconnect the other MCP clients. For a separate
   workspace use `--studio-port`. A standalone viewer is not an MCP session.
+- **Image capture rejected / repeated render HTTP 405:** the browser bundle and
+  running Python owner are from different revisions. Restart the MCP connection
+  that owns Studio, reconnect attached clients, then reload Studio. Saved designs
+  and evidence stay in the workspace. MCP clients now check the owner's API and
+  render capabilities before attaching; the browser only polls an advertised
+  render protocol and stops on incompatible or expired-session responses.
+  Updated attached MCP clients refresh a rotated session token after confirming
+  the replacement owner's workspace, trust roots, and capture compatibility.
 - **No Studio tools:** install `.[mcp,studio]`, confirm `--studio` in the host's
   actual arguments, and reload it.
 - **Workspace rejected:** keep it within an explicit root; correct the path

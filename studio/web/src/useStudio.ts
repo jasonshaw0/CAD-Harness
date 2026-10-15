@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Design, Job, RevisionData } from './types';
 import { connectRenderClient } from './renderClient';
 
-export type Session = { designer: 'mcp' | 'codex'; token: string; authorized: boolean; codex_available: boolean; model: string; workspace: string; active_job: string | null };
+export type Session = { designer: 'mcp' | 'codex'; token: string; authorized: boolean; codex_available: boolean; model: string; workspace: string; active_job: string | null; render_protocol?: string };
 const activeStates = new Set(['queued', 'generating', 'building', 'checking', 'repairing', 'exporting']);
 
 export function useStudio() {
@@ -134,8 +134,8 @@ export function useStudio() {
   useEffect(() => { if (design) localStorage.setItem('studio-design', design.id); }, [design?.id]);
   useEffect(() => {
     if (!initialized || !session) return;
-    return connectRenderClient(session.token);
-  }, [initialized, session?.token]);
+    return connectRenderClient(session.token, session.render_protocol);
+  }, [initialized, session?.token, session?.render_protocol]);
 
   function selectComponent(id: string | null) {
     setSelected(id);
