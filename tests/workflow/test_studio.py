@@ -304,6 +304,30 @@ class StudioTests(unittest.TestCase):
         self.assertEqual(read_json(record)["value"], "new")
         self.assertFalse(list(self.root.glob("*.tmp")))
 
+    def test_record_read_retries_transient_replace_access_denial(self):
+        design = self.store.create("concurrent reader")
+        original = Path.read_text
+        calls = []
+        def read(path, *args, **kwargs):
+            calls.append(path)
+            if len(calls) < 3:
+                raise PermissionError("writer is replacing studio.json")
+            return original(path, *args, **kwargs)
+        with patch.object(Path, "read_text", read):
+            self.assertEqual(self.store.get(design["id"])["title"], "concurrent reader")
+        self.assertEqual(len(calls), 3)
+
+    def test_record_read_surfaces_permanent_denial_and_invalid_json(self):
+        with patch.object(Path, "read_text", side_effect=PermissionError("denied")) as read:
+            with patch("cadharness.workflow.brief.time.sleep"):
+                with self.assertRaises(PermissionError):
+                    read_json(self.root / "record.json")
+            self.assertEqual(read.call_count, 8)
+        with patch.object(Path, "read_text", return_value="{invalid") as read:
+            with self.assertRaises(json.JSONDecodeError):
+                read_json(self.root / "record.json")
+            self.assertEqual(read.call_count, 1)
+
 
 if __name__ == "__main__":
     unittest.main()

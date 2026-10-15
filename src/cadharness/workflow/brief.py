@@ -7,6 +7,7 @@ import json
 from math import isfinite
 from pathlib import Path
 import re
+import time
 
 IDENTIFIER = re.compile(r"^[a-z][a-z0-9]*(?:[-_.][a-z0-9]+)*$")
 SOURCES = {"user-statement", "user-measurement", "referenced-specification",
@@ -27,8 +28,18 @@ def read_json(path: Path) -> dict:
             result[key] = value
         return result
 
-    value = json.loads(path.read_text(encoding="utf-8-sig"),
-                       parse_constant=invalid, object_pairs_hook=unique)
+    # A Windows reader can briefly be denied an open while a worker atomically
+    # replaces a Studio record. Retry only that access failure, with the same
+    # bounded backoff used by the writer; malformed JSON must still fail at once.
+    for attempt in range(8):
+        try:
+            source = path.read_text(encoding="utf-8-sig")
+            break
+        except PermissionError:
+            if attempt == 7:
+                raise
+            time.sleep(.01 * (attempt + 1))
+    value = json.loads(source, parse_constant=invalid, object_pairs_hook=unique)
     if not isinstance(value, dict):
         raise ValueError(f"{path.name} must contain an object")
     return value

@@ -5,6 +5,10 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
+- Retry brief Windows access denials when reading atomically replaced Studio
+  records, preventing intermittent MCP job-poll failures. Permanent denials and
+  malformed JSON still surface as errors.
+
 - Unified the framework and Studio as one installable `cadharness` package.
   Added `cadharness studio`, `cadharness design`, and Studio-aware `mcp-config`.
   Moved editable frontend source to `studio/web`, tests under `tests/`, and
