@@ -109,12 +109,23 @@ login. Unknown mandatory evidence cannot produce a ready verdict.
 | Control | Behavior |
 | --- | --- |
 | Canvas | Drag to orbit, right-drag to pan, scroll to zoom; use Fit or a standard view. |
-| Components | Select geometry or a row; eye buttons hide parts, and the selection card isolates one. Reference envelopes appear ghosted. |
-| Revisions | Open earlier geometry. Overlay shows changed prior components in amber; it is not an exact solid difference. |
-| Checks | Inspect actual/expected values, assumptions, and requirement changes. |
-| Rebuild | Copy current source to a new revision and evaluate without a model call. |
-| Source / Report | Download Python, manifest, and frozen brief as ZIP, or the recorded evidence. |
-| STEP / STL | Explicitly export current, passing printable components; references are excluded. |
+| Explorer | Search and collapse designs, components, source files, and revisions. The panel itself can collapse to leave more canvas space. |
+| Properties | Select geometry or a component row to inspect measured size, bounds, volume, and fingerprint. Hide or isolate a part here. |
+| Design review | Open the check summary or Inspect → Engineering checks. Expand requirements for measured/required values; filter those needing attention. |
+| Revision history | Open the revision badge or Inspect → Revision history. View earlier geometry, return to current, or rebuild without a model call. |
+| Compare | Compare actual geometry and requirement changes with the previous built revision. Overlay shows changed prior components in amber; it is not an exact solid difference. |
+| Source files | Inspect the retained Python and manifest without modifying evidence. Download an individual file or the source/manifest/brief ZIP. |
+| Agent activity | Read assistant messages and questions. In MCP mode, continue in your IDE; the optional Codex mode retains an in-app composer. |
+| Export | Create STEP/STL from current passing printable components, or download source and reports. Completed exports appear in the same menu; references are excluded. |
+| Settings | Switch light/dark/system theme, grid, axes, edge display, and ghost references. Preferences stay in this browser. |
+| Session status | Inspect the local workspace and execution mode, and enable or lock trusted Python execution. |
+
+The bottom dock holds Fit, standard views, inspection tools, Compare, and
+distraction-free mode. `Ctrl/⌘ K` opens the command palette. Single-key shortcuts
+include `E` for Explorer, `I` for properties, `R` for review, `H` for history,
+`C` for comparison, `A` for activity, `F` for Fit, `G` for grid, and `D` for
+distraction-free mode. Shortcuts leave text fields alone. On narrow screens,
+Explorer and the detail panel share space while the dock stays available.
 
 Failed builds and cancellation retain the labeled previous scene. Designs,
 turns, sessions, source, checks, meshes, and exports stay in the workspace.

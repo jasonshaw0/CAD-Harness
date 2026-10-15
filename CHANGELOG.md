@@ -5,6 +5,12 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
+- Rebuilt Studio around floating Explorer/detail panels and a compact viewport
+  dock, following the v2 design reference. Added measured component properties,
+  source previews, command search, persisted light/dark/system display settings,
+  and responsive layouts while retaining MCP authoring, revision checks,
+  comparison, cancellation, optional Codex composition, and explicit exports.
+
 - Added `python bootstrap.py` to create/reuse the environment, install Studio,
   build its canvas, verify the example, and generate a local MCP configuration.
   Includes prerequisite checks, framework-only setup, and explicit root/workspace

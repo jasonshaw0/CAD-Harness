@@ -49,6 +49,12 @@ Use Playwriter exclusively for browser control and testing. Read its skill,
 create a stateful task session, exercise interactions, inspect screenshots,
 and check console errors. Unit tests and a build do not establish browser acceptance.
 
+For the Studio walkthrough, use `scripts/verify_studio_browser.js` in a dedicated
+test workspace. Each Playwriter invocation performs one action and prints the
+resulting snapshot and browser logs; it covers builds, selection, review,
+history, source, STEP export/download, themes, and mobile views. See
+[Studio UI acceptance](docs/STUDIO_UI_ACCEPTANCE.md) for setup and observations.
+
 ## Build a distributable package
 
 Build the frontend **before** creating a wheel so its static assets are

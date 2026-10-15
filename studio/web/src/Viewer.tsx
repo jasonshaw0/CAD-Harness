@@ -4,11 +4,11 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import type { ComponentMesh, SceneData } from './types';
 
 export type ViewerControl = { fit: () => void; view: (view: string) => void };
-type Props = { scene: SceneData | null; previous: SceneData | null; selected: string | null; hidden: Set<string>; isolated: string | null; overlay: boolean; ghost: boolean; onSelect: (id: string | null) => void; controls: React.RefObject<ViewerControl | null> };
+type Props = { scene: SceneData | null; previous: SceneData | null; selected: string | null; hidden: Set<string>; isolated: string | null; overlay: boolean; ghost: boolean; onSelect: (id: string | null) => void; controls: React.RefObject<ViewerControl | null>; theme: 'light' | 'dark'; grid: boolean; axes: boolean; edges: boolean };
 
 export default function Viewer(props: Props) {
   const container = useRef<HTMLDivElement>(null);
-  const runtime = useRef<{ scene: THREE.Scene; renderer: THREE.WebGLRenderer; camera: THREE.PerspectiveCamera; orbit: OrbitControls; model: THREE.Group; previous: THREE.Group; center: THREE.Vector3; radius: number; fit: () => void } | null>(null);
+  const runtime = useRef<{ scene: THREE.Scene; renderer: THREE.WebGLRenderer; camera: THREE.PerspectiveCamera; orbit: OrbitControls; model: THREE.Group; previous: THREE.Group; grid: THREE.GridHelper; axes: THREE.AxesHelper; center: THREE.Vector3; radius: number; fit: () => void } | null>(null);
   const latest = useRef(props);
   latest.current = props;
 
@@ -18,7 +18,7 @@ export default function Viewer(props: Props) {
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.setClearColor(0x171b1d, 1);
+    renderer.setClearColor(0x000000, 0);
     renderer.domElement.setAttribute('aria-label', 'Interactive 3D model');
     renderer.domElement.setAttribute('data-testid', 'cad-canvas');
     host.append(renderer.domElement);
@@ -28,39 +28,41 @@ export default function Viewer(props: Props) {
     const orbit = new OrbitControls(camera, renderer.domElement);
     orbit.enableDamping = true;
     orbit.dampingFactor = 0.12;
-    scene.add(new THREE.HemisphereLight(0xe5f4ff, 0x44494b, 2.8));
-    const light = new THREE.DirectionalLight(0xffffff, 3.2);
+    scene.add(new THREE.HemisphereLight(0xf0f5ff, 0x667780, 2.3));
+    const light = new THREE.DirectionalLight(0xffffff, 2.5);
     light.position.set(70, -100, 160); scene.add(light);
-    const fill = new THREE.DirectionalLight(0x83d5c2, 1); fill.position.set(-80, 20, 40); scene.add(fill);
-    const grid = new THREE.GridHelper(400, 40, 0x3b4448, 0x252e32);
+    const fill = new THREE.DirectionalLight(0xb3c9e0, 1); fill.position.set(-80, 20, 40); scene.add(fill);
+    const grid = new THREE.GridHelper(400, 40, 0xb7c6cd, 0xe0e7e9);
     grid.rotation.x = Math.PI / 2; grid.position.z = -0.15; scene.add(grid);
     const axes = new THREE.AxesHelper(15); axes.position.z = 0.05; scene.add(axes);
     const model = new THREE.Group(), previous = new THREE.Group(); scene.add(model, previous);
     const center = new THREE.Vector3();
     const fit = () => {
-      const box = new THREE.Box3().setFromObject(model);
+      const box = new THREE.Box3();
+      model.children.filter(object => object.visible && object instanceof THREE.Mesh).forEach(object => box.expandByObject(object));
       if (box.isEmpty()) return;
       box.getCenter(center);
       const radius = Math.max(box.getSize(new THREE.Vector3()).length() / 2, 1);
       if (runtime.current) runtime.current.radius = radius;
       orbit.target.copy(center);
-      camera.position.copy(center).add(new THREE.Vector3(1, -1.5, 1.1).normalize().multiplyScalar(radius * 3.8));
+      camera.position.copy(center).add(new THREE.Vector3(1, -1.5, 1.1).normalize().multiplyScalar(radius * 3.8 / Math.min(camera.aspect, 1)));
       camera.near = Math.max(radius / 10000, 0.001); camera.far = radius * 1000; camera.updateProjectionMatrix();
       orbit.update();
     };
-    runtime.current = { scene, renderer, camera, orbit, model, previous, center, radius: 50, fit };
+    runtime.current = { scene, renderer, camera, orbit, model, previous, grid, axes, center, radius: 50, fit };
     props.controls.current = { fit, view: (direction) => {
-      const vectors: Record<string, THREE.Vector3> = { top: new THREE.Vector3(0, -0.001, 1), front: new THREE.Vector3(0, -1, 0), right: new THREE.Vector3(1, 0, 0), iso: new THREE.Vector3(1, -1.5, 1.1) };
+      const vectors: Record<string, THREE.Vector3> = { top: new THREE.Vector3(0, -0.001, 1), bottom: new THREE.Vector3(0, -0.001, -1), front: new THREE.Vector3(0, -1, 0), right: new THREE.Vector3(1, 0, 0), left: new THREE.Vector3(-1, 0, 0), iso: new THREE.Vector3(1, -1.5, 1.1) };
       const r = runtime.current!;
-      camera.position.copy(orbit.target).add(vectors[direction].clone().normalize().multiplyScalar(r.radius * 3.8));
+      camera.position.copy(orbit.target).add(vectors[direction].clone().normalize().multiplyScalar(r.radius * 3.8 / Math.min(camera.aspect, 1)));
       orbit.update();
     }};
-    const resize = () => { const width = host.clientWidth, height = host.clientHeight; renderer.setSize(width, height); camera.aspect = width / height; camera.updateProjectionMatrix(); };
+    const resize = () => { const width = Math.max(host.clientWidth, 1), height = Math.max(host.clientHeight, 1); renderer.setSize(width, height); camera.aspect = width / height; camera.updateProjectionMatrix(); };
     const observer = new ResizeObserver(resize); observer.observe(host); resize();
     const raycaster = new THREE.Raycaster();
     let down = [0, 0];
     const pointerDown = (event: PointerEvent) => { down = [event.clientX, event.clientY]; };
     const pick = (event: PointerEvent) => {
+      if (event.button !== 0) return;
       if (Math.hypot(event.clientX - down[0], event.clientY - down[1]) > 5) return;
       const rect = renderer.domElement.getBoundingClientRect();
       raycaster.setFromCamera(new THREE.Vector2((event.clientX - rect.left) / rect.width * 2 - 1, -(event.clientY - rect.top) / rect.height * 2 + 1), camera);
@@ -87,7 +89,7 @@ export default function Viewer(props: Props) {
     const add = (component: ComponentMesh, group: THREE.Group, old = false) => {
       const geometry = new THREE.BufferGeometry();
       geometry.setAttribute('position', new THREE.Float32BufferAttribute(component.positions, 3)); geometry.setIndex(component.indices); geometry.computeVertexNormals();
-      const material = new THREE.MeshStandardMaterial({ color: old ? 0xe5aa6e : 0xa6b4bc, roughness: 0.48, metalness: 0.25, side: THREE.DoubleSide, transparent: old, opacity: old ? 0.23 : 1, depthWrite: !old });
+      const material = new THREE.MeshStandardMaterial({ color: old ? 0xd8a15e : 0x93a8b5, roughness: 0.6, metalness: 0.12, side: THREE.DoubleSide, transparent: old, opacity: old ? 0.23 : 1, depthWrite: !old });
       const mesh = new THREE.Mesh(geometry, material); mesh.userData = { componentId: component.id, role: component.role, old };
       group.add(mesh);
       const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry, 25), new THREE.LineBasicMaterial({ color: old ? 0xf2bb7b : 0x222c31, transparent: true, opacity: old ? 0.5 : 0.65 }));
@@ -105,13 +107,17 @@ export default function Viewer(props: Props) {
 
   useEffect(() => {
     const r = runtime.current; if (!r) return;
+    r.grid.visible = props.grid;
+    r.axes.visible = props.axes && !!props.scene;
+    const gridMaterial = r.grid.material as THREE.LineBasicMaterial;
+    gridMaterial.color.set(props.theme === 'dark' ? 0x586d7d : 0xffffff);
     for (const object of r.model.children) {
       const { componentId, role, edge } = object.userData;
-      object.visible = !props.hidden.has(componentId) && (!props.isolated || props.isolated === componentId);
+      object.visible = !props.hidden.has(componentId) && (!props.isolated || props.isolated === componentId) && (!edge || props.edges);
       if (!edge) {
         const material = (object as THREE.Mesh).material as THREE.MeshStandardMaterial;
         const reference = role === 'reference-envelope';
-        material.color.set(componentId === props.selected ? 0x82e9ce : reference ? 0x8ca9b8 : 0xaab7bd);
+        material.color.set(componentId === props.selected ? 0x72b2d9 : reference ? 0x96b2bf : props.theme === 'dark' ? 0x8fa5b4 : 0x93a8b5);
         material.transparent = reference && props.ghost;
         material.opacity = reference && props.ghost ? 0.16 : 1;
         material.depthWrite = !(reference && props.ghost);
@@ -119,10 +125,10 @@ export default function Viewer(props: Props) {
     }
     for (const object of r.previous.children) {
       const id = object.userData.componentId;
-      object.visible = !props.hidden.has(id) && (!props.isolated || props.isolated === id);
+      object.visible = !props.hidden.has(id) && (!props.isolated || props.isolated === id) && (!object.userData.edge || props.edges);
     }
     r.previous.visible = props.overlay;
-  }, [props.scene, props.previous, props.selected, props.hidden, props.isolated, props.overlay, props.ghost]);
+  }, [props.scene, props.previous, props.selected, props.hidden, props.isolated, props.overlay, props.ghost, props.theme, props.grid, props.axes, props.edges]);
 
   return <div className="viewer" ref={container} data-testid="viewer" />;
 }
