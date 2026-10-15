@@ -1,0 +1,1179 @@
+{
+  "source_sha256": {
+    "project.py": "6d8b577a722e90ebdedf87f3d31ee3d0f62cf2600f730ff4a48bf2f8e44d2d3c",
+    "verify.py": "60abfe831c7c550fdf03a1037e0e5f95256f4aadaf1bfc818eac7b6e8a3ca2ae"
+  },
+  "component_bounds_mm": {
+    "rear-frame": {
+      "min": [
+        -45.0,
+        -45.0,
+        0.0
+      ],
+      "max": [
+        45.0,
+        45.0,
+        28.0
+      ]
+    },
+    "front-frame": {
+      "min": [
+        -45.0,
+        -45.0,
+        19.0
+      ],
+      "max": [
+        45.0,
+        45.0,
+        24.0
+      ]
+    },
+    "output-carrier": {
+      "min": [
+        -24.0,
+        -24.0,
+        -8.0
+      ],
+      "max": [
+        24.0,
+        24.0,
+        17.8
+      ]
+    },
+    "cycloid-disc": {
+      "min": [
+        -29.2,
+        -30.366723214505495,
+        9.4
+      ],
+      "max": [
+        30.877713167915147,
+        30.366723214505495,
+        15.4
+      ]
+    },
+    "eccentric-input": {
+      "min": [
+        -8.5,
+        -8.5,
+        -7.5
+      ],
+      "max": [
+        9.0,
+        8.5,
+        34.4
+      ]
+    },
+    "crank": {
+      "min": [
+        -10.0,
+        -10.0,
+        24.5
+      ],
+      "max": [
+        34.5,
+        10.0,
+        50.5
+      ]
+    },
+    "frame-key-1": {
+      "min": [
+        9.339745962155618,
+        29.37954248040267,
+        24.5
+      ],
+      "max": [
+        26.762177826491076,
+        43.1051177665153,
+        26.5
+      ]
+    },
+    "frame-key-2": {
+      "min": [
+        -44.0,
+        -9.999999999999996,
+        24.5
+      ],
+      "max": [
+        -36.0,
+        7.000000000000005,
+        26.5
+      ]
+    },
+    "frame-key-3": {
+      "min": [
+        13.237822173508933,
+        -39.902489822352415,
+        24.5
+      ],
+      "max": [
+        30.66025403784439,
+        -26.176914536239785,
+        26.5
+      ]
+    },
+    "crank-key": {
+      "min": [
+        -4.0,
+        -7.0,
+        30.3
+      ],
+      "max": [
+        4.0,
+        10.0,
+        32.3
+      ]
+    }
+  },
+  "validation": {
+    "schema": "cadharness.validation",
+    "schema_version": "1",
+    "project_id": "pocket-cycloid",
+    "revision": "1",
+    "passed": true,
+    "summary": {
+      "pass": 51,
+      "warn": 0,
+      "fail": 0,
+      "error": 0,
+      "skip": 0
+    },
+    "results": [
+      {
+        "id": "geometry.rear-frame",
+        "status": "pass",
+        "message": "rear-frame is valid, nonempty geometry",
+        "actual": {
+          "valid": true,
+          "solid_count": 1,
+          "volume_mm3": 35709.4466108214
+        },
+        "expected": {
+          "valid": true,
+          "nonempty": true,
+          "solid_required": true
+        },
+        "unit": null,
+        "evidence_kind": "geometry-derived",
+        "evidence": {
+          "role": "printable-part"
+        }
+      },
+      {
+        "id": "geometry.front-frame",
+        "status": "pass",
+        "message": "front-frame is valid, nonempty geometry",
+        "actual": {
+          "valid": true,
+          "solid_count": 1,
+          "volume_mm3": 16374.746566089349
+        },
+        "expected": {
+          "valid": true,
+          "nonempty": true,
+          "solid_required": true
+        },
+        "unit": null,
+        "evidence_kind": "geometry-derived",
+        "evidence": {
+          "role": "printable-part"
+        }
+      },
+      {
+        "id": "geometry.output-carrier",
+        "status": "pass",
+        "message": "output-carrier is valid, nonempty geometry",
+        "actual": {
+          "valid": true,
+          "solid_count": 1,
+          "volume_mm3": 8384.592514632477
+        },
+        "expected": {
+          "valid": true,
+          "nonempty": true,
+          "solid_required": true
+        },
+        "unit": null,
+        "evidence_kind": "geometry-derived",
+        "evidence": {
+          "role": "printable-part"
+        }
+      },
+      {
+        "id": "geometry.cycloid-disc",
+        "status": "pass",
+        "message": "cycloid-disc is valid, nonempty geometry",
+        "actual": {
+          "valid": true,
+          "solid_count": 1,
+          "volume_mm3": 14302.778938181847
+        },
+        "expected": {
+          "valid": true,
+          "nonempty": true,
+          "solid_required": true
+        },
+        "unit": null,
+        "evidence_kind": "geometry-derived",
+        "evidence": {
+          "role": "printable-part"
+        }
+      },
+      {
+        "id": "geometry.eccentric-input",
+        "status": "pass",
+        "message": "eccentric-input is valid, nonempty geometry",
+        "actual": {
+          "valid": true,
+          "solid_count": 1,
+          "volume_mm3": 3288.378079131106
+        },
+        "expected": {
+          "valid": true,
+          "nonempty": true,
+          "solid_required": true
+        },
+        "unit": null,
+        "evidence_kind": "geometry-derived",
+        "evidence": {
+          "role": "printable-part"
+        }
+      },
+      {
+        "id": "geometry.crank",
+        "status": "pass",
+        "message": "crank is valid, nonempty geometry",
+        "actual": {
+          "valid": true,
+          "solid_count": 1,
+          "volume_mm3": 4872.431263681324
+        },
+        "expected": {
+          "valid": true,
+          "nonempty": true,
+          "solid_required": true
+        },
+        "unit": null,
+        "evidence_kind": "geometry-derived",
+        "evidence": {
+          "role": "printable-part"
+        }
+      },
+      {
+        "id": "geometry.frame-key-1",
+        "status": "pass",
+        "message": "frame-key-1 is valid, nonempty geometry",
+        "actual": {
+          "valid": true,
+          "solid_count": 1,
+          "volume_mm3": 146.10000000000002
+        },
+        "expected": {
+          "valid": true,
+          "nonempty": true,
+          "solid_required": true
+        },
+        "unit": null,
+        "evidence_kind": "geometry-derived",
+        "evidence": {
+          "role": "printable-part"
+        }
+      },
+      {
+        "id": "geometry.frame-key-2",
+        "status": "pass",
+        "message": "frame-key-2 is valid, nonempty geometry",
+        "actual": {
+          "valid": true,
+          "solid_count": 1,
+          "volume_mm3": 146.10000000000008
+        },
+        "expected": {
+          "valid": true,
+          "nonempty": true,
+          "solid_required": true
+        },
+        "unit": null,
+        "evidence_kind": "geometry-derived",
+        "evidence": {
+          "role": "printable-part"
+        }
+      },
+      {
+        "id": "geometry.frame-key-3",
+        "status": "pass",
+        "message": "frame-key-3 is valid, nonempty geometry",
+        "actual": {
+          "valid": true,
+          "solid_count": 1,
+          "volume_mm3": 146.10000000000002
+        },
+        "expected": {
+          "valid": true,
+          "nonempty": true,
+          "solid_required": true
+        },
+        "unit": null,
+        "evidence_kind": "geometry-derived",
+        "evidence": {
+          "role": "printable-part"
+        }
+      },
+      {
+        "id": "geometry.crank-key",
+        "status": "pass",
+        "message": "crank-key is valid, nonempty geometry",
+        "actual": {
+          "valid": true,
+          "solid_count": 1,
+          "volume_mm3": 146.09999999999994
+        },
+        "expected": {
+          "valid": true,
+          "nonempty": true,
+          "solid_required": true
+        },
+        "unit": null,
+        "evidence_kind": "geometry-derived",
+        "evidence": {
+          "role": "printable-part"
+        }
+      },
+      {
+        "id": "body.diameter",
+        "status": "pass",
+        "message": "90 mm handheld body: observed expected value",
+        "actual": 90.0,
+        "expected": {
+          "value": 90,
+          "absolute_tolerance": 0.001
+        },
+        "unit": "mm",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "mesh.segment-count",
+        "status": "pass",
+        "message": "Read complete final cycloid perimeter: observed expected value",
+        "actual": 720,
+        "expected": {
+          "value": 720,
+          "absolute_tolerance": 0.001
+        },
+        "unit": null,
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "mesh.lobes",
+        "status": "pass",
+        "message": "Nine measured radial lobe maxima: observed expected value",
+        "actual": 9,
+        "expected": {
+          "value": 9,
+          "absolute_tolerance": 0.001
+        },
+        "unit": null,
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "mesh.fixed-pins",
+        "status": "pass",
+        "message": "Ten measured fixed cylindrical pins: observed expected value",
+        "actual": 10,
+        "expected": {
+          "value": 10,
+          "absolute_tolerance": 0.001
+        },
+        "unit": null,
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "mesh.eccentricity",
+        "status": "pass",
+        "message": "Measured eccentric journal offset: observed expected value",
+        "actual": 1.5,
+        "expected": {
+          "value": 1.5,
+          "absolute_tolerance": 0.001
+        },
+        "unit": "mm",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "output.hole-diameter",
+        "status": "pass",
+        "message": "Measured orbit-compensation hole diameter: observed expected value",
+        "actual": 9.2,
+        "expected": {
+          "value": 9.2,
+          "absolute_tolerance": 0.001
+        },
+        "unit": "mm",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "mesh.full-motion",
+        "status": "pass",
+        "message": "No ring interference in 1081 poses over nine input turns: 0.297505mm is within minimum 0.27mm",
+        "actual": 0.2975046941241386,
+        "expected": {
+          "minimum": 0.27
+        },
+        "unit": "mm",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "mesh.continuous-bound",
+        "status": "pass",
+        "message": "Conservative between-sample bound remains positive: 0.157878mm is within minimum 0.15mm",
+        "actual": 0.15787835396459227,
+        "expected": {
+          "minimum": 0.15
+        },
+        "unit": "mm",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "mesh.wrong-ratio-control",
+        "status": "pass",
+        "message": "Incorrect 8:1 motion must jam: -0.841383mm is within maximum -0.1mm",
+        "actual": -0.8413827434843868,
+        "expected": {
+          "maximum": -0.1
+        },
+        "unit": "mm",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "output.hole-motion",
+        "status": "pass",
+        "message": "Output pins remain inside orbit-compensating holes: 0.3mm is within minimum 0.299mm",
+        "actual": 0.2999999999999978,
+        "expected": {
+          "minimum": 0.299
+        },
+        "unit": "mm",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "window.side-height",
+        "status": "pass",
+        "message": "Uninterrupted central side viewing height: 15mm is within minimum 15mm",
+        "actual": 15.0,
+        "expected": {
+          "minimum": 15
+        },
+        "unit": "mm",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "window.front-width",
+        "status": "pass",
+        "message": "Front view opening across mechanism at Y=15: 28.5402mm is within minimum 18mm",
+        "actual": 28.54018696361621,
+        "expected": {
+          "minimum": 18
+        },
+        "unit": "mm",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "crank.frame-clearance",
+        "status": "pass",
+        "message": "Assembled crank clears stationary frame: 0.5mm is within minimum 0.49mm",
+        "actual": 0.5,
+        "expected": {
+          "minimum": 0.49
+        },
+        "unit": "mm",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "shaft.front-clearance",
+        "status": "pass",
+        "message": "Input shaft clears front journal: 0.3mm is within minimum 0.29mm",
+        "actual": 0.2999999999999997,
+        "expected": {
+          "minimum": 0.29
+        },
+        "unit": "mm",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "structure.rib-1",
+        "status": "pass",
+        "message": "Measured 7 mm front rib chord: observed expected value",
+        "actual": 6.999999999999999,
+        "expected": {
+          "value": 7,
+          "absolute_tolerance": 0.001
+        },
+        "unit": "mm",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "structure.rib-2",
+        "status": "pass",
+        "message": "Measured 7 mm front rib chord: observed expected value",
+        "actual": 7.0,
+        "expected": {
+          "value": 7,
+          "absolute_tolerance": 0.001
+        },
+        "unit": "mm",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "structure.rib-3",
+        "status": "pass",
+        "message": "Measured 7 mm front rib chord: observed expected value",
+        "actual": 6.999999999999999,
+        "expected": {
+          "value": 7,
+          "absolute_tolerance": 0.001
+        },
+        "unit": "mm",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "structure.rim",
+        "status": "pass",
+        "message": "Continuous rim is 9 mm radially at a free span: observed expected value",
+        "actual": 9.0,
+        "expected": {
+          "value": 9,
+          "absolute_tolerance": 0.001
+        },
+        "unit": "mm",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "structure.tang-roof",
+        "status": "pass",
+        "message": "Crank cotter slot retains a 1.8 mm top wall: observed expected value",
+        "actual": 1.7999999999999972,
+        "expected": {
+          "value": 1.8,
+          "absolute_tolerance": 0.001
+        },
+        "unit": "mm",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "solid.rear-frame",
+        "status": "pass",
+        "message": "One connected printable solid: rear-frame: observed expected value",
+        "actual": 1,
+        "expected": {
+          "value": 1,
+          "absolute_tolerance": 0.001
+        },
+        "unit": null,
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "solid.front-frame",
+        "status": "pass",
+        "message": "One connected printable solid: front-frame: observed expected value",
+        "actual": 1,
+        "expected": {
+          "value": 1,
+          "absolute_tolerance": 0.001
+        },
+        "unit": null,
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "solid.output-carrier",
+        "status": "pass",
+        "message": "One connected printable solid: output-carrier: observed expected value",
+        "actual": 1,
+        "expected": {
+          "value": 1,
+          "absolute_tolerance": 0.001
+        },
+        "unit": null,
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "solid.cycloid-disc",
+        "status": "pass",
+        "message": "One connected printable solid: cycloid-disc: observed expected value",
+        "actual": 1,
+        "expected": {
+          "value": 1,
+          "absolute_tolerance": 0.001
+        },
+        "unit": null,
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "solid.eccentric-input",
+        "status": "pass",
+        "message": "One connected printable solid: eccentric-input: observed expected value",
+        "actual": 1,
+        "expected": {
+          "value": 1,
+          "absolute_tolerance": 0.001
+        },
+        "unit": null,
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "solid.crank",
+        "status": "pass",
+        "message": "One connected printable solid: crank: observed expected value",
+        "actual": 1,
+        "expected": {
+          "value": 1,
+          "absolute_tolerance": 0.001
+        },
+        "unit": null,
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "solid.frame-key-1",
+        "status": "pass",
+        "message": "One connected printable solid: frame-key-1: observed expected value",
+        "actual": 1,
+        "expected": {
+          "value": 1,
+          "absolute_tolerance": 0.001
+        },
+        "unit": null,
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "solid.frame-key-2",
+        "status": "pass",
+        "message": "One connected printable solid: frame-key-2: observed expected value",
+        "actual": 1,
+        "expected": {
+          "value": 1,
+          "absolute_tolerance": 0.001
+        },
+        "unit": null,
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "solid.frame-key-3",
+        "status": "pass",
+        "message": "One connected printable solid: frame-key-3: observed expected value",
+        "actual": 1,
+        "expected": {
+          "value": 1,
+          "absolute_tolerance": 0.001
+        },
+        "unit": null,
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "solid.crank-key",
+        "status": "pass",
+        "message": "One connected printable solid: crank-key: observed expected value",
+        "actual": 1,
+        "expected": {
+          "value": 1,
+          "absolute_tolerance": 0.001
+        },
+        "unit": null,
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "overlap.rear-frame.front-frame",
+        "status": "pass",
+        "message": "Zero assembled interference: rear-frame/front-frame: observed expected value",
+        "actual": 0.0,
+        "expected": {
+          "value": 0,
+          "absolute_tolerance": 0.001
+        },
+        "unit": "mm^3",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "overlap.rear-frame.output-carrier",
+        "status": "pass",
+        "message": "Zero assembled interference: rear-frame/output-carrier: observed expected value",
+        "actual": 0.0,
+        "expected": {
+          "value": 0,
+          "absolute_tolerance": 0.001
+        },
+        "unit": "mm^3",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "overlap.rear-frame.cycloid-disc",
+        "status": "pass",
+        "message": "Zero assembled interference: rear-frame/cycloid-disc: observed expected value",
+        "actual": 0.0,
+        "expected": {
+          "value": 0,
+          "absolute_tolerance": 0.001
+        },
+        "unit": "mm^3",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "overlap.front-frame.cycloid-disc",
+        "status": "pass",
+        "message": "Zero assembled interference: front-frame/cycloid-disc: observed expected value",
+        "actual": 0.0,
+        "expected": {
+          "value": 0,
+          "absolute_tolerance": 0.001
+        },
+        "unit": "mm^3",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "overlap.output-carrier.eccentric-input",
+        "status": "pass",
+        "message": "Zero assembled interference: output-carrier/eccentric-input: observed expected value",
+        "actual": 0.0,
+        "expected": {
+          "value": 0,
+          "absolute_tolerance": 0.001
+        },
+        "unit": "mm^3",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "overlap.output-carrier.cycloid-disc",
+        "status": "pass",
+        "message": "Zero assembled interference: output-carrier/cycloid-disc: observed expected value",
+        "actual": 0.0,
+        "expected": {
+          "value": 0,
+          "absolute_tolerance": 0.001
+        },
+        "unit": "mm^3",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "overlap.eccentric-input.cycloid-disc",
+        "status": "pass",
+        "message": "Zero assembled interference: eccentric-input/cycloid-disc: observed expected value",
+        "actual": 0.0,
+        "expected": {
+          "value": 0,
+          "absolute_tolerance": 0.001
+        },
+        "unit": "mm^3",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "overlap.crank.eccentric-input",
+        "status": "pass",
+        "message": "Zero assembled interference: crank/eccentric-input: observed expected value",
+        "actual": 0.0,
+        "expected": {
+          "value": 0,
+          "absolute_tolerance": 0.001
+        },
+        "unit": "mm^3",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "overlap.rear-frame.frame-key-1",
+        "status": "pass",
+        "message": "Zero assembled interference: rear-frame/frame-key-1: observed expected value",
+        "actual": 0.0,
+        "expected": {
+          "value": 0,
+          "absolute_tolerance": 0.001
+        },
+        "unit": "mm^3",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "overlap.rear-frame.frame-key-2",
+        "status": "pass",
+        "message": "Zero assembled interference: rear-frame/frame-key-2: observed expected value",
+        "actual": 0.0,
+        "expected": {
+          "value": 0,
+          "absolute_tolerance": 0.001
+        },
+        "unit": "mm^3",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "overlap.rear-frame.frame-key-3",
+        "status": "pass",
+        "message": "Zero assembled interference: rear-frame/frame-key-3: observed expected value",
+        "actual": 0.0,
+        "expected": {
+          "value": 0,
+          "absolute_tolerance": 0.001
+        },
+        "unit": "mm^3",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      },
+      {
+        "id": "overlap.eccentric-input.crank-key",
+        "status": "pass",
+        "message": "Zero assembled interference: eccentric-input/crank-key: observed expected value",
+        "actual": 0.0,
+        "expected": {
+          "value": 0,
+          "absolute_tolerance": 0.001
+        },
+        "unit": "mm^3",
+        "evidence_kind": "geometry-derived",
+        "evidence": {}
+      }
+    ]
+  },
+  "all_assembled_pairs": [
+    {
+      "a": "rear-frame",
+      "b": "front-frame",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "rear-frame",
+      "b": "output-carrier",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "rear-frame",
+      "b": "cycloid-disc",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "rear-frame",
+      "b": "eccentric-input",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "rear-frame",
+      "b": "crank",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "rear-frame",
+      "b": "frame-key-1",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "rear-frame",
+      "b": "frame-key-2",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "rear-frame",
+      "b": "frame-key-3",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "rear-frame",
+      "b": "crank-key",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "front-frame",
+      "b": "output-carrier",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "front-frame",
+      "b": "cycloid-disc",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "front-frame",
+      "b": "eccentric-input",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "front-frame",
+      "b": "crank",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "front-frame",
+      "b": "frame-key-1",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "front-frame",
+      "b": "frame-key-2",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "front-frame",
+      "b": "frame-key-3",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "front-frame",
+      "b": "crank-key",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "output-carrier",
+      "b": "cycloid-disc",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "output-carrier",
+      "b": "eccentric-input",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "output-carrier",
+      "b": "crank",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "output-carrier",
+      "b": "frame-key-1",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "output-carrier",
+      "b": "frame-key-2",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "output-carrier",
+      "b": "frame-key-3",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "output-carrier",
+      "b": "crank-key",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "cycloid-disc",
+      "b": "eccentric-input",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "cycloid-disc",
+      "b": "crank",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "cycloid-disc",
+      "b": "frame-key-1",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "cycloid-disc",
+      "b": "frame-key-2",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "cycloid-disc",
+      "b": "frame-key-3",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "cycloid-disc",
+      "b": "crank-key",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "eccentric-input",
+      "b": "crank",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "eccentric-input",
+      "b": "frame-key-1",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "eccentric-input",
+      "b": "frame-key-2",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "eccentric-input",
+      "b": "frame-key-3",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "eccentric-input",
+      "b": "crank-key",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "crank",
+      "b": "frame-key-1",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "crank",
+      "b": "frame-key-2",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "crank",
+      "b": "frame-key-3",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "crank",
+      "b": "crank-key",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "frame-key-1",
+      "b": "frame-key-2",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "frame-key-1",
+      "b": "frame-key-3",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "frame-key-1",
+      "b": "crank-key",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "frame-key-2",
+      "b": "frame-key-3",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "frame-key-2",
+      "b": "crank-key",
+      "overlap_mm3": 0.0
+    },
+    {
+      "a": "frame-key-3",
+      "b": "crank-key",
+      "overlap_mm3": 0.0
+    }
+  ],
+  "assembly_paths": [
+    {
+      "name": "disc slides on from rear of input",
+      "poses": 31,
+      "max_overlap_mm3": 0
+    },
+    {
+      "name": "carrier enters rear frame",
+      "poses": 26,
+      "max_overlap_mm3": 0
+    },
+    {
+      "name": "disc and shaft enter cage together",
+      "poses": 31,
+      "max_overlap_mm3": 0
+    },
+    {
+      "name": "front frame closes over journals and pin tips",
+      "poses": 21,
+      "max_overlap_mm3": 0
+    },
+    {
+      "name": "crank slides over square tang",
+      "poses": 16,
+      "max_overlap_mm3": 0
+    }
+  ],
+  "crank_sweep": {
+    "poses": 72,
+    "minimum_stationary_clearance_mm": 0.5
+  },
+  "axial_float_checks": [
+    {
+      "part": "eccentric-input",
+      "shift_mm": -0.3,
+      "fixed_overlap_mm3": 0
+    },
+    {
+      "part": "cycloid-disc",
+      "shift_mm": -0.3,
+      "fixed_overlap_mm3": 0
+    },
+    {
+      "part": "output-carrier",
+      "shift_mm": -0.3,
+      "fixed_overlap_mm3": 0
+    },
+    {
+      "part": "eccentric-input",
+      "shift_mm": 0.3,
+      "fixed_overlap_mm3": 0
+    },
+    {
+      "part": "cycloid-disc",
+      "shift_mm": 0.3,
+      "fixed_overlap_mm3": 0
+    },
+    {
+      "part": "output-carrier",
+      "shift_mm": 0.3,
+      "fixed_overlap_mm3": 0
+    }
+  ],
+  "motion": {
+    "perimeter_segments": 720,
+    "poses": 1081,
+    "input_turns": 9,
+    "output_turns": -1,
+    "actual_lobes": 9,
+    "actual_ring_pins": 10,
+    "actual_output_hole_diameter_mm": 9.2,
+    "measured_eccentricity_mm": 1.5,
+    "mesh_min_mm": 0.2975046941241386,
+    "mesh_nearest_max_mm": 0.2990229219076186,
+    "continuous_mesh_lower_bound_mm": 0.15787835396459227,
+    "output_pin_min_mm": 0.2999999999999978,
+    "wrong_ratio_min_mm": -0.8413827434843868
+  },
+  "elapsed_seconds": 18.71899999998277,
+  "limitations": [
+    "Assembly paths sampled at 1 mm; cotters require elastic insertion.",
+    "No print, torque, friction, flexural life or manufacturing error test performed."
+  ]
+}

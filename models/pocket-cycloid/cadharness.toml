@@ -1,0 +1,5 @@
+[project]
+id = "pocket-cycloid"
+name = "Pocket Cycloid — all-printed 9:1 teaching gearbox"
+entrypoint = "project.py:create_project"
+parameter_type = "project.py:GearboxParameters"

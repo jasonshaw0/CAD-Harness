@@ -1,0 +1,649 @@
+{
+  "accepted_brief": "cce1811c012de9aec17cf08b032cc9710855f68bd3f4287c85f5ec8368b51ead",
+  "active_seconds": 8.116547599958722,
+  "artifacts": {
+    "evidence/brief.json": "3dd3ec09a92dfd713835235c007cce1f9cb81c2442be5199298d3a87b1ebc67a",
+    "evidence/comparison.json": "762fecd84f653c8b03d50f5866a93c9bc3a74cf6076ee655282fc3584f6852c9",
+    "evidence/evaluation.json": "cc5d2c784a23dd957df97609896f3d23986ff9fc729f781d6f0fdfc177ce60d7",
+    "evidence/inspection.json": "8cac16d8575ab170399d836161dca14490c5007103d82d0954ee270a5c4193d4",
+    "evidence/prompt.txt": "a0a96bc915c1e29985191d923417d447ad086b30e808a3ae7c1f4a22d4b44fe2",
+    "evidence/scene.json": "e78c4a96d8686b6e53ee46fbdfd923333a6438e540dd21cb3dce9444e5fb2a90",
+    "evidence/snapshot.json": "52b58e49846326346bd69bee59b2dad75442de29533a52cc755a6b38f3ffa4d9",
+    "evidence/validation.json": "6a61440ed8cfc3bb84d6ea337bd9ffab0e779fe9faaab3aac14b84452db45bee",
+    "evidence/verification.json": "e180f6945b59e352a6503bfecdf6d96e12a4739da45d381db2f15713aa5d84f5",
+    "evidence/worker.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "evidence/worker.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "assumptions": [
+    {
+      "blocking": false,
+      "description": "PETG; 0.4 mm nozzle; 0.2 mm layers; supports for shaft/carrier overhangs; four identical planar split cotters; hand loads only."
+    }
+  ],
+  "blocking_reasons": [],
+  "brief": "brief-v001.json",
+  "brief_sha256": "cce1811c012de9aec17cf08b032cc9710855f68bd3f4287c85f5ec8368b51ead",
+  "coverage": [
+    {
+      "check_id": "workflow.body-diameter",
+      "description": "90 mm handheld fixed frame",
+      "evidence_kind": "geometry-derived",
+      "execution_status": "pass",
+      "id": "body-diameter",
+      "mandatory": true,
+      "reason": "90 mm handheld fixed frame: observed expected value",
+      "result": {
+        "actual": 90.0,
+        "evidence": {},
+        "evidence_kind": "geometry-derived",
+        "expected": {
+          "absolute_tolerance": 0.01,
+          "value": 90
+        },
+        "id": "workflow.body-diameter",
+        "message": "90 mm handheld fixed frame: observed expected value",
+        "status": "pass",
+        "unit": "mm"
+      },
+      "status": "pass"
+    },
+    {
+      "check_id": "workflow.front-height",
+      "description": "5 mm structural front frame",
+      "evidence_kind": "geometry-derived",
+      "execution_status": "pass",
+      "id": "front-height",
+      "mandatory": true,
+      "reason": "5 mm structural front frame: observed expected value",
+      "result": {
+        "actual": 5.0,
+        "evidence": {},
+        "evidence_kind": "geometry-derived",
+        "expected": {
+          "absolute_tolerance": 0.01,
+          "value": 5
+        },
+        "id": "workflow.front-height",
+        "message": "5 mm structural front frame: observed expected value",
+        "status": "pass",
+        "unit": "mm"
+      },
+      "status": "pass"
+    },
+    {
+      "check_id": "workflow.disc-thickness",
+      "description": "6 mm active cycloid plate",
+      "evidence_kind": "geometry-derived",
+      "execution_status": "pass",
+      "id": "disc-thickness",
+      "mandatory": true,
+      "reason": "6 mm active cycloid plate: observed expected value",
+      "result": {
+        "actual": 6.0,
+        "evidence": {},
+        "evidence_kind": "geometry-derived",
+        "expected": {
+          "absolute_tolerance": 0.01,
+          "value": 6
+        },
+        "id": "workflow.disc-thickness",
+        "message": "6 mm active cycloid plate: observed expected value",
+        "status": "pass",
+        "unit": "mm"
+      },
+      "status": "pass"
+    },
+    {
+      "check_id": "workflow.visible-side-gap",
+      "description": "15 mm side viewing opening at Y40",
+      "evidence_kind": "geometry-derived",
+      "execution_status": "pass",
+      "id": "visible-side-gap",
+      "mandatory": true,
+      "reason": "15 mm side viewing opening at Y40: observed expected value",
+      "result": {
+        "actual": 19.0,
+        "evidence": {},
+        "evidence_kind": "geometry-derived",
+        "expected": {
+          "absolute_tolerance": 0.01,
+          "value": 19
+        },
+        "id": "workflow.visible-side-gap",
+        "message": "15 mm side viewing opening at Y40: observed expected value",
+        "status": "pass",
+        "unit": "mm"
+      },
+      "status": "pass"
+    },
+    {
+      "check_id": "workflow.handle-protrusion",
+      "description": "Grip reaches 50.5 mm above rear datum",
+      "evidence_kind": "geometry-derived",
+      "execution_status": "pass",
+      "id": "handle-protrusion",
+      "mandatory": true,
+      "reason": "Grip reaches 50.5 mm above rear datum: observed expected value",
+      "result": {
+        "actual": 50.5,
+        "evidence": {},
+        "evidence_kind": "geometry-derived",
+        "expected": {
+          "absolute_tolerance": 0.01,
+          "value": 50.5
+        },
+        "id": "workflow.handle-protrusion",
+        "message": "Grip reaches 50.5 mm above rear datum: observed expected value",
+        "status": "pass",
+        "unit": "mm"
+      },
+      "status": "pass"
+    },
+    {
+      "check_id": "workflow.input-running-clearance",
+      "description": "Input clears front journal",
+      "evidence_kind": "geometry-derived",
+      "execution_status": "pass",
+      "id": "input-running-clearance",
+      "mandatory": true,
+      "reason": "Input clears front journal: measured geometry meets requirement",
+      "result": {
+        "actual": 0.2999999999999997,
+        "evidence": {
+          "components": [
+            "eccentric-input",
+            "front-frame"
+          ],
+          "measurement": {
+            "components": [
+              "eccentric-input",
+              "front-frame"
+            ],
+            "computational_tolerance": {
+              "angular_deg": 0.0001,
+              "linear_mm": 1e-06,
+              "volume_mm3": 1e-07
+            },
+            "diagnostics": {},
+            "features": [],
+            "id": "workflow.input-running-clearance",
+            "limitations": [
+              "Interference volume is not penetration depth.",
+              "Distance is unsigned and is zero for contact or overlap."
+            ],
+            "method": "occt-minimum-distance-and-boolean-common-volume",
+            "provenance": {
+              "kind": "geometry-derived"
+            },
+            "schema": "cadharness.measurement",
+            "schema_version": "1",
+            "status": "success",
+            "type": "shape-clearance",
+            "unit": "mm",
+            "value": {
+              "closest_point_first_mm": [
+                5.0,
+                -1.2246467991473533e-15,
+                24.0
+              ],
+              "closest_point_second_mm": [
+                5.3,
+                -1.2981256070961944e-15,
+                24.0
+              ],
+              "distance_mm": 0.2999999999999997,
+              "interference_volume_mm3": 0.0,
+              "state": "separated"
+            }
+          }
+        },
+        "evidence_kind": "geometry-derived",
+        "expected": {
+          "minimum": 0.29
+        },
+        "id": "workflow.input-running-clearance",
+        "message": "Input clears front journal: measured geometry meets requirement",
+        "status": "pass",
+        "unit": "mm"
+      },
+      "status": "pass"
+    },
+    {
+      "check_id": "workflow.one-solid.rear-frame",
+      "description": "Connected printable rear-frame",
+      "evidence_kind": "geometry-derived",
+      "execution_status": "pass",
+      "id": "one-solid.rear-frame",
+      "mandatory": true,
+      "reason": "Connected printable rear-frame: observed expected value",
+      "result": {
+        "actual": 1,
+        "evidence": {},
+        "evidence_kind": "geometry-derived",
+        "expected": {
+          "absolute_tolerance": 0,
+          "value": 1
+        },
+        "id": "workflow.one-solid.rear-frame",
+        "message": "Connected printable rear-frame: observed expected value",
+        "status": "pass",
+        "unit": null
+      },
+      "status": "pass"
+    },
+    {
+      "check_id": "workflow.one-solid.front-frame",
+      "description": "Connected printable front-frame",
+      "evidence_kind": "geometry-derived",
+      "execution_status": "pass",
+      "id": "one-solid.front-frame",
+      "mandatory": true,
+      "reason": "Connected printable front-frame: observed expected value",
+      "result": {
+        "actual": 1,
+        "evidence": {},
+        "evidence_kind": "geometry-derived",
+        "expected": {
+          "absolute_tolerance": 0,
+          "value": 1
+        },
+        "id": "workflow.one-solid.front-frame",
+        "message": "Connected printable front-frame: observed expected value",
+        "status": "pass",
+        "unit": null
+      },
+      "status": "pass"
+    },
+    {
+      "check_id": "workflow.one-solid.output-carrier",
+      "description": "Connected printable output-carrier",
+      "evidence_kind": "geometry-derived",
+      "execution_status": "pass",
+      "id": "one-solid.output-carrier",
+      "mandatory": true,
+      "reason": "Connected printable output-carrier: observed expected value",
+      "result": {
+        "actual": 1,
+        "evidence": {},
+        "evidence_kind": "geometry-derived",
+        "expected": {
+          "absolute_tolerance": 0,
+          "value": 1
+        },
+        "id": "workflow.one-solid.output-carrier",
+        "message": "Connected printable output-carrier: observed expected value",
+        "status": "pass",
+        "unit": null
+      },
+      "status": "pass"
+    },
+    {
+      "check_id": "workflow.one-solid.cycloid-disc",
+      "description": "Connected printable cycloid-disc",
+      "evidence_kind": "geometry-derived",
+      "execution_status": "pass",
+      "id": "one-solid.cycloid-disc",
+      "mandatory": true,
+      "reason": "Connected printable cycloid-disc: observed expected value",
+      "result": {
+        "actual": 1,
+        "evidence": {},
+        "evidence_kind": "geometry-derived",
+        "expected": {
+          "absolute_tolerance": 0,
+          "value": 1
+        },
+        "id": "workflow.one-solid.cycloid-disc",
+        "message": "Connected printable cycloid-disc: observed expected value",
+        "status": "pass",
+        "unit": null
+      },
+      "status": "pass"
+    },
+    {
+      "check_id": "workflow.one-solid.eccentric-input",
+      "description": "Connected printable eccentric-input",
+      "evidence_kind": "geometry-derived",
+      "execution_status": "pass",
+      "id": "one-solid.eccentric-input",
+      "mandatory": true,
+      "reason": "Connected printable eccentric-input: observed expected value",
+      "result": {
+        "actual": 1,
+        "evidence": {},
+        "evidence_kind": "geometry-derived",
+        "expected": {
+          "absolute_tolerance": 0,
+          "value": 1
+        },
+        "id": "workflow.one-solid.eccentric-input",
+        "message": "Connected printable eccentric-input: observed expected value",
+        "status": "pass",
+        "unit": null
+      },
+      "status": "pass"
+    },
+    {
+      "check_id": "workflow.one-solid.crank",
+      "description": "Connected printable crank",
+      "evidence_kind": "geometry-derived",
+      "execution_status": "pass",
+      "id": "one-solid.crank",
+      "mandatory": true,
+      "reason": "Connected printable crank: observed expected value",
+      "result": {
+        "actual": 1,
+        "evidence": {},
+        "evidence_kind": "geometry-derived",
+        "expected": {
+          "absolute_tolerance": 0,
+          "value": 1
+        },
+        "id": "workflow.one-solid.crank",
+        "message": "Connected printable crank: observed expected value",
+        "status": "pass",
+        "unit": null
+      },
+      "status": "pass"
+    },
+    {
+      "check_id": "workflow.one-solid.frame-key-1",
+      "description": "Connected printable frame-key-1",
+      "evidence_kind": "geometry-derived",
+      "execution_status": "pass",
+      "id": "one-solid.frame-key-1",
+      "mandatory": true,
+      "reason": "Connected printable frame-key-1: observed expected value",
+      "result": {
+        "actual": 1,
+        "evidence": {},
+        "evidence_kind": "geometry-derived",
+        "expected": {
+          "absolute_tolerance": 0,
+          "value": 1
+        },
+        "id": "workflow.one-solid.frame-key-1",
+        "message": "Connected printable frame-key-1: observed expected value",
+        "status": "pass",
+        "unit": null
+      },
+      "status": "pass"
+    },
+    {
+      "check_id": "workflow.one-solid.frame-key-2",
+      "description": "Connected printable frame-key-2",
+      "evidence_kind": "geometry-derived",
+      "execution_status": "pass",
+      "id": "one-solid.frame-key-2",
+      "mandatory": true,
+      "reason": "Connected printable frame-key-2: observed expected value",
+      "result": {
+        "actual": 1,
+        "evidence": {},
+        "evidence_kind": "geometry-derived",
+        "expected": {
+          "absolute_tolerance": 0,
+          "value": 1
+        },
+        "id": "workflow.one-solid.frame-key-2",
+        "message": "Connected printable frame-key-2: observed expected value",
+        "status": "pass",
+        "unit": null
+      },
+      "status": "pass"
+    },
+    {
+      "check_id": "workflow.one-solid.frame-key-3",
+      "description": "Connected printable frame-key-3",
+      "evidence_kind": "geometry-derived",
+      "execution_status": "pass",
+      "id": "one-solid.frame-key-3",
+      "mandatory": true,
+      "reason": "Connected printable frame-key-3: observed expected value",
+      "result": {
+        "actual": 1,
+        "evidence": {},
+        "evidence_kind": "geometry-derived",
+        "expected": {
+          "absolute_tolerance": 0,
+          "value": 1
+        },
+        "id": "workflow.one-solid.frame-key-3",
+        "message": "Connected printable frame-key-3: observed expected value",
+        "status": "pass",
+        "unit": null
+      },
+      "status": "pass"
+    },
+    {
+      "check_id": "workflow.one-solid.crank-key",
+      "description": "Connected printable crank-key",
+      "evidence_kind": "geometry-derived",
+      "execution_status": "pass",
+      "id": "one-solid.crank-key",
+      "mandatory": true,
+      "reason": "Connected printable crank-key: observed expected value",
+      "result": {
+        "actual": 1,
+        "evidence": {},
+        "evidence_kind": "geometry-derived",
+        "expected": {
+          "absolute_tolerance": 0,
+          "value": 1
+        },
+        "id": "workflow.one-solid.crank-key",
+        "message": "Connected printable crank-key: observed expected value",
+        "status": "pass",
+        "unit": null
+      },
+      "status": "pass"
+    },
+    {
+      "check_id": "workflow.no-overlap.cycloid-disc.rear-frame",
+      "description": "Assembled solids do not interfere",
+      "evidence_kind": "geometry-derived",
+      "execution_status": "pass",
+      "id": "no-overlap.cycloid-disc.rear-frame",
+      "mandatory": true,
+      "reason": "Assembled solids do not interfere: overlap 0mm^3",
+      "result": {
+        "actual": 0.0,
+        "evidence": {
+          "components": [
+            "cycloid-disc",
+            "rear-frame"
+          ]
+        },
+        "evidence_kind": "geometry-derived",
+        "expected": {
+          "maximum": 0.001
+        },
+        "id": "workflow.no-overlap.cycloid-disc.rear-frame",
+        "message": "Assembled solids do not interfere: overlap 0mm^3",
+        "status": "pass",
+        "unit": "mm^3"
+      },
+      "status": "pass"
+    },
+    {
+      "check_id": "workflow.no-overlap.cycloid-disc.front-frame",
+      "description": "Assembled solids do not interfere",
+      "evidence_kind": "geometry-derived",
+      "execution_status": "pass",
+      "id": "no-overlap.cycloid-disc.front-frame",
+      "mandatory": true,
+      "reason": "Assembled solids do not interfere: overlap 0mm^3",
+      "result": {
+        "actual": 0.0,
+        "evidence": {
+          "components": [
+            "cycloid-disc",
+            "front-frame"
+          ]
+        },
+        "evidence_kind": "geometry-derived",
+        "expected": {
+          "maximum": 0.001
+        },
+        "id": "workflow.no-overlap.cycloid-disc.front-frame",
+        "message": "Assembled solids do not interfere: overlap 0mm^3",
+        "status": "pass",
+        "unit": "mm^3"
+      },
+      "status": "pass"
+    },
+    {
+      "check_id": "workflow.no-overlap.cycloid-disc.output-carrier",
+      "description": "Assembled solids do not interfere",
+      "evidence_kind": "geometry-derived",
+      "execution_status": "pass",
+      "id": "no-overlap.cycloid-disc.output-carrier",
+      "mandatory": true,
+      "reason": "Assembled solids do not interfere: overlap 0mm^3",
+      "result": {
+        "actual": 0.0,
+        "evidence": {
+          "components": [
+            "cycloid-disc",
+            "output-carrier"
+          ]
+        },
+        "evidence_kind": "geometry-derived",
+        "expected": {
+          "maximum": 0.001
+        },
+        "id": "workflow.no-overlap.cycloid-disc.output-carrier",
+        "message": "Assembled solids do not interfere: overlap 0mm^3",
+        "status": "pass",
+        "unit": "mm^3"
+      },
+      "status": "pass"
+    },
+    {
+      "check_id": "workflow.no-overlap.cycloid-disc.eccentric-input",
+      "description": "Assembled solids do not interfere",
+      "evidence_kind": "geometry-derived",
+      "execution_status": "pass",
+      "id": "no-overlap.cycloid-disc.eccentric-input",
+      "mandatory": true,
+      "reason": "Assembled solids do not interfere: overlap 0mm^3",
+      "result": {
+        "actual": 0.0,
+        "evidence": {
+          "components": [
+            "cycloid-disc",
+            "eccentric-input"
+          ]
+        },
+        "evidence_kind": "geometry-derived",
+        "expected": {
+          "maximum": 0.001
+        },
+        "id": "workflow.no-overlap.cycloid-disc.eccentric-input",
+        "message": "Assembled solids do not interfere: overlap 0mm^3",
+        "status": "pass",
+        "unit": "mm^3"
+      },
+      "status": "pass"
+    },
+    {
+      "check_id": "workflow.no-overlap.crank.front-frame",
+      "description": "Assembled solids do not interfere",
+      "evidence_kind": "geometry-derived",
+      "execution_status": "pass",
+      "id": "no-overlap.crank.front-frame",
+      "mandatory": true,
+      "reason": "Assembled solids do not interfere: overlap 0mm^3",
+      "result": {
+        "actual": 0.0,
+        "evidence": {
+          "components": [
+            "crank",
+            "front-frame"
+          ]
+        },
+        "evidence_kind": "geometry-derived",
+        "expected": {
+          "maximum": 0.001
+        },
+        "id": "workflow.no-overlap.crank.front-frame",
+        "message": "Assembled solids do not interfere: overlap 0mm^3",
+        "status": "pass",
+        "unit": "mm^3"
+      },
+      "status": "pass"
+    }
+  ],
+  "created_utc": "2026-10-15T08:09:30.394452+00:00",
+  "elapsed_seconds": 8.116547599958722,
+  "errors": [],
+  "execution_authorization": {
+    "mode": "trusted-session",
+    "session_id": "8a92515a899c73973d5cc066c2abb975"
+  },
+  "files": {
+    "cadharness.toml": "2d0b99f5598afaf51dcab5a41704776a9cef48628fbb4bc39b0d23104a13eee2",
+    "project.py": "d57e5f6d9ebce72970c07421bc4fdc070ecdcf8450ed2a65733336888d3d52cc",
+    "verify.py": "b5d3d863eca6e44c40d8faf01a627d421ac86a6b451d54193ff0c06c446ea52c"
+  },
+  "fingerprints": {
+    "crank": "sha256:11e20264f36dec27bf05c4a8b3be28a63dee8319cabc011d3c52ad8dda192bb6",
+    "crank-key": "sha256:19c06c9e9f3e263afa8a11d7059d42ab3ab27a52ab56759c83a42424c51e18a6",
+    "cycloid-disc": "sha256:faadb4178343592ba6b97a4de6f607d2d1485d2722b57228c52e37b36f88e118",
+    "eccentric-input": "sha256:1dddda8c9f9bdb9a974bdb11811023b853b34e3e43e9991ce1f99f8114f9e419",
+    "frame-key-1": "sha256:f3027d1dfcb37722a3bfab657ba7f60438a36c20b7325cf2328f421aa1d9f6c0",
+    "frame-key-2": "sha256:083c20b66675ca6a8d3d2a011d48b4ac464cd466b9368c54c6546374abe36e2c",
+    "frame-key-3": "sha256:4fb0d1a9da53bc7112a0ce6f2d9e0f95e1d5bcc45599abf70a42be3c48ec17c9",
+    "front-frame": "sha256:854e63f565b76f592e3e09685983a332a8f562ec1e986772fce8f15ce6a5cb6f",
+    "output-carrier": "sha256:6353be618cbf1a8f8d3db2f6d9f13f24e151b2ea117360aefe1f912116c5b427",
+    "rear-frame": "sha256:29d1ccc397f565e54c1c7c664256716184f269ce8cf0e4e650853614da29b313"
+  },
+  "outcome": "ready-for-review",
+  "physical_validation": {
+    "gaps": [
+      "Not printed or assembled physically: friction, actual dimensional errors, snap retention, endurance and torque need a print trial.",
+      "Source-defined checks independently read final BREP for 9 lobes/10 pins and sweep 1081 poses; computational motion is not a physical functional test."
+    ],
+    "status": "not-yet-verified"
+  },
+  "prompt_inputs": {
+    "prompt.txt": "a0a96bc915c1e29985191d923417d447ad086b30e808a3ae7c1f4a22d4b44fe2"
+  },
+  "questions": [],
+  "ready_for_review": true,
+  "repository": {
+    "commit": "2872c53fec96c1fba0c57fc0118d323410892803",
+    "workflow_files_sha256": "df21bd306a8515b91617b11316d4996ab3e396e167a6bc21a15876c9d45b7c32",
+    "working_tree": "A  models/pocket-cycloid/README.md\nA  models/pocket-cycloid/cadharness.toml\nAM models/pocket-cycloid/docs/BUILD.md\nA  models/pocket-cycloid/evidence/mcp-run.json\nA  models/pocket-cycloid/evidence/render-iso.json\nA  models/pocket-cycloid/evidence/render-top.json\nA  models/pocket-cycloid/evidence/verification.json\nA  models/pocket-cycloid/previews/mcp-assembled.png\nA  models/pocket-cycloid/previews/mcp-top.png\nAM models/pocket-cycloid/project.py\nA  models/pocket-cycloid/verify.py\n?? assets/\n?? p.url()))"
+  },
+  "reviewed_source": null,
+  "revision": "r003",
+  "revision_spec": {
+    "brief": "brief-v001.json",
+    "parent": "r002",
+    "schema": "designworkflow.revision",
+    "schema_version": "1",
+    "turn_id": "turn-60a7b5dc",
+    "variant": null
+  },
+  "schema": "designworkflow.run",
+  "schema_version": "1",
+  "source_sha256": "00442ef6fee73d0a14afbd1904afdf1a435da850c46e21d7265849f19428493c",
+  "toolchain": {
+    "brep_fingerprint": "build123d.export_brep/sha256",
+    "build123d": "0.13.0",
+    "cadharness": "0.9.0",
+    "measurement_defaults": {
+      "angular_deg": 0.0001,
+      "linear_mm": 1e-06,
+      "volume_mm3": 1e-07
+    },
+    "measurement_tolerance_mm": 1e-06,
+    "measurement_tolerance_scope": "Defaults only; each measurement records its own tolerances.",
+    "occt": "8.0.1.1"
+  },
+  "unmetered_time": "IDE/model authoring and human review time must be supplied with --active-seconds; user-response waits excluded.",
+  "variant": null,
+  "verification_passed": true,
+  "warnings": []
+}

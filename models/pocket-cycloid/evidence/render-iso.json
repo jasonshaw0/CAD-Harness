@@ -1,0 +1,56 @@
+{
+  "status": "captured",
+  "design_id": "design-316a6790",
+  "revision_id": "r003",
+  "scene_fingerprint": "e78c4a96d8686b6e53ee46fbdfd923333a6438e540dd21cb3dce9444e5fb2a90",
+  "component_ids": [
+    "rear-frame",
+    "front-frame",
+    "output-carrier",
+    "cycloid-disc",
+    "eccentric-input",
+    "crank",
+    "frame-key-1",
+    "frame-key-2",
+    "frame-key-3",
+    "crank-key"
+  ],
+  "view": "iso",
+  "width": 1200,
+  "height": 900,
+  "focus_bounds_mm": null,
+  "camera": {
+    "projection": "orthographic",
+    "position": [
+      132.6590761812909,
+      -198.98861427193637,
+      167.17498379942
+    ],
+    "target": [
+      0.0,
+      0.0,
+      21.25
+    ],
+    "up": [
+      0,
+      0,
+      1
+    ],
+    "near": 0.001,
+    "far": 560.3177669858417,
+    "left": -85.82617889541348,
+    "right": 85.82617889541348,
+    "top": 64.36963417156011,
+    "bottom": -64.36963417156011
+  },
+  "reviewed": false,
+  "created": "2026-10-15T04:09:50.756612-04:00",
+  "artifact": {
+    "id": "render-9eecd423",
+    "mime_type": "image/png",
+    "bytes": 103078,
+    "sha256": "40e7f459ed76f846a7a826c5da95f6d28a69a1a49413c62c263777e2118e349a",
+    "path": "designs\\design-316a6790\\renders\\render-9eecd423.png",
+    "url": "http://127.0.0.1:8741/api/designs/design-316a6790/renders/render-9eecd423.png"
+  }
+}
