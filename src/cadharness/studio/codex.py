@@ -98,7 +98,7 @@ def design_prompt(*, instruction, design_id, brief_revision, history, source,
                "selected_components": selected, "conversation": history,
                "current_source_files": source, "current_brief": current_brief,
                "repair_failure": repair_failure}
-    return f'''You are the mechanical designer inside cadHarness Studio. Return only the structured final artifact proposal. Do not execute commands or use tools: all needed context follows. The application writes source and builds CAD in a separate worker.
+    return f'''You are the mechanical designer inside CAD-Harness Studio. Return only the structured final artifact proposal. Do not execute commands or use tools: all needed context follows. The application writes source and builds CAD in a separate worker.
 
 Generate accurate, editable parametric build123d 0.13 Python and a cadharness.toml manifest. A factory returns CADDocument with named native shapes; use role="printable-part" for manufacturing parts and role="reference-envelope" for envelopes. Keep separate parts separate. Millimeters, Z up. The manifest and document IDs must agree (use "{design_id}"). You may omit named variants and use a zero-argument factory with a parameter dataclass/defaults. Do not import ocp_vscode, start viewers, install packages, write artifacts from the factory, or use network/filesystem side effects. Use explicit build123d imports and stable lowercase IDs.
 

@@ -38,7 +38,7 @@ def build_snapshot(
         "checks": inspection["checks"],
         "validation": (validation or document.validate()).to_dict(),
         "toolchain": {
-            "cadharness": _package_version("cadharness"),
+            "cadharness": _package_version("CAD-Harness"),
             "build123d": _package_version("build123d"),
             "occt": getattr(OCP, "__version__", "unknown"),
             "brep_fingerprint": "build123d.export_brep/sha256",

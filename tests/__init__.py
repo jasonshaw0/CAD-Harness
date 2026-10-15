@@ -1,1 +1,1 @@
-"""Tests for the cadHarness framework and independent example projects."""
+"""Tests for the CAD-Harness framework and independent example projects."""

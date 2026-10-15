@@ -1,6 +1,6 @@
-# Author a cadHarness project
+# Author a CAD-Harness project
 
-cadHarness wraps ordinary build123d shapes with stable component IDs and
+CAD-Harness wraps ordinary build123d shapes with stable component IDs and
 engineering checks. Start with a small project, then replace the example geometry
 with your existing shape factory.
 

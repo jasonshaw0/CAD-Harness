@@ -1,9 +1,28 @@
-# Moving from designworkflow to the unified cadHarness layout
+# Moving from designworkflow to the unified CAD-Harness layout
 
 Studio and design orchestration now ship inside `cadharness`. The framework
 API, project manifests, CAD MCP tool names, and public framework JSON schemas
 retain their contracts. Saved workflow records still use `designworkflow.*`
 v1 schema IDs; path changes do not rewrite those identities.
+
+## CAD-Harness name
+
+The Python distribution is now `CAD-Harness`. New `cad-harness` and
+`cad-harness-mcp` commands accompany the existing `cadharness` commands.
+Python imports, `cadharness.toml`, `.cadharness/`, MCP configuration keys,
+environment variables, and evidence schemas keep their compatible names.
+Previously generated reports and CAD artifacts are not rewritten for branding.
+
+When upgrading an environment with the old `cadharness` distribution installed,
+remove that distribution before reinstalling so two distributions do not own the
+same legacy command scripts. From the checkout in Windows PowerShell:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip uninstall cadharness
+python bootstrap.py
+```
+
+On macOS/Linux, use `./.venv/bin/python` and `python3 bootstrap.py`.
 
 ## Commands and source paths
 
@@ -43,7 +62,7 @@ Fresh MCP configs default to `<first-root>/runs/studio/`. Manual designs default
 to `<checkout>/runs/` in editable installs, or `<cwd>/runs/` in a wheel install.
 Both are ignored by Git. Manual commands still accept old revision paths.
 
-cadHarness fingerprints evaluator source, and this refactor changes that
+CAD-Harness fingerprints evaluator source, and this refactor changes that
 fingerprint. Freshness checks may reject export or revision of an old evaluated
 attempt. Keep it for inspection and use Studio Rebuild to create fresh evidence.
 Do not patch stored hashes to bypass freshness checks.

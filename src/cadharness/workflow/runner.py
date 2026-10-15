@@ -328,7 +328,7 @@ def write_review(revision, report):
     content = f'''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{text(revision.parent.parent.name)} — {text(report['outcome'])}</title>
 <style>body{{font:16px/1.5 system-ui,sans-serif;max-width:1100px;margin:32px auto;padding:0 20px;color:#17212b;background:#f7f9fb}}a{{color:#145b8c}}h1{{font-size:30px}}.verdict{{padding:16px;border:1px solid #aab9c6;background:white}}.previews{{display:flex;flex-wrap:wrap;gap:16px}}figure{{margin:0;flex:1 1 240px;background:white;padding:12px}}img{{width:100%;height:220px}}figcaption{{font-size:13px}}table{{border-collapse:collapse;width:100%;background:white}}td,th{{text-align:left;padding:10px;border-bottom:1px solid #d7e0e7;overflow-wrap:anywhere}}.table{{overflow-x:auto}}code{{overflow-wrap:anywhere}}@media(max-width:600px){{body{{margin:16px auto}}td,th{{padding:8px;font-size:13px}}}}</style>
-<main><p>cadHarness · design workflow</p><h1>{text(revision.parent.parent.name)}</h1>
+<main><p>CAD-Harness · design workflow</p><h1>{text(revision.parent.parent.name)}</h1>
 <p class="verdict"><strong>{text(report['outcome'])}</strong> · Physical validation: not-yet-verified</p>
 <p>Ready for review means the recorded mandatory CAD requirements pass. Physical fit, manufacturing suitability, and performance remain unverified.</p>
 <nav><a href="project/project.py">Editable source</a> · <a href="project/evidence/brief.json">Design brief</a> · {inspector_link} · <a href="run.json">Evidence manifest</a></nav>

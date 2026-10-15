@@ -1,6 +1,6 @@
 # Geometry measurement guide
 
-cadHarness 0.9 requires build123d 0.13.x. Measurement helpers inspect the built
+CAD-Harness 0.9 requires build123d 0.13.x. Measurement helpers inspect the built
 OCCT geometry independently of declared parameter values. They do not certify
 physical fit, materials, manufacturing capability, or hardware compatibility.
 

@@ -47,7 +47,7 @@ export function connectRenderClient(token: string, protocol?: string): () => voi
       if (error instanceof RenderHTTPError && [401, 403, 404, 405, 410, 426].includes(error.status)) {
         closed = true;
         loaded?.disposeRenderer();
-        console.warn(`Studio image capture stopped (HTTP ${error.status}). Restart the Studio owner after updating cadHarness, then reload this tab.`);
+        console.warn(`Studio image capture stopped (HTTP ${error.status}). Restart the Studio owner after updating CAD-Harness, then reload this tab.`);
       } else {
         // Temporary disconnects retry without changing the user's viewport.
         retryDelay = Math.min(retryDelay * 2, 10000);

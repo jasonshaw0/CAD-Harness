@@ -1,8 +1,8 @@
-# cadHarness authoring guide — version 1
+# CAD-Harness authoring guide — version 1
 
-cadHarness supplies this workflow through MCP. No personal skill, browser
+CAD-Harness supplies this workflow through MCP. No personal skill, browser
 extension, desktop-control permission, or external CAD viewer is required.
-The host's assistant authors source; cadHarness builds, measures and displays it.
+The host's assistant authors source; CAD-Harness builds, measures and displays it.
 
 ## Design intent and source
 

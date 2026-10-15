@@ -1,6 +1,6 @@
 """Core project, component, parameter, and validation records.
 
-cadharness intentionally stores build123d ``Shape`` objects directly.  It adds
+CAD-Harness intentionally stores build123d ``Shape`` objects directly.  It adds
 project identity and engineering semantics without duplicating build123d's
 geometry or assembly object model.
 """

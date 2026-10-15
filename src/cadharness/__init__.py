@@ -1,4 +1,4 @@
-"""Public API for cadHarness project authors and integrations."""
+"""Public API for CAD-Harness project authors and integrations."""
 
 from .checks import (
     boolean_check,

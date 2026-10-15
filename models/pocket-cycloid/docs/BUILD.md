@@ -54,7 +54,7 @@ it is not a separate free-spinning knob.
 
 The source stores assembled placements. Drop each exported part to the bed in
 the slicer and apply the orientations above; do not print the assembly in place.
-Geometry export is available explicitly through cadHarness/Studio. No STEP/STL
+Geometry export is available explicitly through CAD-Harness/Studio. No STEP/STL
 exports were generated during this task.
 
 Nominal radial running gaps are 0.30 mm (0.60 mm diametral), including disc/cam,
@@ -142,4 +142,4 @@ ten-pin/nine-lobe, 6 mm disc configuration. Other tooth counts or stack thicknes
 require a frame/stack redesign and renewed verification.
 
 Studio design `design-316a6790` retains the source and frozen acceptance brief.
-The PNGs in `previews/` were returned through actual cadHarness MCP capture.
+The PNGs in `previews/` were returned through actual CAD-Harness MCP capture.

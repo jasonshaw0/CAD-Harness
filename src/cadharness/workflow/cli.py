@@ -65,7 +65,7 @@ def run(args):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(prog="cadharness design", description="Reviewed source and brief workflow; trusted local Python execution")
+    parser = argparse.ArgumentParser(prog="cad-harness design", description="Reviewed source and brief workflow; trusted local Python execution")
     add_arguments(parser)
     return run(parser.parse_args(argv))
 

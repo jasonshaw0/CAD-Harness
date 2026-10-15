@@ -1,4 +1,4 @@
-"""Self-contained read-only HTML rendering for cadHarness evidence."""
+"""Self-contained read-only HTML rendering for CAD-Harness evidence."""
 
 from __future__ import annotations
 
@@ -140,7 +140,7 @@ def render_inspector(
         else ("Validation passed" if passed else "Validation failed")
     )
     verdict_class = "pass" if passed else "fail"
-    title = _html(project.get("name", project.get("id", "cadHarness project")))
+    title = _html(project.get("name", project.get("id", "CAD-Harness project")))
     variant = inspection.get("manifest", {})
     variant_name = variant.get("variant") if isinstance(variant, Mapping) else None
     gate_reasons = gate.get("reasons", [])
@@ -155,7 +155,7 @@ def render_inspector(
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{title} · cadHarness inspector</title>
+<title>{title} · CAD-Harness inspector</title>
 <style>
 :root {{ color-scheme: dark; --bg:#0b0e12; --panel:#141920; --line:#2a333e;
   --text:#e8edf2; --muted:#9ba8b5; --accent:#55d6be; --pass:#65d08a;
@@ -196,7 +196,7 @@ footer {{ padding:28px 0 48px; color:var(--muted); }}
 </head>
 <body>
 <header><div class="shell">
-  <div class="eyebrow">cadHarness · read-only evidence</div>
+  <div class="eyebrow">CAD-Harness · read-only evidence</div>
   <h1>{title}</h1>
   <div class="meta">
     <span class="pill {verdict_class}" data-testid="verdict">{verdict}</span>

@@ -1,7 +1,7 @@
 # Manual design workflow
 
 For a live 3D canvas driven by your IDE assistant, start with
-[cadHarness Studio](STUDIO.md). The manual CLI below remains available
+[CAD-Harness Studio](STUDIO.md). The manual CLI below remains available
 for explicit source review and independent evidence collection.
 
 Turn a prompt into reviewed parametric source, independent CAD checks, and a
@@ -67,9 +67,9 @@ the loop. Failures, ambiguity, and timeouts retain a review package.
 ## Review and export
 
 The package contains ordinary Python, a manifest, original prompt and frozen
-brief copies, a four-state requirement ledger, cadHarness JSON evidence, SVG
+brief copies, a four-state requirement ledger, CAD-Harness JSON evidence, SVG
 previews, an HTML inspector, and source/artifact hashes. Success means **ready
-for user review**, not physical validation. A cadHarness pass alone cannot
+for user review**, not physical validation. A CAD-Harness pass alone cannot
 override missing mandatory evidence or blocking questions.
 
 ```powershell
@@ -101,7 +101,7 @@ They can access files and the network. Project paths and output restrictions do
 not isolate code. Only use reviewed imports and trusted installed dependencies.
 
 The workflow does not change MCP roots or configuration. Configure narrow,
-explicit roots for any existing cadHarness MCP use. The CLI/Python runner uses
+explicit roots for any existing CAD-Harness MCP use. The CLI/Python runner uses
 the same measurement and check implementation; it adds orchestration and a
 coverage ledger, not another geometry kernel or validation system.
 
@@ -138,4 +138,4 @@ The optional [Studio application](STUDIO.md) exposes source-backed design
 tools to the IDE assistant through MCP, with no separate model calls. Its previous
 Codex CLI designer is opt-in. Both use trusted local execution. Hosted/local model adapters,
 untrusted-code isolation, and unattended deployment remain deferred. Existing
-cadHarness public schemas remain unchanged.
+CAD-Harness public schemas remain unchanged.

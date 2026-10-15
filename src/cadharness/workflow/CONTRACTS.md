@@ -1,7 +1,7 @@
 # Workflow records and acceptance bindings
 
 Workflow JSON records carry `schema` and `schema_version: "1"`. These are
-independent of CADHarness's seven existing v1 contracts, which are validated with
+independent of CAD-Harness's seven existing v1 contracts, which are validated with
 `require_schema`. The workflow is currently a checkout tool, not an installed
 `cadharness` subcommand or MCP tool.
 
@@ -37,7 +37,7 @@ Requirement criteria use `expected` and optional `absolute_tolerance`, or
 inclusive `minimum`/`maximum`. Check units are `mm`, `deg`, `mm^3`, or null for
 counts. Numbers must be finite. Geometry acceptance defaults in the fixtures are
 0.01 mm/degree; count checks are exact. These acceptance limits are separate from
-CADHarness computational tolerances, preserved in measurement evidence.
+CAD-Harness computational tolerances, preserved in measurement evidence.
 
 Requirements use `geometry-derived`, `declared`, or `external` provenance.
 Only supported geometry bindings are executed automatically. Declared/external
@@ -46,7 +46,7 @@ unresolved instead of treating a project-supplied number as a geometry proof.
 
 ## Bindings
 
-Bindings construct CADHarness checks on the built `CADDocument`. Candidate
+Bindings construct CAD-Harness checks on the built `CADDocument`. Candidate
 checks are retained but cannot use the reserved `workflow.` namespace.
 
 | `type` | Fields and measurement |
@@ -54,10 +54,10 @@ checks are retained but cannot use the reserved `workflow.` namespace.
 | `bbox` | `component`, `axis: X/Y/Z`, optional `quantity: size/min/max/center`; OCCT bounding box. |
 | `solid-count` | `component`; actual solids in the shape. |
 | `printable-count` | Components with `role: printable-part`; contract metadata, not physical evidence. |
-| `hole-pattern` | `component`, `selector`, `value_path`; CADHarness simple parallel-cylinder inventory and pattern metrics. |
+| `hole-pattern` | `component`, `selector`, `value_path`; CAD-Harness simple parallel-cylinder inventory and pattern metrics. |
 | `cylinder` | `component`, `selector`, `value_path`; explicit feature dimensions, extent, and angular span. |
-| `clearance` | Two `components`, `value_path`; CADHarness unsigned distance/state. Optional `z_slab_mm: [lower, upper]` clips the actual shapes to an explicit slab before measurement. |
-| `interference` | Two `components`, maximum volume criterion, unit `mm^3`; existing CADHarness boolean-common check. |
+| `clearance` | Two `components`, `value_path`; CAD-Harness unsigned distance/state. Optional `z_slab_mm: [lower, upper]` clips the actual shapes to an explicit slab before measurement. |
+| `interference` | Two `components`, maximum volume criterion, unit `mm^3`; existing CAD-Harness boolean-common check. |
 | `thickness` | `component`, `points_mm`, `direction`, `value_path: minimum_mm`; existing sampled material-chord measurement. Samples must start in material. |
 | Other / `physical` / `external` | Explicitly unsupported or not-yet-verified. Mandatory unresolved requirements prevent readiness. |
 
@@ -106,7 +106,7 @@ checks. Approved engineering-baseline/sign-off workflows are deferred.
 
 `run.json` records coverage, original check results, warnings/errors, blockers,
 time, source/brief hashes, code/toolchain provenance, geometry fingerprints, and
-artifact hashes. Frozen prompt/brief copies, CADHarness reports, and failure logs
+artifact hashes. Frozen prompt/brief copies, CAD-Harness reports, and failure logs
 live under `project/evidence/`. Read-only review HTML and Markdown live beside
 `run.json`. A worker error or timeout leaves mandatory coverage unknown; an
 unexecuted check remains not-yet-verified. A core skip/warning maps to unknown,

@@ -1,1 +1,1 @@
-"""cadHarness design orchestration, using the shared framework evidence engine."""
+"""CAD-Harness design orchestration, using the shared framework evidence engine."""

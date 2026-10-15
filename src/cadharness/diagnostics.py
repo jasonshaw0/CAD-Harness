@@ -12,7 +12,7 @@ from typing import Any
 from .project import discover_projects
 
 
-def package_version(distribution: str = "cadharness") -> str:
+def package_version(distribution: str = "CAD-Harness") -> str:
     """Return installed distribution version without failing from a source tree."""
     try:
         return metadata.version(distribution)

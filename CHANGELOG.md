@@ -1,9 +1,15 @@
 # Changelog
 
-All notable cadHarness changes are recorded here. The project follows semantic
+All notable CAD-Harness changes are recorded here. The project follows semantic
 versioning while its public schemas remain experimental.
 
 ## Unreleased
+
+- Rename the product and Python distribution to CAD-Harness across Studio,
+  MCP identity, CLI help, and documentation. Add `cad-harness` and
+  `cad-harness-mcp` entrypoints while preserving Python imports, legacy commands,
+  manifests, configuration keys, and evidence protocols. Refresh the README
+  with a real Studio capture and local Python/build123d SVG badges.
 
 - Package versioned authoring guidance through MCP initialization, tool
   descriptions and `get_cad_authoring_guide`, including adaptive visual review.
@@ -47,7 +53,7 @@ versioning while its public schemas remain experimental.
   and exports. `cadharness-mcp --studio` serves the canvas beside the stdio
   transport. Separate Codex CLI generation is opt-in with `--designer codex`.
 
-- Added cadHarness Studio: a loopback 3D workbench with installed Codex CLI
+- Added CAD-Harness Studio: a loopback 3D workbench with installed Codex CLI
   generation, conversational revisions, bounded repairs, independent checks,
   component meshes, comparison overlays, cancellable workers, and explicit exports.
   Trusted-session authorization is separate from manual human source review.
@@ -168,7 +174,7 @@ versioning while its public schemas remain experimental.
 
 ## 0.2.0 — 2026-10-14
 
-- Established cadHarness as an independent, general-purpose build123d workflow.
+- Established CAD-Harness as an independent, general-purpose build123d workflow.
 - Added project discovery, inspection, validation, snapshot, comparison,
   hidden-line SVG preview, and explicit STEP/STL export operations.
 - Added deterministic BREP fingerprints, manifold evidence, topology counts,

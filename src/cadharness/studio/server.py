@@ -319,5 +319,5 @@ def serve(*, workspace=None, port=8741, model=None, designer="mcp"):
     dist = STUDIO_WEB / "index.html"
     if not dist.exists():
         raise RuntimeError("Build the Studio frontend first: cd studio/web && npm ci && npm run build")
-    print(f"cadHarness Studio: http://127.0.0.1:{port}", flush=True)
+    print(f"CAD-Harness Studio: http://127.0.0.1:{port}", flush=True)
     uvicorn.run(create_app(workspace, model=model, designer=designer), host="127.0.0.1", port=port, log_level="warning")

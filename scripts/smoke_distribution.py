@@ -1,7 +1,7 @@
 """Build/install a full wheel and exercise it outside the source checkout.
 
 Run after the Studio frontend build, using an environment with [mcp,studio].
-The temporary venv inherits dependencies but must import cadHarness from its wheel.
+The temporary venv inherits dependencies but must import CAD-Harness from its wheel.
 """
 
 import argparse
@@ -26,7 +26,7 @@ def main(*, render_browser=False):
     with TemporaryDirectory(prefix="cadharness-wheel-") as directory:
         work = Path(directory)
         run(sys.executable, "-m", "pip", "wheel", ROOT, "--no-deps", "--wheel-dir", work, cwd=work)
-        wheel, = work.glob("cadharness-*.whl")
+        wheel, = work.glob("cad_harness-*.whl")
         env = work / "venv"
         venv.EnvBuilder(with_pip=True).create(env)
         python = env / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
@@ -56,12 +56,14 @@ assert (WORKFLOW_ROOT / "CONTRACTS.md").is_file()
 assert (WORKFLOW_ROOT / "AUTHORING.md").is_file()
 assert list((PACKAGE_ROOT / 'studio/web/assets').glob('renderView-*.js'))
 from cadharness.guidance import authoring_guide
+from cadharness.diagnostics import package_version
+assert package_version() != 'uninstalled'
 assert authoring_guide()['version'] == '1'
 assert (WORKFLOW_ROOT / "prompts/workflow.md").is_file()
 assert (WORKFLOW_ROOT / "benchmarks/prompts/square-mount.txt").is_file()
 with TestClient(create_app(Path.cwd() / "workspace")) as client:
     page = client.get("/")
-    assert page.status_code == 200 and "cadHarness" in page.text
+    assert page.status_code == 200 and "CAD-Harness" in page.text
     assets = re.findall(r'(?:src|href)="(/assets/[^\"]+)"', page.text)
     assert assets
     for asset in assets:
@@ -70,6 +72,10 @@ print("Installed wheel resources and canvas passed:", PACKAGE_ROOT)
 ''', encoding="utf-8")
         run(python, smoke, cwd=work)
         run(python, "-m", "cadharness", "--help", cwd=work)
+        scripts = env / ("Scripts" if sys.platform == "win32" else "bin")
+        extension = ".exe" if sys.platform == "win32" else ""
+        for command in ("cad-harness", "cad-harness-mcp", "cadharness", "cadharness-mcp"):
+            run(scripts / (command + extension), "--help", cwd=work)
         run(python, "-m", "unittest", "test_studio_mcp", "test_studio_rendering", "-v", cwd=work)
         if render_browser:
             # Use the permanent repository acceptance runner with the installed

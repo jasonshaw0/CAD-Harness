@@ -1,4 +1,4 @@
-"""Exercise the installed cadharness MCP server through a real stdio client."""
+"""Exercise the installed CAD-Harness MCP server through a real stdio client."""
 
 from __future__ import annotations
 
@@ -70,7 +70,7 @@ async def smoke() -> dict:
                     "preview_cad_project",
                     "export_cad_project",
                 }
-                if initialization.server_info.name != "cadHarness":
+                if initialization.server_info.name != "CAD-Harness":
                     raise RuntimeError(
                         f"unexpected server name: {initialization.server_info.name}"
                     )

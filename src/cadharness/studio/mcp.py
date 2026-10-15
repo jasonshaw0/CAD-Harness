@@ -44,7 +44,7 @@ def _validate_owner(handshake, expected, port):
             or 'studio_render_view' not in handshake.get('tools', [])):
         raise RuntimeError(f"Studio port {port} is owned by an older or incompatible MCP service "
                            "without the required image-capture API. Restart its owning MCP "
-                           "connection after updating cadHarness, then reconnect this client. "
+                           "connection after updating CAD-Harness, then reconnect this client. "
                            "The existing workspace and designs are preserved.")
 
 

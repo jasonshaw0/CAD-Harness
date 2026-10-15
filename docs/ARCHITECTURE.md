@@ -1,8 +1,8 @@
-# cadHarness architecture
+# CAD-Harness architecture
 
 ## Product boundary
 
-cadHarness combines a reusable framework for build123d projects with Studio,
+CAD-Harness combines a reusable framework for build123d projects with Studio,
 an included MCP design workbench. The framework owns project semantics and
 engineering evidence; design orchestration owns briefs and retained attempts;
 Studio provides assistant tools and a live 3D interface. build123d/OCCT builds
@@ -34,7 +34,7 @@ Keeping native `Shape` instances avoids a second topology model and retains dire
 ## One product, three layers
 
 ```text
-IDE assistant <------- MCP -------> cadHarness Studio <----> browser canvas
+IDE assistant <------- MCP -------> CAD-Harness Studio <----> browser canvas
    |                                | selection, jobs, revisions
    +--- Python/TOML + brief ---------+
                                     v
@@ -43,7 +43,7 @@ IDE assistant <------- MCP -------> cadHarness Studio <----> browser canvas
                          source hashes, bounded repairs
                                     |
                                     v
-                         cadHarness framework operations
+                         CAD-Harness framework operations
                          CADDocument + build123d/OCCT
                          measurements, checks, reports, exports
 ```
@@ -162,7 +162,7 @@ claim of geometric identity or physical suitability.
 `verify` evaluates whether the current design satisfies engineering requirements,
 optionally combining that assessment with revision comparison against a baseline snapshot.
 
-Crucially, cadHarness maintains a strict separation of concerns:
+Crucially, CAD-Harness maintains a strict separation of concerns:
 - **Geometry validity**: whether the solid can be constructed and is topologically sound.
 - **Engineering validation**: whether the model satisfies declared functional checks and bounds.
 - **Revision comparison**: an objective diff between two states (which may report "identical" even between two failing revisions).
@@ -261,7 +261,7 @@ build123d/OCCT toolchain; revision evidence should record and review that change
 1. Define richer assembly metadata exchange without duplicating build123d or XDE.
 2. Add topology-derived measurement helpers only where OCCT evidence can be made explicit and robust.
 3. Add typed command-line overrides and variant inheritance only if real projects demonstrate a need beyond named configurations.
-4. Add review/sign-off metadata without turning cadHarness into a full PLM system.
+4. Add review/sign-off metadata without turning CAD-Harness into a full PLM system.
 5. Evaluate XDE assembly export and external analysis adapters only when independent projects demonstrate the need.
 
 Out of scope for the near term: a custom kernel, a general constraint solver, a full sketch-based editor, an in-process LLM, or remote execution of untrusted project source.

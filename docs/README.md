@@ -1,6 +1,6 @@
-# cadHarness documentation
+# CAD-Harness documentation
 
-cadHarness includes a reusable CAD framework and Studio, the application that
+CAD-Harness includes a reusable CAD framework and Studio, the application that
 uses it with your IDE assistant. Both connect Python source and built geometry
 to explicit engineering evidence.
 
@@ -13,7 +13,7 @@ to explicit engineering evidence.
 | Measure holes, clearances, and sampled thickness | [Geometry measurements](MEASUREMENTS.md) |
 | Understand the shared design and evidence pipeline | [Architecture](ARCHITECTURE.md) |
 | Find moved code or reuse an older workspace | [Migration](MIGRATION.md) |
-| Develop, test, or package cadHarness | [Contributing](../CONTRIBUTING.md) |
+| Develop, test, or package CAD-Harness | [Contributing](../CONTRIBUTING.md) |
 | Evaluate defect detection and design trials | [Evaluation](EVALUATION.md) |
 
 The authoring contract is `cadharness.toml` → trusted Python factory →

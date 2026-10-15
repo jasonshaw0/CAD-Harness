@@ -1,7 +1,7 @@
 [project]
 id = "project-box"
 name = "Parametric Project Box"
-description = "Two-part enclosure exercising the general cadHarness project contract."
+description = "Two-part enclosure exercising the general CAD-Harness project contract."
 entrypoint = "project.py:create_project"
 parameter_type = "project.py:ProjectBoxParameters"
 default_variant = "standard"

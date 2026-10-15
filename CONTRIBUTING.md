@@ -1,6 +1,6 @@
-# Developing cadHarness
+# Developing CAD-Harness
 
-cadHarness is one product with a reusable framework, design orchestration, and
+CAD-Harness is one product with a reusable framework, design orchestration, and
 Studio. Keep CAD operations in the shared framework; Studio orchestrates and
 presents their results.
 
@@ -88,7 +88,7 @@ npm --prefix studio/web run build
 temporary environment, verifies its canvas/assets, and runs the real Studio
 stdio integration outside the checkout. CI runs this after building the frontend.
 It includes installed guidance discovery and direct/shared MCP image transport;
-the temporary environment borrows dependencies while importing cadHarness from
+the temporary environment borrows dependencies while importing CAD-Harness from
 the built wheel. It does not load personal skills or client configuration.
 With Chrome for Testing installed, add `--render-browser` to exercise the same
 real rendering acceptance runner against that installed wheel outside the checkout.

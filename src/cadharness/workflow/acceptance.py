@@ -1,4 +1,4 @@
-"""Bind independent brief requirements to existing CADHarness checks."""
+"""Bind independent brief requirements to existing CAD-Harness checks."""
 
 from dataclasses import replace
 from copy import deepcopy

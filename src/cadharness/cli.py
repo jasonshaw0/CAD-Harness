@@ -31,15 +31,15 @@ from .verification import VerificationPolicy
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="cadharness",
-        description="Design with Studio and verify source-backed build123d projects.",
+        prog="cad-harness",
+        description="CAD-Harness: design with Studio and verify source-backed build123d projects.",
         epilog=(
             "examples:\n"
-            "  cadharness doctor .\n"
-            "  cadharness list examples\n"
-            "  cadharness validate examples/project-box --variant standard\n"
-            "  cadharness verify examples/nema17-mount --summary\n"
-            "  cadharness inspector examples/nema17-mount --summary\n"
+            "  cad-harness doctor .\n"
+            "  cad-harness list examples\n"
+            "  cad-harness validate examples/project-box --variant standard\n"
+            "  cad-harness verify examples/nema17-mount --summary\n"
+            "  cad-harness inspector examples/nema17-mount --summary\n"
             "\n"
             "verify exit codes: 0 gate passed, 1 gate failed, 2 usage or execution error"
         ),

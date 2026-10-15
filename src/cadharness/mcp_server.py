@@ -1,4 +1,4 @@
-"""Bounded MCP transport for trusted, source-backed cadharness projects."""
+"""Bounded MCP transport for trusted, source-backed CAD-Harness projects."""
 
 from __future__ import annotations
 
@@ -41,8 +41,8 @@ def _configured_roots(cli_roots: Iterable[str] | None = None) -> tuple[Path, ...
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="cadharness-mcp",
-        description="Run the cadHarness MCP server over stdio.",
+        prog="cad-harness-mcp",
+        description="Run the CAD-Harness MCP server over stdio.",
     )
     parser.add_argument(
         "--root",
@@ -74,7 +74,7 @@ def _resolve_in_roots(path: str, roots: Iterable[Path]) -> Path:
 
 ROOTS = _configured_roots()
 mcp = MCPServer(
-    "cadHarness",
+    "CAD-Harness",
     version=package_version(),
     instructions=SERVER_INSTRUCTIONS,
 )
@@ -108,7 +108,7 @@ def list_cad_schemas() -> dict[str, Any]:
 
 @mcp.tool()
 def list_cad_projects() -> dict[str, Any]:
-    """List cadharness manifests beneath the configured project roots."""
+    """List CAD-Harness manifests beneath the configured project roots."""
     return {
         "roots": [str(root) for root in ROOTS],
         "projects": sum((discover_projects(root) for root in ROOTS), []),

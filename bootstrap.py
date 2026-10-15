@@ -58,7 +58,7 @@ def prepare(args, *, checkout=ROOT, runner=run, which=shutil.which):
         runner([sys.executable, "-m", "venv", environment], cwd=checkout)
     else:
         print("[1/4] Reusing .venv", flush=True)
-    print("[2/4] Installing cadHarness" + (" framework" if args.framework_only else " with MCP and Studio"), flush=True)
+    print("[2/4] Installing CAD-Harness" + (" framework" if args.framework_only else " with MCP and Studio"), flush=True)
     target = str(checkout) + ("" if args.framework_only else "[mcp,studio]")
     runner([python, "-m", "pip", "install", "-e", target], cwd=checkout)
     if npm:
@@ -92,7 +92,7 @@ def prepare(args, *, checkout=ROOT, runner=run, which=shutil.which):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="Set up cadHarness from a checkout with one command.")
+    parser = argparse.ArgumentParser(description="Set up CAD-Harness from a checkout with one command.")
     parser.add_argument("--framework-only", action="store_true", help="install/check the framework without Node.js, MCP, or Studio")
     parser.add_argument("--check", action="store_true", help="check prerequisites without changing files or installing packages")
     parser.add_argument("--root", action="append", help="explicit trusted MCP root; repeat for several (default: this checkout)")

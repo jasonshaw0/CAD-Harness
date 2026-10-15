@@ -1,6 +1,6 @@
-# cadHarness Studio
+# CAD-Harness Studio
 
-Studio is the included application for the cadHarness framework. Your IDE
+Studio is the included application for the CAD-Harness framework. Your IDE
 assistant authors designs through MCP; the browser displays built geometry,
 revisions, and measured requirements.
 

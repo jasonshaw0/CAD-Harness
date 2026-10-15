@@ -20,8 +20,8 @@ Install `[mcp]` for framework-only MCP, or `[mcp,studio]` for the integrated
 design workbench. See [Studio setup](STUDIO.md) for its canvas build.
 
 ```powershell
-git clone https://github.com/jasonshaw0/cadharness.git
-cd cadharness
+git clone https://github.com/jasonshaw0/cadHarness.git CAD-Harness
+cd CAD-Harness
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e ".[mcp]"
 .\.venv\Scripts\python.exe -m cadharness doctor .
@@ -33,7 +33,10 @@ should be the repository you just cloned.
 
 The examples below use `python -m cadharness`, which does not depend on the
 console-script directory being on `PATH`. After activating the environment,
-the shorter `cadharness ...` commands are equivalent.
+the shorter `cad-harness ...` commands are equivalent. The `cadharness` and
+`cadharness-mcp` entrypoints remain available for compatibility. The distribution
+is named `CAD-Harness`; Python imports and `python -m cadharness` retain their
+existing names, as do manifests, MCP keys, environment variables, and v1 schemas.
 
 ## CLI workflow
 

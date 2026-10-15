@@ -1,6 +1,6 @@
-# cadHarness Studio
+# CAD-Harness Studio
 
-Studio is the included application for the cadHarness framework. Your IDE
+Studio is the included application for the CAD-Harness framework. Your IDE
 assistant writes parametric Python through MCP; Studio builds revisions,
 displays the actual geometry, and returns measured acceptance evidence to the
 same conversation. Source remains editable and every attempt retains its report.
@@ -172,7 +172,7 @@ claims each request. Normal builds generate no images.
 tab heartbeat indicates a connected renderer; WebGL is tested when capture is
 requested. Closed Studio, WebGL failure or a 10-second capture deadline returns
 `status: unavailable` with a reason and preserves the build. Background-tab
-throttling can also cause a timeout. cadHarness does not retry or launch a browser.
+throttling can also cause a timeout. CAD-Harness does not retry or launch a browser.
 Report a needed visual check honestly when unavailable; there is no screenshot
 quota, review form or extra completion gate. A headless production renderer is
 outside the current implementation.
@@ -233,7 +233,7 @@ For frontend development, run the backend on port 8741 and
   the MCP host so its static mount is refreshed.
 - **Port occupied / tools disappear:** an older MCP host or standalone viewer may
   own port 8741 without supporting shared MCP connections. Restart that owner
-  after updating cadHarness, then reconnect the other MCP clients. For a separate
+  after updating CAD-Harness, then reconnect the other MCP clients. For a separate
   workspace use `--studio-port`. A standalone viewer is not an MCP session.
 - **Image capture rejected / repeated render HTTP 405:** the browser bundle and
   running Python owner are from different revisions. Restart the MCP connection
