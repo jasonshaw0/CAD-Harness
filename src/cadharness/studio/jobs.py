@@ -26,7 +26,11 @@ class Jobs:
 
     def submit(self, design_id, instruction="", selected=(), *, example=None, import_path=None, export_format=None, rebuild=False, candidate=None, session_id):
         if not self.lock.acquire(blocking=False):
-            raise ValueError("Another design job is active. Cancel it or wait for it to finish.")
+            # Pollers can observe the persisted terminal status just before the
+            # previous worker finishes its event writes and releases this lock.
+            # Wait for that cleanup, while still rejecting genuinely active jobs.
+            if self.is_active() or not self.lock.acquire(timeout=5):
+                raise ValueError("Another design job is active. Cancel it or wait for it to finish.")
         job = {"id": new_id("job"), "design_id": design_id, "status": "queued", "created": now(),
                "instruction": instruction, "error": None,
                "requested_model": "IDE assistant via MCP" if candidate else

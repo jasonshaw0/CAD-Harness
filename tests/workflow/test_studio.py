@@ -262,6 +262,24 @@ class StudioTests(unittest.TestCase):
                         cwd=self.root, cancel=cancel, on_line=on_line)
         self.assertLess(time.monotonic() - start, 5)
 
+    def test_next_job_waits_for_terminal_worker_to_release_its_lock(self):
+        jobs = Jobs(self.store)
+        design = self.store.create("terminal cleanup")
+        previous = {"id": "job-deadbeef", "design_id": design["id"], "status": "ready"}
+        self.store.put_job(previous)
+        jobs.active_id = previous["id"]
+        jobs.lock.acquire()
+        # Reproduce polling a terminal status before the old worker's finally
+        # block releases its lock. The next operation must wait for that cleanup.
+        cleanup = threading.Timer(.05, jobs.lock.release)
+        cleanup.start()
+        jobs.export = lambda *args: None
+        try:
+            submitted = jobs.submit(design["id"], export_format="stl", session_id="test")
+            self.assertEqual(self.wait(jobs, submitted)["status"], "ready")
+        finally:
+            cleanup.join()
+
     def test_cancelled_build_has_terminal_revision_state(self):
         entered = threading.Event()
         jobs = Jobs(self.store, generator=lambda *args, **kwargs: self.proposal())
