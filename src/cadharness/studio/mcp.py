@@ -18,6 +18,7 @@ from starlette.routing import Route
 from ..workflow.brief import read_json
 from ..paths import STUDIO_WEB
 from .server import create_app
+from .jobs import ACTIVE
 from .rendering import RENDER_PROTOCOL
 
 
@@ -283,7 +284,10 @@ def register_tools(server, service):
         report, error, artifacts = None, None, {}
         if revision_id:
             revision = store.design_root(design["id"]) / "revisions" / revision_id
-            if (revision / "run.json").exists():
+            # check_revision publishes its immutable report before the worker
+            # records a terminal job status. Pollers must not parse that file
+            # while its first write is still in progress.
+            if job["status"] not in ACTIVE and (revision / "run.json").exists():
                 report = read_json(revision / "run.json")
             stderr = revision / "project/evidence/worker.stderr.txt"
             if stderr.exists():

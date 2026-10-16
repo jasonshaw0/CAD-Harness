@@ -28,6 +28,35 @@ from cadharness.studio.store import Store
 
 
 class StudioMCPTests(unittest.TestCase):
+    def test_poll_defers_partial_report_until_job_is_terminal(self):
+        with TemporaryDirectory() as directory:
+            owner = StudioService(Path(directory) / 'studio', port=0, library_root=directory, trusted_roots=[directory])
+            try:
+                register_tools(MCPServer('owner'), owner)
+                store = owner.app.state.store
+                design = store.create('Report publication race')
+                design['latest_revision'] = 'r001'
+                store.put(design)
+                revision = store.design_root(design['id']) / 'revisions/r001'
+                revision.mkdir(parents=True)
+                report_file = revision / 'run.json'
+                report_file.write_text('{"coverage":[', encoding='utf-8')
+                job = {'id': 'job-1234abcd', 'design_id': design['id'], 'revision': 'r001', 'status': 'building'}
+                store.put_job(job)
+                self.assertIsNone(owner.invoke('studio_get_job', {'job_id': job['id']})['report'])
+                report = {'ready_for_review': False, 'outcome': 'needs-revision', 'coverage': []}
+                report_file.write_text(json.dumps(report), encoding='utf-8')
+                job['status'] = 'needs-revision'
+                store.put_job(job)
+                self.assertEqual(owner.invoke('studio_get_job', {'job_id': job['id']})['report'], report)
+                # Corruption in a completed report remains an error, not a
+                # successful empty result or a blind JSON retry.
+                report_file.write_text('{"coverage":[', encoding='utf-8')
+                with self.assertRaises(json.JSONDecodeError):
+                    owner.invoke('studio_get_job', {'job_id': job['id']})
+            finally:
+                owner.close()
+
     def test_new_client_rejects_stale_owner_before_advertising_render_tools(self):
         with TemporaryDirectory() as directory:
             workspace = Path(directory) / 'studio'
