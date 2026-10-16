@@ -92,18 +92,33 @@ import-path injection.
 
 ```powershell
 npm --prefix studio/web run build
-.\.venv\Scripts\python.exe -m pip wheel . --no-deps --wheel-dir dist
+.\.venv\Scripts\python.exe -m pip install build
+.\.venv\Scripts\python.exe scripts/smoke_distribution.py --fresh-install --output dist/validated
 ```
 
 Or on Linux/macOS, keep the npm command and use
-`./.venv/bin/python -m pip wheel . --no-deps --wheel-dir dist`.
+`./.venv/bin/python` for both Python commands.
 
-`python scripts/smoke_distribution.py` builds a wheel, installs it in a
-temporary environment, verifies its canvas/assets, and runs the real Studio
-stdio integration outside the checkout. CI runs this after building the frontend.
-It includes installed guidance discovery and direct/shared MCP image transport;
-the temporary environment borrows dependencies while importing CAD-Harness from
-the built wheel. It does not load personal skills or client configuration.
+The smoke script builds a source distribution, then a wheel from that archive
+using isolated build dependencies. It checks source/resource bytes and package
+name/version in both artifacts, including the lazy renderer chunk, templates and
+authoring guidance. `--fresh-install` resolves `[mcp,studio]` and dependencies in
+a clean temporary environment, runs `pip check`, serves installed assets, and
+runs the real Studio stdio integration outside the checkout. CI runs this path
+on Windows, Linux and macOS with Python 3.12 after building the frontend. It
+includes failed measurement, frozen repair, follow-up, export, guidance discovery
+and direct/shared MCP image transport; no personal skills or host config are used.
+
+`--output` retains the validated wheel, sdist and `SHA256SUMS` only after success.
+Choose a new directory each run; existing output is preserved. This does not tag,
+release or upload a package. The source archive carries compiled Studio assets;
+use a Git checkout to edit/rebuild the frontend. These checks establish artifact
+contents and installation behavior, not byte-identical rebuilds or physical fit.
+
+For a faster local check, omit `--fresh-install`; that mode borrows development
+dependencies and cannot establish a clean installation. `build` is a development
+tool only, not an added application dependency. The default build sequence is
+documented by [PyPA build](https://build.pypa.io/en/stable/how-to/basic-usage.html).
 With Chrome for Testing installed, add `--render-browser` to exercise the same
 real rendering acceptance runner against that installed wheel outside the checkout.
 
@@ -112,6 +127,9 @@ Studio reports `frontend_available=False`. For a full Studio distribution,
 build from a clean tree and include the canvas. Install the wheel with
 `[mcp,studio]` extras in a separate environment, test outside the checkout, and
 confirm the authoring resources and viewer are present.
+
+See the [release-readiness audit and roadmap](docs/RELEASE_READINESS.md) for
+current evidence, owner decisions, and the next incremental milestone.
 
 Keep generated CAD runs and exports out of commits. Preserve user changes,
 run relevant checks before committing, and use focused commits. The local

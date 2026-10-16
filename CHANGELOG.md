@@ -5,6 +5,12 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
+- Validate full Studio distributions by building an sdist and its wheel,
+  checking bundled source/resources and version metadata, and testing fresh
+  dependency installation outside the checkout. Extend bootstrap/distribution
+  CI to Windows and retain validated artifacts with hashes. Add a phased
+  release-readiness audit and roadmap; no package or release is published.
+
 - Start a browser download when STEP or STL is chosen in Studio. Single parts
   download directly; multipart designs arrive in one ZIP containing the exact
   exported files. Retain individual links, report failed transfers, and preserve

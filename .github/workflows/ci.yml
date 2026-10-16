@@ -63,7 +63,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -79,7 +79,21 @@ jobs:
       - name: Check frontend behavior
         run: npm --prefix studio/web test
       - name: Check installed Studio distribution
-        run: .venv/bin/python scripts/smoke_distribution.py
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            python_path=.venv/Scripts/python.exe
+          else
+            python_path=.venv/bin/python
+          fi
+          "$python_path" -m pip install build
+          "$python_path" scripts/smoke_distribution.py --fresh-install --output dist/validated
+      - name: Retain validated distributions
+        uses: actions/upload-artifact@v4
+        with:
+          name: distributions-${{ runner.os }}-py312
+          path: dist/validated/
+          if-no-files-found: error
       - name: Check Studio rendering through isolated Playwriter
         if: runner.os == 'Linux'
         run: |
