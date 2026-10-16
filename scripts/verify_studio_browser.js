@@ -7,7 +7,7 @@ const path = require('node:path');
 const steps = ['open', 'authorize', 'new', 'example', 'ready', 'select', 'isolate', 'restore',
   'review', 'expand', 'filter', 'history', 'rebuild', 'rebuilt', 'historical', 'current',
   'compare', 'overlay', 'palette', 'find-source', 'source', 'source-ready', 'export-menu',
-  'export-step', 'export-finished', 'download-menu', 'download', 'dismiss-menu',
+  'export-step', 'export-finished', 'export-stl', 'export-stl-finished', 'download-menu', 'download', 'dismiss-menu',
   'theme', 'desktop-dark', 'mobile', 'close-panel', 'collapse-explorer', 'mobile-fit', 'mobile-view', 'mobile-top', 'done'];
 const step = state.studioCheckStep || 'open';
 state.studioArtifacts ||= path.resolve('runs', 'studio-browser-' + Date.now());
@@ -50,8 +50,33 @@ else if (step === 'source-ready') {
   await state.page.getByLabel('Source code').filter({ hasText: /from |\[project\]/ }).waitFor({ timeout: 10000 });
   await shot('source-light');
 } else if (step === 'export-menu') await button('Export design').click();
-else if (step === 'export-step') await button('STEP geometry .step').click();
+else if (step === 'export-step') {
+  const [download] = await Promise.all([state.page.waitForEvent('download'), button('STEP geometry .step').click()]);
+  const failure = await download.failure();
+  if (failure) throw new Error('Automatic STEP download failed: ' + failure);
+  const artifact = await state.page.evaluate(async url => {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Automatic export download returned ' + response.status);
+    return response.text();
+  }, download.url());
+  if (!artifact.startsWith('ISO-10303-21;')) throw new Error('Automatic export is not a STEP file');
+  fs.writeFileSync(path.join(state.studioArtifacts, 'automatic-' + download.suggestedFilename()), artifact);
+}
 else if (step === 'export-finished') await state.page.getByRole('link', { name: /plate-standard\.step/ }).waitFor({ timeout: 30000 });
+else if (step === 'export-stl') {
+  const [download] = await Promise.all([state.page.waitForEvent('download'), button('STL mesh .stl').click()]);
+  const failure = await download.failure();
+  if (failure) throw new Error('Automatic STL download failed: ' + failure);
+  const bytes = await state.page.evaluate(async url => {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Automatic STL download returned ' + response.status);
+    return Array.from(new Uint8Array(await response.arrayBuffer()));
+  }, download.url());
+  const artifact = Buffer.from(bytes);
+  if (artifact.length < 84 || artifact.length !== 84 + 50 * artifact.readUInt32LE(80)) throw new Error('Automatic export is not a binary STL file');
+  fs.writeFileSync(path.join(state.studioArtifacts, 'automatic-' + download.suggestedFilename()), artifact);
+}
+else if (step === 'export-stl-finished') await state.page.getByRole('link', { name: /plate-standard\.stl/ }).waitFor({ timeout: 30000 });
 else if (step === 'download-menu') await state.page.getByRole('link', { name: /plate-standard\.step/ }).waitFor();
 else if (step === 'download') {
   const [download] = await Promise.all([state.page.waitForEvent('download'), state.page.getByRole('link', { name: /plate-standard\.step/ }).click()]);

@@ -201,15 +201,15 @@ outside the current implementation.
 | Compare | Compare actual geometry and requirement changes with the previous built revision. Overlay shows changed prior components in amber; it is not an exact solid difference. |
 | Source files | Inspect the retained Python and manifest without modifying evidence. Download an individual file or the source/manifest/brief ZIP. |
 | Agent activity | Read assistant messages and questions. In MCP mode, continue in your IDE; the optional Codex mode retains an in-app composer. |
-| Export | Create STEP/STL from current passing printable components, or download source and reports. The menu reopens with download links when generation finishes; references are excluded. |
+| Export | Choosing STEP/STL generates current passing printable components and starts a download: one part as its original file, multiple parts together in a ZIP. The menu also retains individual download links; references are excluded. |
 | Settings | Switch light/dark/system theme, grid, axes, edge display, and ghost references. Preferences stay in this browser. |
 | Session status | Inspect the local workspace and execution mode, and enable or lock trusted Python execution. |
 
 If an export reports stale evidence after a CAD-Harness update, use **Rebuild
 current source**, then export again. This evaluates the retained source and
 frozen requirements in a new revision; earlier source and evidence remain intact.
-Export failures appear as alerts. Successful generation reopens the Export menu
-with a separate download link for each printable part.
+Export or transfer failures appear as alerts. A successful export starts the
+download automatically and reopens the menu with individual links as well.
 
 The bottom dock holds Fit, standard views, inspection tools, Compare, and
 distraction-free mode. `Ctrl/⌘ K` opens the command palette. Single-key shortcuts

@@ -76,6 +76,8 @@ jobs:
           python-version: "3.12"
       - name: One-command onboarding
         run: python bootstrap.py
+      - name: Check frontend behavior
+        run: npm --prefix studio/web test
       - name: Check installed Studio distribution
         run: .venv/bin/python scripts/smoke_distribution.py
       - name: Check Studio rendering through isolated Playwriter

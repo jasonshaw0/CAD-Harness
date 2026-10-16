@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Design, Job, RevisionData } from './types';
 import { connectRenderClient } from './renderClient';
 import { jobErrorMessage } from './jobErrors';
+import { prepareExportDownload, saveExportDownload, type ExportFormat } from './exportDownload';
 
 export type Session = { designer: 'mcp' | 'codex'; token: string; authorized: boolean; codex_available: boolean; model: string; workspace: string; active_job: string | null; render_protocol?: string };
 const activeStates = new Set(['queued', 'generating', 'building', 'checking', 'repairing', 'exporting']);
@@ -17,18 +18,20 @@ export function useStudio() {
   const [previous, setPrevious] = useState<RevisionData | null>(null);
   const [job, setJob] = useState<Job | null>(null);
   const [progress, setProgress] = useState('');
+  const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
   const [hidden, setHidden] = useState<Set<string>>(new Set());
   const [isolated, setIsolated] = useState<string | null>(null);
   const [overlay, setOverlay] = useState(false);
   const stream = useRef<EventSource | null>(null);
+  const readyActions = useRef(new Map<string, () => void | Promise<void>>());
   const token = useRef('');
   const current = useRef({ design, revision, job });
   current.current = { design, revision, job };
   const navigation = useRef(0);
   const mcpMode = session?.designer !== 'codex';
-  const busy = !!job && activeStates.has(job.status);
+  const busy = downloading || (!!job && activeStates.has(job.status));
   const historical = !!design && !!revision && revision !== design.display_revision && revision !== design.latest_revision;
   const report = historical ? data?.report : latestData?.report || data?.report;
   const reportRevision = historical ? revision : latestData?.revision || revision;
@@ -73,7 +76,10 @@ export function useStudio() {
     setSelected(null); setHidden(new Set()); setIsolated(null); setOverlay(false);
     setData(null); setLatestData(null); setPrevious(null); setRevision(null);
   }
-  function watch(next: Job, onReady?: () => void) {
+  function watch(next: Job, onReady?: () => void | Promise<void>) {
+    // MCP polling can reattach to this job before React commits setJob. Keep
+    // the initiating export action even when that watcher has no callback.
+    if (onReady) readyActions.current.set(next.id, onReady);
     const generation = navigation.current;
     stream.current?.close(); setJob(next);
     const events = new EventSource(`/api/jobs/${next.id}/events`);
@@ -91,9 +97,11 @@ export function useStudio() {
       void run(async () => {
         const completed: Job = await api(`/api/jobs/${next.id}`);
         setJob(completed); setProgress(''); await refresh(next.design_id);
+        const action = readyActions.current.get(next.id);
+        readyActions.current.delete(next.id);
         if (generation !== navigation.current || current.current.design?.id !== next.design_id) return;
         if (completed.status === 'failed') throw new Error(jobErrorMessage(completed.error || 'The job failed. Open Agent activity for details.'));
-        if (completed.status === 'ready') onReady?.();
+        if (completed.status === 'ready') await action?.();
       });
     });
     events.onerror = () => { if (events.readyState === EventSource.CLOSED) events.close(); };
@@ -176,8 +184,19 @@ export function useStudio() {
   async function rebuild() {
     if (design) watch((await api(`/api/designs/${design.id}/rebuild`, {})).job);
   }
-  async function exportModel(format: string, onReady?: () => void) {
-    if (design) watch((await api(`/api/designs/${design.id}/export`, { format })).job, onReady);
+  async function exportModel(format: ExportFormat, onReady?: () => void) {
+    if (!design?.latest_revision) return;
+    const designId = design.id, revisionId = design.latest_revision;
+    watch((await api(`/api/designs/${designId}/export`, { format })).job, async () => {
+      setDownloading(true); setProgress(`Preparing ${format.toUpperCase()} download…`);
+      try {
+        const exported: RevisionData = await api(`/api/designs/${designId}/revisions/${revisionId}`);
+        const fileUrl = (file: string) => `/api/designs/${designId}/revisions/${revisionId}/files/${file.split('/').map(encodeURIComponent).join('/')}`;
+        const download = await prepareExportDownload(exported.files, format, `${designId}-${revisionId}-${format}.zip`, fileUrl);
+        saveExportDownload(download);
+        onReady?.();
+      } finally { setDownloading(false); setProgress(''); }
+    });
   }
   async function cancel() { if (job) { await api(`/api/jobs/${job.id}/cancel`, {}); setProgress('Cancelling…'); } }
   async function authorize(enabled: boolean) { setSession(await api('/api/session', { authorize: enabled })); }
@@ -185,7 +204,7 @@ export function useStudio() {
     setHidden(old => { const next = new Set(old); next.has(id) ? next.delete(id) : next.add(id); return next; });
   }
   const fileUrl = (file: string, id = revision) => `/api/designs/${design?.id}/revisions/${id}/files/${file.split('/').map(encodeURIComponent).join('/')}`;
-  return { session, designs, design, revision, data, previous, job, busy, progress, error, setError,
+  return { session, designs, design, revision, data, previous, job, busy, downloading, progress, error, setError,
     selected, selectComponent, hidden, toggleHidden, isolated, setIsolated, overlay, setOverlay,
     mcpMode, historical, report, reportRevision, api, run, openDesign, startDraft, showRevision, create, submit,
     rebuild, exportModel, cancel, authorize, fileUrl };

@@ -5,6 +5,11 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
+- Start a browser download when STEP or STL is chosen in Studio. Single parts
+  download directly; multipart designs arrive in one ZIP containing the exact
+  exported files. Retain individual links, report failed transfers, and preserve
+  the download action when MCP polling reattaches to a fast export job.
+
 - Keep Windows instructions primary and add short Linux/macOS equivalents to
   setup, CLI/MCP, Studio, testing, migration, and model verification guides.
   Extend Python/CLI/MCP and Studio installation CI coverage to macOS.
