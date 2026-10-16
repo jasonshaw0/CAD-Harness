@@ -66,11 +66,20 @@ Node.js is needed to build it; the running application serves static files.
 
 ## Connect your assistant
 
-Copy the `cadharness` entry from `.cadharness/mcp.json` into your MCP host's
-`mcpServers` object. For manual setup, use the printed `mcp-config` output.
-It uses this environment's absolute interpreter, explicit trusted roots, and
-`--studio`. Hosts with stdio configuration can use the same command and
-arguments. Reload the host after configuration changes.
+Use the [host-specific setup guide](MCP_HOSTS.md): Codex uses its CLI/TOML;
+Claude Desktop uses desktop JSON and a full app restart. Preview the entry with
+this environment's interpreter and an existing trusted project directory:
+
+```powershell
+.\.venv\Scripts\python.exe -m cadharness setup --host codex --root "D:/CAD/my-project" --studio --summary
+```
+
+Select `--host claude-desktop` for that app. On Linux/macOS use
+`./.venv/bin/python` and your own project path. Add `--check` to test the proposed
+connection, then `--apply` after reviewing it. Keep any custom bootstrap
+`--root`, workspace and port values in this command. The generated
+`.cadharness/mcp.json` remains portable command/args reference material; hosts
+use their own configuration formats. Restart the affected host after saving.
 
 The host starts the framework CAD tools and Studio design tools together, plus
 the loopback viewer at **http://127.0.0.1:8741**. Call `studio_status` to confirm

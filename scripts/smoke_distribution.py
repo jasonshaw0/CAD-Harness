@@ -180,6 +180,7 @@ def main(*, render_browser=False, fresh_install=False, output=None):
         # contracts, workers, API, failed measurement, frozen repair, and STL export.
         shutil.copyfile(ROOT / "tests/workflow/test_studio_mcp.py", work / "test_studio_mcp.py")
         shutil.copyfile(ROOT / "tests/workflow/test_studio_rendering.py", work / "test_studio_rendering.py")
+        shutil.copyfile(ROOT / "tests/test_host_setup.py", work / "test_host_setup.py")
         smoke = work / "check_install.py"
         smoke.write_text('''from pathlib import Path
 import re
@@ -218,7 +219,7 @@ print("Installed wheel resources and canvas passed:", PACKAGE_ROOT)
         extension = ".exe" if sys.platform == "win32" else ""
         for command in ("cad-harness", "cad-harness-mcp", "cadharness", "cadharness-mcp"):
             run(scripts / (command + extension), "--help", cwd=work)
-        run(python, "-m", "unittest", "test_studio_mcp", "test_studio_rendering", "-v", cwd=work)
+        run(python, "-m", "unittest", "test_studio_mcp", "test_studio_rendering", "test_host_setup", "-v", cwd=work)
         if fresh_install:
             check_lifecycle(python, wheel, work)
         if render_browser:

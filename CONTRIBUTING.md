@@ -45,7 +45,7 @@ python3 bootstrap.py
 ```
 
 CI runs the Python/CLI/MCP checks on Windows, Linux, and macOS, and checks full
-Studio setup and wheel installation on Linux and macOS. One discovery command
+Studio setup and wheel installation on all three OS runners. One discovery command
 includes all workflow and Studio tests. The real stdio integration exercises a failed
 measurement, repair under a frozen brief, follow-up turn, and STL export.
 
@@ -53,6 +53,18 @@ Use `cadharness --help` for shared commands. Manual design commands live under
 `cadharness design`; integrated Studio is launched by the MCP host with
 `--studio`. See [Studio](docs/STUDIO.md) for frontend development and
 [evaluation](docs/EVALUATION.md) for repeatable defect trials.
+
+Host setup tests cover isolated Desktop JSON fixtures and real stdio transport;
+the full distribution run also requires the installed Studio frontend. With
+Codex CLI on PATH, run the additional native registration/discovery/reload check:
+
+```powershell
+.\.venv\Scripts\python.exe scripts/smoke_host_setup.py --output runs/isolated-host-check
+```
+
+Use `./.venv/bin/python` on Linux/macOS. It retains a new isolated `CODEX_HOME`,
+config backup, host stderr and catalog evidence; it does not edit personal host
+settings or start model turns. See [host setup and validation limits](docs/MCP_HOSTS.md).
 
 Use Playwriter exclusively for browser control and testing. Read its skill,
 create a stateful task session, exercise interactions, inspect screenshots,

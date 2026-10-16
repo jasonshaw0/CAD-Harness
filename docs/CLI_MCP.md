@@ -72,7 +72,7 @@ Or in Bash/Zsh, set `cad=./.venv/bin/python` and replace `& $cad` with
 `"$cad"`, for example `"$cad" -m cadharness verify examples/project-box --summary`.
 
 Commands emit JSON by default. Add `--compact` anywhere in the command for
-one-line JSON. `verify` and `inspector` accept `--summary` for readable terminal
+one-line JSON. `verify`, `inspector` and `setup` accept `--summary` for readable terminal
 output, including the verdict, checks needing attention, or report path.
 `--summary` and `--compact` cannot be combined. Neither changes the verification
 policy or exit codes. Runtime errors remain structured JSON on stderr.
@@ -110,6 +110,7 @@ records the errors. A gate exception never rewrites the underlying evidence.
 | `preview <project>` | Create hidden-line SVG views | `.cadharness/previews/` |
 | `export <project>` | Explicitly write STEP or STL geometry | `exports/cadharness/` |
 | `mcp-config [roots...]` | Generate portable MCP client JSON | No |
+| `setup [--host ... --root ...]` | Detect hosts or preview an explicit MCP entry | Host settings only with `--apply`; `--check --studio` creates/attaches a workspace |
 | `studio` | Serve the standalone viewer/API | Selected workspace |
 | `design init/check/revise/export` | Run the manual source/brief workflow | Selected design run |
 
@@ -119,6 +120,13 @@ explicitly supplied. Run `python -m cadharness <command> --help` for all
 options, including variants, selected components, and preview views.
 
 ## Connect an MCP client
+
+Use [host-specific setup](MCP_HOSTS.md) for Codex CLI/IDE/app or Claude Desktop.
+`python -m cadharness setup --summary` detects the setup paths. Select a host and
+explicit roots to preview, optionally `--check` the stdio connection, then use
+`--apply` to approve saving the entry. Codex uses CLI/TOML; Desktop uses JSON
+and requires a full app restart. The lower-level generator below remains useful
+for other stdio hosts and manual settings forms.
 
 Generate the client entry instead of hand-writing interpreter and root paths:
 
@@ -154,8 +162,9 @@ On Linux/macOS the generated `command` points to `/absolute/path/.venv/bin/pytho
 and roots use ordinary `/absolute/path` directories. Generate the config locally
 instead of copying the Windows paths in this illustrative JSON.
 
-Copy the `cadharness` entry into the MCP client's `mcpServers` object, then
-restart or reload that client. The absolute interpreter ensures the client uses
+For clients using this JSON format, copy the `cadharness` entry into their
+`mcpServers` object, then restart the client. For Codex use `setup --host codex`
+or its stdio settings form instead. The absolute interpreter ensures the client uses
 this checkout's environment. The explicit `--root` makes discovery independent
 of whatever working directory the host chooses.
 

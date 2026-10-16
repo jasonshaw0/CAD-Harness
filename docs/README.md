@@ -13,6 +13,7 @@ same; platform-specific shell and path differences are noted in each guide.
 | --- | --- |
 | Install, update or remove CAD-Harness | [Installation and compatibility](INSTALLATION.md) |
 | Design with an assistant and live 3D canvas | [Studio](STUDIO.md) |
+| Connect Codex or Claude Desktop | [MCP host setup](MCP_HOSTS.md) |
 | Wrap my build123d model and add checks | [Project authoring](GETTING_STARTED.md) |
 | Review generated source manually before execution | [Design workflow](DESIGN_WORKFLOW.md) |
 | Run commands, configure MCP, or diagnose discovery | [CLI and MCP](CLI_MCP.md) |

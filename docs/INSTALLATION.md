@@ -45,7 +45,7 @@ run `python bootstrap.py --framework-only` (Linux/macOS: `python3`). It does not
 remove extras already installed in an existing environment.
 
 Full bootstrap writes `.cadharness/mcp.json`; it does not edit another
-application's settings. Follow [Studio setup](STUDIO.md#connect-your-assistant)
+application's settings. Follow [MCP host setup](MCP_HOSTS.md)
 to connect an MCP host. Keep roots limited to trusted projects. Python factories
 execute locally without sandboxing, and checks do not establish physical fit.
 
@@ -58,7 +58,7 @@ to produce a validated wheel and sdist first. In a separate environment:
 python -m venv .cad-venv
 .\.cad-venv\Scripts\python.exe -m pip install "C:/Downloads/cad_harness-0.9.0-py3-none-any.whl[mcp,studio]"
 .\.cad-venv\Scripts\python.exe -m cadharness --help
-.\.cad-venv\Scripts\python.exe -m cadharness mcp-config D:/CAD/projects --studio
+.\.cad-venv\Scripts\python.exe -m cadharness setup --host codex --root D:/CAD/projects --studio --summary
 ```
 
 Replace the illustrative wheel and trusted-project paths with actual paths.

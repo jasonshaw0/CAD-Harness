@@ -89,8 +89,8 @@ for a green demo, unnecessary providers/hosted services, and blanket UI rewrites
 | --- | --- | --- |
 | **M1: Distribution validation foundation** (completed; B2/B4/E2 subset) | Essential; no owner decision; small tooling-only change, low runtime risk. Extend the existing smoke script and CI. | Build sdist then wheel from that sdist; compare source/resource bytes and version metadata; reject missing/stale assets; install extras with fresh dependencies; serve installed assets and run real stdio defect/repair/export tests outside checkout; retain validated artifacts with hashes. Existing fast smoke mode remains available. |
 | **M2: Compatibility and install lifecycle** (completed; B3/E1/E2) | Essential; depends on M1; medium CI/dependency work. | Test 3.13/3.14 dependency availability and practical CI coverage before widening claims; record exact supported combinations. Exercise core-only/full installs, reinstallation and upgrade with a retained saved workspace; document update/uninstall steps. Decide and document sdist source/third-party notice contents. No unsupported platform claims. |
-| **M3: Supported MCP host setup** (next; C) | High value; depends on stable install; medium configuration risk. | Research actual Codex and Claude host formats/lifecycle; document and verify each supported path. Reuse `mcp-config`/doctor; preview and approve any host changes, preserve unrelated entries, handle escaping/collisions, and test restart/connection. No root widening. |
-| **M4: Packaged first-use demonstration** (D plus focused F tutorials) | High value; depends on M1/M2; medium Studio integration risk. | Reuse templates, Studio and evidence formats for assistant-free real geometry, failure, repair, history/comparison, source and explicit export in a fresh dedicated workspace. No credentials. Verify packaged resources and inspect real Playwriter desktop/mobile output and logs. Preserve existing workspaces. |
+| **M3: Supported MCP host setup** (completed with host UI limits below; C) | High value; depends on stable install; medium configuration risk. | Research actual Codex and Claude host formats/lifecycle; document and verify each supported path. Reuse `mcp-config`/doctor; preview and approve any host changes, preserve unrelated entries, handle escaping/collisions, and test restart/connection. No root widening. |
+| **M4: Packaged first-use demonstration** (next; D plus focused F tutorials) | High value; depends on M1/M2; medium Studio integration risk. | Reuse templates, Studio and evidence formats for assistant-free real geometry, failure, repair, history/comparison, source and explicit export in a fresh dedicated workspace. No credentials. Verify packaged resources and inspect real Playwriter desktop/mobile output and logs. Preserve existing workspaces. |
 | **M5: Public beta preparation** (A, remaining B4/E/F/G readiness) | Essential license/release controls; other presentation work high value/nice to have. Depends on M2–M4 and license decision. Split into small sessions. | Apply approved license and notices; align metadata/version/changelog; add practical issue forms and beta feedback checklist; refine links/install guide around validated paths; prepare tag/artifact/release-note checks and owner-controlled trusted publishing. Create tailored launch drafts only after a real demo. Review release candidate artifacts before requesting publication authorization. |
 
 M5 prepares publication. Actual public release, PyPI upload and community posts
@@ -243,3 +243,73 @@ To resume after M2: read this file and `AGENTS.md`, inspect Git/user changes and
 the latest CI, then implement **M3 only**. Research current host documentation;
 do not modify another application's configuration without the required preview
 and approval. Do not begin the demo or publishing milestones in that session.
+
+### M3 — completed 2026-10-16, with host UI acceptance limits
+
+- [x] Confirm M2 CI [38945342223](https://github.com/jasonshaw0/CAD-Harness/actions/runs/38945342223)
+  passed all 16 jobs before continuing.
+- [x] Research current official Codex and Claude Desktop documentation; record
+  source links and validation boundaries in [MCP host setup](MCP_HOSTS.md).
+- [x] Add read-only host-path discovery and setup previews using the existing
+  `mcp-config` interpreter/roots/Studio arguments and `doctor` diagnostics.
+- [x] Require explicit roots and a separate `--apply` invocation to save a
+  reviewed entry. Use native `codex mcp add` for TOML; merge Desktop JSON
+  atomically. Preserve unrelated settings and backups, refuse differing entries,
+  invalid/ambiguous input, symlink targets and detected concurrent changes.
+- [x] Add optional bounded stdio initialization, tool discovery and status
+  checks from an unrelated cwd. Studio checks require its frontend. Retain
+  startup stderr and explicit failure states; do not confuse SDK preflight with
+  host reload, geometry verification or rendered-image acceptance.
+- [x] Test native Windows Codex CLI 0.162.1 in an isolated `CODEX_HOME`: preview,
+  additive apply, public CLI readback, repeated apply, preserved unrelated server
+  and sentinel setting, and paths containing spaces, Unicode and `&`.
+- [x] Verify all 26 CAD/Studio tools through native Codex `app-server` discovery
+  before/after live reload and again in a second host process. No model turn.
+- [x] Replace generic JSON advice in onboarding with host-specific instructions,
+  exact restart/log guidance and a first-design handoff. Keep portable JSON and
+  existing entrypoints compatible.
+- [x] Extend installed-wheel acceptance with host setup tests; run local
+  regression and distribution/lifecycle acceptance. Keep the existing 16-job
+  remote CI gate (check the milestone commit's Actions run for platform results).
+
+The first full suite passed **180 tests in 173.115 s**. The subsequent final
+host suite passed **18 tests** after adding relative/empty `CODEX_HOME` coverage.
+The first fresh distribution run passed installed integration/host tests but
+failed its synthetic upgrade freshness check: source was edited while that
+run was in progress, so the fixture copied newer evaluator inputs than its
+previously built candidate wheel. The check was not changed or relaxed.
+
+With source fixed for the duration of validation, final discovery passed
+**181 tests in 170.571 s**. The fresh distribution run passed **31 installed
+integration/host tests in 48.837 s**, core-only geometry/defect checks, full
+extras, console aliases and `pip check`. Wheel/sdist bytes matched 57 package
+source/resource files and 73 build/test/documentation inputs. The synthetic
+version upgrade, reinstall, uninstall and reinstall all passed; saved Studio
+source, briefs, measurements, mesh/export evidence and client config remained
+byte-identical and the retained design reopened. Final native host acceptance
+again discovered all 26 tools across reload and restart. All **80 local
+documentation links** resolved; `git diff --check` passed.
+
+Evidence is retained under ignored `runs/host-setup-20261016-142514/`, including
+native registration/readback (`codex-native/report.json`), actual host catalogs
+(`codex-lifecycle/report.json`, repeated against final source in
+`codex-final/report.json`), per-host stderr, `tests312-final.log`,
+`host-tests-final.log`, initial failing `distribution.log`, successful
+`distribution-final.log`, and `validated-dist/` with wheel/sdist hashes.
+The isolated host logged a nonfatal optional featured-plugin cache HTTP 401;
+MCP catalog discovery/reload/restart succeeded. No authentication settings were
+changed to suppress it.
+
+Remaining host acceptance: Claude Desktop was not installed on this machine.
+Its documented Windows/macOS locations, JSON preservation and exact server
+transport are tested; interactive Desktop restart and tool discovery remain
+manual acceptance. Codex IDE/app GUI reload and native registration on
+macOS/Linux also remain unverified; cross-platform CI exercises setup/config
+and stdio, not those host UIs. No personal host configuration or host permission
+policy was modified. Claude Code, browser/remote connectors and extension bundles
+are not additional automated adapters in this milestone.
+
+To resume after M3: read this file and `AGENTS.md`, inspect Git/user changes and
+the latest CI, then implement **M4 only**. Use a fresh dedicated demo workspace
+and Playwriter for actual browser acceptance. Do not begin publication, licensing
+changes, repository metadata changes or promotional posts in that session.

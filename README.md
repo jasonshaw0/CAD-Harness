@@ -48,9 +48,9 @@ Or on Linux/macOS, use the same clone and `cd` commands, then run
 with `./.venv/bin/python` in the examples below; activation is optional.
 
 Setup creates `.venv`, installs dependencies, builds Studio, verifies an example,
-and writes `.cadharness/mcp.json`. Add its `cadharness` entry to your MCP host and
-reload the host. Call `studio_status` for the viewer URL, normally
-`http://127.0.0.1:8741`. See [Studio setup](docs/STUDIO.md) for configuration.
+and writes `.cadharness/mcp.json`. Follow [MCP host setup](docs/MCP_HOSTS.md)
+to preview and save settings for Codex or Claude Desktop, then restart the host.
+Call `studio_status` for the viewer URL, normally `http://127.0.0.1:8741`.
 
 For framework-only setup, use `python bootstrap.py --framework-only` without
 Node.js (Linux/macOS: `python3 bootstrap.py --framework-only`).

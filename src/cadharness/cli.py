@@ -84,6 +84,18 @@ def _parser() -> argparse.ArgumentParser:
     mcp_config_parser.add_argument("--studio-workspace", type=Path, help="workspace inside a configured root (default: first root/runs/studio)")
     mcp_config_parser.add_argument("--studio-port", type=int, default=8741)
 
+    setup = subparsers.add_parser("setup", help="preview MCP host settings; save only with --apply")
+    setup.add_argument("--host", choices=("codex", "claude-desktop"), help="omit for read-only host discovery")
+    setup.add_argument("--root", action="append", default=[], dest="roots", help="explicit trusted root; repeat for multiple roots")
+    setup.add_argument("--name", default="cadharness")
+    setup.add_argument("--studio", action="store_true")
+    setup.add_argument("--studio-workspace", type=Path)
+    setup.add_argument("--studio-port", type=int, default=8741)
+    setup.add_argument("--config", type=Path, help="override the Claude Desktop JSON path (Codex uses CODEX_HOME)")
+    setup.add_argument("--check", action="store_true", help="test the proposed stdio command; Studio starts/attaches and creates its workspace")
+    setup.add_argument("--apply", action="store_true", help="save the reviewed entry; preserve unrelated settings and refuse collisions")
+    setup.add_argument("--summary", action="store_true", help="print a readable setup plan")
+
     list_parser = subparsers.add_parser("list", help="find projects beneath a root")
     list_parser.add_argument(
         "root", nargs="?", default=".", help="directory to scan (default: current)"
@@ -318,6 +330,16 @@ def main(argv: Sequence[str] | None = None) -> int:
         elif args.command == "mcp-config":
             result = mcp_client_config(args.roots, name=args.name, studio=args.studio,
                                        studio_workspace=args.studio_workspace, studio_port=args.studio_port)
+        elif args.command == "setup":
+            from .host_setup import detect_hosts, setup_host
+            if args.host is None:
+                if args.roots or args.apply or args.check or args.config or args.studio or args.studio_workspace or args.studio_port != 8741 or args.name != "cadharness":
+                    raise ValueError("Select --host codex or --host claude-desktop before configuring an integration")
+                result = detect_hosts()
+            else:
+                result = setup_host(args.roots, host=args.host, name=args.name, studio=args.studio,
+                                    studio_workspace=args.studio_workspace, studio_port=args.studio_port,
+                                    config=args.config, check=args.check, apply=args.apply)
         elif args.command == "list":
             result = {"projects": discover_projects(Path(args.root))}
         elif args.command == "inspect":
@@ -407,7 +429,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         else:  # pragma: no cover - argparse guarantees a registered command
             parser.error(f"unsupported command: {args.command}")
         if getattr(args, "summary", False):
-            _print_summary(args.command, result)
+            if args.command == "setup":
+                from .host_setup import print_setup_summary
+                print_setup_summary(result)
+            else:
+                _print_summary(args.command, result)
         else:
             json.dump(
                 result, sys.stdout, indent=None if args.compact else 2, sort_keys=True
@@ -415,6 +441,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             sys.stdout.write("\n")
         if args.command == "validate" and not result["passed"]:
             return 1
+        if args.command == "setup" and result.get("ready") is False:
+            return 2
         if args.command == "measure":
             if result["status"] in {"invalid-input", "kernel-error"}:
                 return 2

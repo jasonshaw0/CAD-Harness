@@ -5,6 +5,12 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
+- Add host-specific MCP setup previews for Codex and Claude Desktop, explicit
+  additive `--apply`, preserved settings/backups, collision checks and optional
+  real stdio/Studio preflight. Document each host's format and reload lifecycle;
+  validate native Codex registration and tool discovery across reload/restart in
+  an isolated profile without model calls.
+
 - Extend Python/CLI/MCP CI to 3.13 and 3.14 on Windows, Linux and macOS.
   Add core-only and full-wheel install lifecycle acceptance with real retained
   Studio source, evidence and STL exports across a synthetic version upgrade,
