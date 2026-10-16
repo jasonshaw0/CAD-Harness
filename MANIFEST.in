@@ -1,0 +1,15 @@
+# Keep editable frontend source alongside the compiled assets in the sdist.
+include bootstrap.py CONTRIBUTING.md CHANGELOG.md
+include studio/README.md
+include studio/web/package.json studio/web/package-lock.json
+include studio/web/index.html studio/web/tsconfig.json studio/web/vite.config.ts
+graft studio/web/src
+graft studio/web/tests
+graft scripts
+graft tests
+graft docs
+recursive-include examples *.py *.toml *.json *.svg *.html
+prune examples/*/.cadharness
+prune examples/*/exports
+include designworkflow/__init__.py designworkflow/__main__.py
+global-exclude *.py[cod] *.log *.tmp

@@ -55,6 +55,8 @@ reload the host. Call `studio_status` for the viewer URL, normally
 For framework-only setup, use `python bootstrap.py --framework-only` without
 Node.js (Linux/macOS: `python3 bootstrap.py --framework-only`).
 
+[Compatibility, wheel installation, updates and removal](docs/INSTALLATION.md).
+
 ## Try the evidence loop
 
 ```powershell

@@ -11,6 +11,7 @@ same; platform-specific shell and path differences are noted in each guide.
 
 | I want to… | Start here |
 | --- | --- |
+| Install, update or remove CAD-Harness | [Installation and compatibility](INSTALLATION.md) |
 | Design with an assistant and live 3D canvas | [Studio](STUDIO.md) |
 | Wrap my build123d model and add checks | [Project authoring](GETTING_STARTED.md) |
 | Review generated source manually before execution | [Design workflow](DESIGN_WORKFLOW.md) |

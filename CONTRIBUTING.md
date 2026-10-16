@@ -102,17 +102,25 @@ Or on Linux/macOS, keep the npm command and use
 The smoke script builds a source distribution, then a wheel from that archive
 using isolated build dependencies. It checks source/resource bytes and package
 name/version in both artifacts, including the lazy renderer chunk, templates and
-authoring guidance. `--fresh-install` resolves `[mcp,studio]` and dependencies in
+authoring guidance. It also checks editable frontend source, the lockfile, guides,
+tests and scripts in the sdist, and rejects dependency environments in that archive.
+Vite generates bundled dependency notices; they are required in both artifacts.
+`--fresh-install` first verifies a core-only install, then adds `[mcp,studio]` in
 a clean temporary environment, runs `pip check`, serves installed assets, and
 runs the real Studio stdio integration outside the checkout. CI runs this path
 on Windows, Linux and macOS with Python 3.12 after building the frontend. It
 includes failed measurement, frozen repair, follow-up, export, guidance discovery
 and direct/shared MCP image transport; no personal skills or host config are used.
+It then builds a same-code `.dev0` fixture, saves a real Studio design and STL,
+upgrades its package version, reinstalls, uninstalls and reinstalls again. Saved
+source, geometry evidence, meshes, exports and generated MCP JSON must remain
+byte-identical and reopen through the Studio API. This is a package lifecycle
+test, not proof of migration across historical releases or changed evaluators.
 
 `--output` retains the validated wheel, sdist and `SHA256SUMS` only after success.
 Choose a new directory each run; existing output is preserved. This does not tag,
-release or upload a package. The source archive carries compiled Studio assets;
-use a Git checkout to edit/rebuild the frontend. These checks establish artifact
+release or upload a package. The source archive carries compiled Studio assets
+and editable frontend source/build inputs. These checks establish artifact
 contents and installation behavior, not byte-identical rebuilds or physical fit.
 
 For a faster local check, omit `--fresh-install`; that mode borrows development
@@ -130,6 +138,8 @@ confirm the authoring resources and viewer are present.
 
 See the [release-readiness audit and roadmap](docs/RELEASE_READINESS.md) for
 current evidence, owner decisions, and the next incremental milestone.
+The [installation guide](docs/INSTALLATION.md) records compatibility boundaries,
+source-archive contents, dependency notice provenance and update/removal commands.
 
 Keep generated CAD runs and exports out of commits. Preserve user changes,
 run relevant checks before committing, and use focused commits. The local

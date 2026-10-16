@@ -8,11 +8,12 @@ from tempfile import TemporaryDirectory
 import unittest
 import zipfile
 
-from scripts.smoke_distribution import REQUIRED_RESOURCES, check_archives
+from scripts.smoke_distribution import REQUIRED_RESOURCES, SDIST_INPUTS, check_archives
 
 
 class DistributionTests(unittest.TestCase):
-    def make_artifacts(self, root, *, omit=None, altered=None, stale=False, version="0.9.0"):
+    def make_artifacts(self, root, *, omit=None, altered=None, stale=False, version="0.9.0",
+                       omit_source=None, extra_source=None):
         package = root / "src/cadharness"
         files = {name: b"resource" for name in REQUIRED_RESOURCES}
         files.update({"__init__.py": b"", "studio/web/assets/index-test.js": b"app",
@@ -25,11 +26,22 @@ class DistributionTests(unittest.TestCase):
             '[project]\nname="CAD-Harness"\nversion="0.9.0"\n'
             '[tool.setuptools.package-data]\n"cadharness.studio"=["web/*", "web/assets/*"]\n',
             encoding="utf-8")
+        source_inputs = {name: b"source" for name in SDIST_INPUTS}
+        source_inputs["studio/web/src/main.tsx"] = b"frontend"
+        for name, content in source_inputs.items():
+            path = root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(content)
         metadata = f"Name: CAD-Harness\nVersion: {version}\n".encode()
         wheel, sdist = root / "package.whl", root / "package.tar.gz"
         with zipfile.ZipFile(wheel, "w") as whl, tarfile.open(sdist, "w:gz") as source:
             entries = {f"src/cadharness/{name}": content for name, content in files.items()}
             entries["PKG-INFO"] = metadata
+            entries.update(source_inputs)
+            if omit_source:
+                entries.pop(omit_source)
+            if extra_source:
+                entries[extra_source] = b"must not ship"
             for name, content in entries.items():
                 entry = tarfile.TarInfo(f"cad_harness-0.9.0/{name}")
                 entry.size = len(content)
@@ -49,7 +61,7 @@ class DistributionTests(unittest.TestCase):
 
     def test_missing_guidance_template_and_lazy_render_chunk_are_rejected(self):
         for name in ("workflow/AUTHORING.md", "workflow/templates/enclosure/project.py",
-                     "studio/web/assets/renderView-test.js"):
+                     "studio/web/assets/renderView-test.js", "studio/web/THIRD_PARTY_LICENSES.md"):
             with self.subTest(name=name), TemporaryDirectory() as directory:
                 root = Path(directory)
                 artifacts = self.make_artifacts(root, omit=name)
@@ -73,8 +85,28 @@ class DistributionTests(unittest.TestCase):
             with tarfile.open(sdist, "w:gz") as source:
                 entry = tarfile.TarInfo("cad_harness-0.9.0/PKG-INFO")
                 source.addfile(entry, BytesIO())
-            with self.assertRaisesRegex(ValueError, "Missing distribution resource"):
+            with self.assertRaisesRegex(ValueError, "Missing (?:distribution resource|source distribution input)"):
                 check_archives(wheel, sdist, root=root)
+
+    def test_source_archive_requires_editable_frontend_and_lockfile(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            wheel, sdist = self.make_artifacts(root)
+            # The archive must match the current lockfile rather than silently
+            # shipping bytes from an earlier build.
+            (root / "studio/web/package-lock.json").write_text("changed", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "input differs from checkout.*package-lock"):
+                check_archives(wheel, sdist, root=root)
+
+    def test_source_archive_rejects_missing_frontend_and_dependency_environments(self):
+        for options, message in (({"omit_source": "studio/web/src/main.tsx"}, "Missing source distribution input"),
+                                  ({"extra_source": "studio/web/node_modules/react/index.js"}, "dependency environment"),
+                                  ({"extra_source": ".venv/pyvenv.cfg"}, "dependency environment")):
+            with self.subTest(options=options), TemporaryDirectory() as directory:
+                root = Path(directory)
+                wheel, sdist = self.make_artifacts(root, **options)
+                with self.assertRaisesRegex(ValueError, message):
+                    check_archives(wheel, sdist, root=root)
 
 
 if __name__ == "__main__":

@@ -28,6 +28,13 @@ REQUIRED_RESOURCES = (
     *(f"workflow/templates/{template}/{name}" for template in
       ("mounting-plate", "flange", "enclosure") for name in ("project.py", "cadharness.toml")),
     "studio/web/index.html",
+    "studio/web/THIRD_PARTY_LICENSES.md",
+)
+SDIST_INPUTS = (
+    "bootstrap.py", "CONTRIBUTING.md", "CHANGELOG.md", "MANIFEST.in",
+    "studio/web/package.json", "studio/web/package-lock.json", "studio/web/index.html",
+    "studio/web/tsconfig.json", "studio/web/vite.config.ts",
+    "studio/web/src/main.tsx",
 )
 
 
@@ -55,6 +62,21 @@ def check_archives(wheel, sdist, *, root=ROOT):
         if len(roots) != 1:
             raise ValueError("Source distribution must have one top-level directory.")
         prefix, = roots
+        source_inputs = {root / name for name in SDIST_INPUTS}
+        for directory in ("studio/web/src", "studio/web/tests", "scripts", "tests", "docs"):
+            source_inputs.update(path for path in (root / directory).rglob("*")
+                                 if path.is_file() and "__pycache__" not in path.parts
+                                 and path.suffix not in {".pyc", ".pyo", ".log", ".tmp"})
+        for path in source_inputs:
+            name = path.relative_to(root).as_posix()
+            try:
+                archived = source.extractfile(f"{prefix}/{name}")
+                if archived is None or archived.read() != path.read_bytes():
+                    raise ValueError(f"Source distribution input differs from checkout: {name}")
+            except KeyError as exc:
+                raise ValueError(f"Missing source distribution input: {name}") from exc
+        if any("node_modules" in Path(name).parts or ".venv" in Path(name).parts for name in source.getnames()):
+            raise ValueError("Source distribution contains a generated dependency environment")
         for name, path in expected.items():
             if not path.is_file():
                 raise ValueError(f"Required packaging input missing: {name}")
@@ -75,7 +97,36 @@ def check_archives(wheel, sdist, *, root=ROOT):
             headers = BytesParser().parsebytes(raw)
             if (headers["Name"], headers["Version"]) != (config["project"]["name"], config["project"]["version"]):
                 raise ValueError("Distribution name/version differs from pyproject.toml.")
-    print(f"Wheel and sdist match {len(expected)} source/resource files.", flush=True)
+    print(f"Wheel and sdist match {len(expected)} source/resource files; "
+          f"sdist matches {len(source_inputs)} build/test/documentation inputs.", flush=True)
+
+
+def check_lifecycle(python, wheel, work):
+    """Exercise a real pip version replacement using a labeled development fixture."""
+    fixture = work / "upgrade-fixture"
+    fixture.mkdir()
+    config = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    version = tomllib.loads(config)["project"]["version"]
+    fixture_version = version + ".dev0"
+    config = config.replace(f'version = "{version}"', f'version = "{fixture_version}"', 1)
+    (fixture / "pyproject.toml").write_text(config, encoding="utf-8")
+    shutil.copyfile(ROOT / "README.md", fixture / "README.md")
+    shutil.copytree(ROOT / "src/cadharness", fixture / "src/cadharness",
+                    ignore=shutil.ignore_patterns("__pycache__"))
+    run(sys.executable, "-m", "build", fixture, "--wheel", "--outdir", fixture / "dist", cwd=work)
+    previous, = (fixture / "dist").glob("*.whl")
+    helper = work / "check_install_lifecycle.py"
+    run(python, "-m", "pip", "install", "--no-deps", "--force-reinstall", previous, cwd=work)
+    run(python, helper, "seed", work, cwd=work)
+    run(python, "-m", "pip", "install", "--no-deps", "--upgrade", wheel, cwd=work)
+    run(python, helper, "reopen", work, cwd=work)
+    run(python, "-m", "pip", "install", "--no-deps", "--force-reinstall", wheel, cwd=work)
+    run(python, helper, "reopen", work, cwd=work)
+    run(python, "-m", "pip", "uninstall", "-y", "CAD-Harness", cwd=work)
+    run(python, helper, "absent", work, cwd=work)
+    run(python, "-m", "pip", "install", "--no-deps", wheel, cwd=work)
+    run(python, helper, "reopen", work, cwd=work)
+    run(python, "-m", "pip", "check", cwd=work)
 
 
 def run(*args, cwd):
@@ -102,6 +153,7 @@ def main(*, render_browser=False, fresh_install=False, output=None):
         wheel, = work.glob("cad_harness-*.whl")
         sdist, = work.glob("cad_harness-*.tar.gz")
         check_archives(wheel, sdist)
+        shutil.copyfile(ROOT / "scripts/check_install_lifecycle.py", work / "check_install_lifecycle.py")
         env = work / "venv"
         venv.EnvBuilder(with_pip=True).create(env)
         python = env / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
@@ -112,6 +164,10 @@ def main(*, render_browser=False, fresh_install=False, output=None):
         site = env / ("Lib/site-packages" if sys.platform == "win32" else
                       f"lib/python{sys.version_info.major}.{sys.version_info.minor}/site-packages")
         if fresh_install:
+            print("Testing core-only installation before adding extras.", flush=True)
+            run(python, "-m", "pip", "install", wheel, cwd=work)
+            run(python, "-m", "cadharness", "--version", cwd=work)
+            run(python, work / "check_install_lifecycle.py", "core", work, cwd=work)
             print("Installing wheel extras with fresh dependencies (no borrowed packages).", flush=True)
             run(python, "-m", "pip", "install", f"{wheel}[mcp,studio]", cwd=work)
             run(python, "-m", "pip", "check", cwd=work)
@@ -147,6 +203,9 @@ assert (WORKFLOW_ROOT / "benchmarks/prompts/square-mount.txt").is_file()
 with TestClient(create_app(Path.cwd() / "workspace")) as client:
     page = client.get("/")
     assert page.status_code == 200 and "CAD-Harness" in page.text
+    notices = client.get("/THIRD_PARTY_LICENSES.md")
+    assert notices.status_code == 200
+    assert notices.content == (PACKAGE_ROOT / "studio/web/THIRD_PARTY_LICENSES.md").read_bytes()
     assets = re.findall(r'(?:src|href)="(/assets/[^\"]+)"', page.text)
     assert assets
     for asset in assets:
@@ -160,6 +219,8 @@ print("Installed wheel resources and canvas passed:", PACKAGE_ROOT)
         for command in ("cad-harness", "cad-harness-mcp", "cadharness", "cadharness-mcp"):
             run(scripts / (command + extension), "--help", cwd=work)
         run(python, "-m", "unittest", "test_studio_mcp", "test_studio_rendering", "-v", cwd=work)
+        if fresh_install:
+            check_lifecycle(python, wheel, work)
         if render_browser:
             # Use the permanent repository acceptance runner with the installed
             # interpreter; its server and CAD workspace are outside the checkout.

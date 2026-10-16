@@ -6,6 +6,9 @@ Run commands from the repository checkout unless you pass absolute paths.
 
 ## Install from a checkout
 
+See [installation and compatibility](INSTALLATION.md) for the tested matrix,
+local wheel installation, updates, environment replacement and removal.
+
 Use a project-local virtual environment so another editable checkout cannot
 silently replace the version you intend to run.
 

@@ -5,6 +5,14 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
+- Extend Python/CLI/MCP CI to 3.13 and 3.14 on Windows, Linux and macOS.
+  Add core-only and full-wheel install lifecycle acceptance with real retained
+  Studio source, evidence and STL exports across a synthetic version upgrade,
+  reinstall, uninstall and reinstall. Document updates and removal.
+- Include editable frontend source/build inputs and validation resources in
+  source distributions. Generate and package Vite's bundled dependency license
+  notices; retain the project-license and native-dependency publication review.
+
 - Validate full Studio distributions by building an sdist and its wheel,
   checking bundled source/resources and version metadata, and testing fresh
   dependency installation outside the checkout. Extend bootstrap/distribution

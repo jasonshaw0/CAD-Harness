@@ -87,9 +87,9 @@ for a green demo, unnecessary providers/hosted services, and blanket UI rewrites
 
 | Order / scope | Priority, dependencies and cost | Measurable acceptance |
 | --- | --- | --- |
-| **M1: Distribution validation foundation** (this session; B2/B4/E2 subset) | Essential; no owner decision; small tooling-only change, low runtime risk. Extend the existing smoke script and CI. | Build sdist then wheel from that sdist; compare source/resource bytes and version metadata; reject missing/stale assets; install extras with fresh dependencies; serve installed assets and run real stdio defect/repair/export tests outside checkout; retain validated artifacts with hashes. Existing fast smoke mode remains available. |
-| **M2: Compatibility and install lifecycle** (next; B3/E1/E2) | Essential; depends on M1; medium CI/dependency work. | Test 3.13/3.14 dependency availability and practical CI coverage before widening claims; record exact supported combinations. Exercise core-only/full installs, reinstallation and upgrade with a retained saved workspace; document update/uninstall steps. Decide and document sdist source/third-party notice contents. No unsupported platform claims. |
-| **M3: Supported MCP host setup** (C) | High value; depends on stable install; medium configuration risk. | Research actual Codex and Claude host formats/lifecycle; document and verify each supported path. Reuse `mcp-config`/doctor; preview and approve any host changes, preserve unrelated entries, handle escaping/collisions, and test restart/connection. No root widening. |
+| **M1: Distribution validation foundation** (completed; B2/B4/E2 subset) | Essential; no owner decision; small tooling-only change, low runtime risk. Extend the existing smoke script and CI. | Build sdist then wheel from that sdist; compare source/resource bytes and version metadata; reject missing/stale assets; install extras with fresh dependencies; serve installed assets and run real stdio defect/repair/export tests outside checkout; retain validated artifacts with hashes. Existing fast smoke mode remains available. |
+| **M2: Compatibility and install lifecycle** (completed; B3/E1/E2) | Essential; depends on M1; medium CI/dependency work. | Test 3.13/3.14 dependency availability and practical CI coverage before widening claims; record exact supported combinations. Exercise core-only/full installs, reinstallation and upgrade with a retained saved workspace; document update/uninstall steps. Decide and document sdist source/third-party notice contents. No unsupported platform claims. |
+| **M3: Supported MCP host setup** (next; C) | High value; depends on stable install; medium configuration risk. | Research actual Codex and Claude host formats/lifecycle; document and verify each supported path. Reuse `mcp-config`/doctor; preview and approve any host changes, preserve unrelated entries, handle escaping/collisions, and test restart/connection. No root widening. |
 | **M4: Packaged first-use demonstration** (D plus focused F tutorials) | High value; depends on M1/M2; medium Studio integration risk. | Reuse templates, Studio and evidence formats for assistant-free real geometry, failure, repair, history/comparison, source and explicit export in a fresh dedicated workspace. No credentials. Verify packaged resources and inspect real Playwriter desktop/mobile output and logs. Preserve existing workspaces. |
 | **M5: Public beta preparation** (A, remaining B4/E/F/G readiness) | Essential license/release controls; other presentation work high value/nice to have. Depends on M2–M4 and license decision. Split into small sessions. | Apply approved license and notices; align metadata/version/changelog; add practical issue forms and beta feedback checklist; refine links/install guide around validated paths; prepare tag/artifact/release-note checks and owner-controlled trusted publishing. Create tailored launch drafts only after a real demo. Review release candidate artifacts before requesting publication authorization. |
 
@@ -161,13 +161,85 @@ or saved-workspace changes were needed. Browser acceptance was not rerun locally
 the passing baseline CI rendering run is recorded above. Serving assets and MCP
 PNG transport tests alone do not establish browser usability. Next: **M2 only**.
 
-Known remaining limits: no license decision, no public package/release, no
+Remaining limits at the end of M1: no license decision, no public package/release, no
 validated 3.13/3.14 matrix, no host-specific automatic configuration, no bundled
 demo command, no independent beta feedback. Setuptools currently emits warnings
 about data directories being importable but excluded from package discovery;
 archive inspection checks their actual inclusion. Do not silence those warnings
 by casually changing namespace/package discovery.
 
-To resume: read this file and `AGENTS.md`, inspect Git/user changes and the latest
-CI results, then implement **M2 only**. Use current packaging/host documentation;
-do not reconstruct old plans from chat or begin promotional work prematurely.
+### M2 — completed 2026-10-16
+
+- [x] Confirm M1 CI run [38939422135](https://github.com/jasonshaw0/CAD-Harness/actions/runs/38939422135)
+  passed all ten jobs before continuing.
+- [x] Resolve/install the complete native dependency stack from wheels on
+  Windows CPython 3.13.12 and 3.14.3. No interpreter outside isolated test
+  environments or existing project environments was reconfigured.
+- [x] Extend unit/CLI/stdio MCP CI to 3.13 and 3.14 on all three existing OS runners.
+  Keep full distribution/lifecycle CI at Python 3.12 and rendering on Linux.
+- [x] Add core-only verification, a same-code development-version upgrade,
+  reinstall, uninstall and reinstall to the existing fresh distribution gate.
+  Preserve real Studio source/evidence/meshes/exports and generated client JSON.
+- [x] Ship editable frontend/build inputs, tests/fixtures, scripts, framework
+  examples and guides in the sdist using `MANIFEST.in`; exclude dependency
+  environments and generated example workspaces. Showcase models remain in Git.
+- [x] Generate Vite's complete bundled dependency notices and require them in
+  wheel/sdist; document the native dependency notice inventory and outstanding
+  owner publication review. No project license terms or credentials were changed.
+- [x] Add [installation/update/removal guidance](INSTALLATION.md), link it from
+  existing entry guides, and update contributor instructions and the changelog.
+- [x] Complete source/archive, core/full fresh install and saved-workspace
+  lifecycle acceptance; record results below.
+
+The upgrade fixture is explicitly `0.9.0.dev0` built from the same code as
+`0.9.0`. Pip performs a real version replacement; this does not establish
+migration compatibility across historical releases, dependency/kernel changes
+or different evaluator code. Existing stale-evidence safeguards remain intact.
+
+The first core smoke incorrectly assumed the bare mounting-plate template
+contained the external brief's hole-count acceptance. That assertion failed.
+The corrected test supplies an independent four-hole OCCT measurement check;
+standard geometry passes and the missing-hole variant fails. Product checks
+were not relaxed or changed.
+
+Local evidence is under ignored `runs/compatibility-20261016-140051/`.
+Initial full suites passed **162 tests** each on Python 3.13.12 (175.695 s) and
+3.14.3 (180.540 s). The sixth packaging test was added after discovery started;
+all six packaging tests subsequently passed on both interpreters. Frontend
+typecheck/build and **19 frontend tests** passed. Local documentation links:
+48 checked, none missing. Final Python 3.12.11 discovery passed **163 tests in
+163.011 s**. All six packaging fault tests also passed again after the final
+source/archive checks were added.
+
+The fresh distribution run passed the 13 installed Studio/MCP integration tests,
+core-only geometry/defect verification, full extras, all console aliases and
+`pip check`. It then upgraded the real saved Studio fixture from `0.9.0.dev0`
+to `0.9.0`, force-reinstalled, uninstalled and reinstalled. All source, frozen
+briefs, measurements, mesh data, STL/export receipts, viewer state and generated
+MCP JSON remained byte-identical. API reopening and the existing source/evaluator
+freshness checks passed after every replacement. Uninstall made the package
+unimportable while retaining that user data.
+
+Vite's generated notice file contains six bundled dependencies (fflate,
+lucide-react, react-dom, react, scheduler and three) with their upstream text.
+The static endpoint served it successfully. The JavaScript/CSS bundle names and
+hashes were unchanged; this milestone adds distribution resources, not a UI redesign.
+
+Evidence: `install313.log`, `install314.log`, `tests312.log`, `tests313.log`,
+`tests314.log`, the initial failing `distribution.log`, corrected
+`distribution-final.log` and `validated-dist/` in the local evidence directory.
+The committed CI matrix runs 12 Python/OS combinations plus minimum build123d
+and three distribution jobs. Check the milestone commit's Actions run for the
+remote platform outcomes; the installation guide distinguishes those paths.
+
+Remaining limits: project license and native-dependency provenance/notice review
+before publication; no historical-release or kernel/evaluator migration proof;
+no free-threaded/32-bit/Windows ARM coverage; packaged lifecycle CI remains at
+Python 3.12. Host-specific setup, packaged demo and public releases remain future
+milestones. No external host configuration, project trust roots, saved user
+workspaces, publication credentials or project license terms were changed.
+
+To resume after M2: read this file and `AGENTS.md`, inspect Git/user changes and
+the latest CI, then implement **M3 only**. Research current host documentation;
+do not modify another application's configuration without the required preview
+and approval. Do not begin the demo or publishing milestones in that session.
