@@ -1,9 +1,9 @@
 # Installation, updates and removal
 
-CAD-Harness installs from a checkout or a validated wheel. The selected beta
-channel is [GitHub release downloads](https://github.com/jasonshaw0/CAD-Harness/releases),
-with `0.10.0b1` prepared for publication. Until that release is published, use
-the checkout or a locally validated wheel. No public PyPI path is established.
+CAD-Harness installs from a checkout or a validated wheel. The
+[0.10.0b1 public beta](https://github.com/jasonshaw0/CAD-Harness/releases/tag/v0.10.0b1)
+provides a prebuilt wheel, source archive, release notes, dependency inventory,
+build provenance and checksums. No public PyPI path is established.
 Use an isolated virtual environment and keep designs outside its directory.
 
 ## Compatibility and prerequisites
@@ -51,19 +51,24 @@ application's settings. Follow [MCP host setup](MCP_HOSTS.md)
 to connect an MCP host. Keep roots limited to trusted projects. Python factories
 execute locally without sandboxing, and checks do not establish physical fit.
 
-## Install a locally built wheel
+## Install a release or locally built wheel
 
-Use [the contributor distribution check](../CONTRIBUTING.md#build-a-distributable-package)
-to produce a validated wheel and sdist first. In a separate environment:
+Download the `.whl` and `SHA256SUMS` from the public beta above. Compare the
+wheel's SHA-256 with its entry in `SHA256SUMS` before installing. Alternatively,
+use [the contributor distribution check](../CONTRIBUTING.md#build-a-distributable-package)
+to produce your own validated wheel. In a separate environment:
 
 ```powershell
+Get-FileHash "C:/Downloads/cad_harness-0.10.0b1-py3-none-any.whl" -Algorithm SHA256
 python -m venv .cad-venv
 .\.cad-venv\Scripts\python.exe -m pip install "C:/Downloads/cad_harness-0.10.0b1-py3-none-any.whl[mcp,studio]"
+.\.cad-venv\Scripts\python.exe -m pip check
 .\.cad-venv\Scripts\python.exe -m cadharness --help
 .\.cad-venv\Scripts\python.exe -m cadharness setup --host codex --root D:/CAD/projects --studio --summary
 ```
 
 Replace the illustrative wheel and trusted-project paths with actual paths.
+On Linux, compute the wheel hash with `sha256sum`; on macOS, use `shasum -a 256`.
 On Linux/macOS, create the environment with `python3 -m venv .cad-venv`, use
 `./.cad-venv/bin/python`, and supply local Unix paths. Omit `[mcp,studio]` for
 core only, or use `[mcp]` for framework MCP without the server extras. A wheel

@@ -34,7 +34,11 @@ and CLI also work independently of Studio.
 
 ## Quick start
 
-Requires **Python 3.11–3.14**. Studio setup also needs **Node.js 22.12+** and npm.
+Download the [0.10.0b1 beta](https://github.com/jasonshaw0/CAD-Harness/releases/tag/v0.10.0b1)
+and follow [wheel installation](docs/INSTALLATION.md#install-a-release-or-locally-built-wheel)
+for a prebuilt Studio.
+
+For a checkout, use **Python 3.11–3.14**. Studio builds also need **Node.js 22.12+** and npm.
 From Windows PowerShell:
 
 ```powershell

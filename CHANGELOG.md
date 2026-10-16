@@ -5,7 +5,11 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
-## 0.10.0b1 — beta candidate
+## 0.10.0b1 — 2026-10-16 (beta)
+
+- Publish the [first GitHub beta](https://github.com/jasonshaw0/CAD-Harness/releases/tag/v0.10.0b1)
+  from the verified CI candidate, including wheel/sdist, notes, dependency
+  inventory, commit/run provenance and SHA-256 checksums.
 
 - Adopt Apache-2.0, Copyright 2026 Jason Shaw, with matching SPDX package
   metadata and complete license/NOTICE files in wheel and source archives.

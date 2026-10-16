@@ -2,6 +2,9 @@
 
 Owner decision, 2026-10-16: Apache-2.0, Copyright 2026 Jason Shaw;
 GitHub release downloads. The first candidate is `0.10.0b1`, tag `v0.10.0b1`.
+The [public beta](https://github.com/jasonshaw0/CAD-Harness/releases/tag/v0.10.0b1)
+was published on 2026-10-16 from commit `9e8efe6` and passing CI run
+[38960900367](https://github.com/jasonshaw0/CAD-Harness/actions/runs/38960900367).
 The beta suffix reflects experimental interfaces and the acceptance limits in
 the release notes. PyPI, standalone installers and promotional posts are outside
 this release scope. This procedure prepares evidence; a commit/push does not
@@ -41,10 +44,11 @@ does not itself establish that CI or browser acceptance passed.
 
 ## Publication
 
-Review the exact notes, commit, successful CI matrix, checksums, inventory and
-artifact contents. The owner chose GitHub downloads; the current engineering
-task ends with committed preparation. An instruction to publish this concrete
-candidate authorizes the following separate operation:
+For later candidates, review the exact notes, commit, successful CI matrix,
+checksums, inventory and artifact contents, then obtain the owner's publication
+instruction. The owner authorized publication of `v0.10.0b1` on 2026-10-16.
+Use each candidate's own version and tag in the following procedure. Preserve
+published assets and tags; corrections require a new version.
 
 - Download `github-beta-candidate` from that commit's successful CI run.
   Verify every file against its `SHA256SUMS` and the recorded commit/run URL.

@@ -73,8 +73,8 @@ for a green demo, unnecessary providers/hosted services, and blanket UI rewrites
   for a later social preview. These settings are proposals, not applied changes.
 - **Distribution — decided 2026-10-16:** owner selected GitHub release downloads
   and delegated version/prerelease selection. First candidate: `0.10.0b1`,
-  corresponding tag `v0.10.0b1`, marked beta/pre-release. Current instruction is
-  to finish engineering and commit; no tag/release is published by preparation.
+  corresponding tag `v0.10.0b1`, marked beta/pre-release. The owner subsequently
+  instructed publication; the public beta is live (publication record below).
   PyPI/TestPyPI, trusted publishing, standalone bundling and promotional posts
   are outside this scope. See [release procedure](RELEASING.md).
 
@@ -86,7 +86,7 @@ for a green demo, unnecessary providers/hosted services, and blanket UI rewrites
 | **M2: Compatibility and install lifecycle** (completed; B3/E1/E2) | Essential; depends on M1; medium CI/dependency work. | Test 3.13/3.14 dependency availability and practical CI coverage before widening claims; record exact supported combinations. Exercise core-only/full installs, reinstallation and upgrade with a retained saved workspace; document update/uninstall steps. Decide and document sdist source/third-party notice contents. No unsupported platform claims. |
 | **M3: Supported MCP host setup** (completed with host UI limits below; C) | High value; depends on stable install; medium configuration risk. | Research actual Codex and Claude host formats/lifecycle; document and verify each supported path. Reuse `mcp-config`/doctor; preview and approve any host changes, preserve unrelated entries, handle escaping/collisions, and test restart/connection. No root widening. |
 | **M4: Packaged first-use demonstration** (completed; D plus focused F tutorials) | High value; depends on M1/M2; medium Studio integration risk. | Reuse templates, Studio and evidence formats for assistant-free real geometry, failure, repair, history/comparison, source and explicit export in a fresh dedicated workspace. No credentials. Verify packaged resources and inspect real Playwriter desktop/mobile output and logs. Preserve existing workspaces. |
-| **M5: Public beta preparation** (engineering slice implemented; A, remaining B4/E/F/G readiness) | Essential license/release controls; other presentation work high value/nice to have. Depends on M2–M4 and license decision. | Apply approved license/notices, beta metadata/version/changelog, beta feedback form, install/release notes and checksummed CI artifacts. Owner selected GitHub downloads; PyPI/trusted publishing and launch drafts are deferred. Review candidate artifacts and green CI before publication. |
+| **M5: Public beta preparation** (package-only beta published; A, remaining B4/E/F/G readiness) | Essential license/release controls completed; other presentation work high value/nice to have. Depends on M2–M4 and license decision. | Approved license/notices, beta metadata/version/changelog, feedback form, install/release notes and checksummed CI artifacts are in place. GitHub beta published from verified green CI; PyPI/trusted publishing and launch drafts remain deferred. |
 
 M5 prepares publication. Actual public release, PyPI upload and community posts
 remain separate owner-authorized actions; do not infer approval from this plan.
@@ -474,3 +474,42 @@ checksums/provenance. Follow [the release procedure](RELEASING.md) when publicat
 is requested. License, attribution, channel and beta-version decisions are
 resolved; do not reopen them. Repository presentation and tailored launch drafts
 remain optional later work and are not prerequisites for this engineering commit.
+
+### M5 — public GitHub beta published, 2026-10-16
+
+The owner explicitly instructed: "Make public release". Published
+[CAD-Harness 0.10.0b1](https://github.com/jasonshaw0/CAD-Harness/releases/tag/v0.10.0b1)
+at **2026-10-16 20:26:22 UTC** as a public prerelease, with latest disabled.
+Annotated tag `v0.10.0b1` points to the verified source commit
+`9e8efe6686f3e43a8b1b921d2003ba000b5599f5`.
+
+- Reconfirmed all **16 jobs** of
+  [CI 38960900367](https://github.com/jasonshaw0/CAD-Harness/actions/runs/38960900367)
+  passed on that exact commit. Reviewed clean build provenance, release notes,
+  dependency inventory and all candidate checksums before publication.
+- Created/reviewed a draft with all six original CI assets, then published it:
+  wheel, sdist, `DEPENDENCIES.json`, `BUILD.json`, `RELEASE_NOTES.md` and
+  `SHA256SUMS`. Release notes and assets were preserved byte-for-byte.
+- Downloaded all six public assets and matched every byte to the CI candidate;
+  all recorded SHA-256 checks passed. Unauthenticated public API access and an
+  anonymous wheel download also succeeded; the latter's hash matched the CI wheel.
+- Installed the public wheel with `[mcp,studio]` and fresh dependencies into a
+  new temporary environment outside the checkout. `pip check`, installed import
+  containment/version checks and `cadharness demo --prepare-only` passed. The
+  real `r001` failure and `r002` repair were prepared with version `0.10.0b1`.
+- Updated the main-branch README/install guide, changelog and release procedure
+  to identify the published beta. The release tag and its validated assets
+  remain at the original tested commit. Six bootstrap and six onboarding tests
+  passed; 102 local guide links resolved and `git diff --check` passed.
+
+Local evidence under ignored `runs/licensing-beta-20261016/`:
+`public-download/`, `public-verification.json`, `public-install.log` and
+`public-install-result.json`. These checks establish public artifact delivery
+and fresh Windows/Python 3.12 installation/demo preparation; the earlier CI
+provides the recorded cross-platform/browser acceptance. No new physical-fit,
+historical migration or host-UI claim is made. No PyPI upload, standalone bundle,
+repository visibility change, host/account permission change or promotional
+message was performed. Unrelated user files were preserved.
+
+Next: collect beta feedback through the published issue form, reproduce/fix
+reported failures, and use a new version for changes to released artifacts.
