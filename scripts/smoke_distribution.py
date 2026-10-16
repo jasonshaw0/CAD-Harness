@@ -132,7 +132,9 @@ from starlette.testclient import TestClient
 import cadharness
 from cadharness.paths import PACKAGE_ROOT, WORKFLOW_ROOT
 from cadharness.studio.server import create_app
-assert PACKAGE_ROOT.is_relative_to(Path(sys.prefix)), cadharness.__file__
+# Windows runners may launch from an 8.3 TEMP alias while PACKAGE_ROOT has
+# already resolved to its long path. Compare canonical paths on both sides.
+assert PACKAGE_ROOT.is_relative_to(Path(sys.prefix).resolve()), cadharness.__file__
 assert (WORKFLOW_ROOT / "CONTRACTS.md").is_file()
 assert (WORKFLOW_ROOT / "AUTHORING.md").is_file()
 assert list((PACKAGE_ROOT / 'studio/web/assets').glob('renderView-*.js'))

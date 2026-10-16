@@ -144,6 +144,18 @@ and `validated-dist/` (wheel, sdist, SHA256SUMS). These are local validation
 artifacts, not published releases. The milestone's commit introduces this
 record; consult its GitHub Actions run for the expanded platform CI outcomes.
 
+The first expanded CI run exposed a Windows-only smoke assertion bug: the
+runner uses an 8.3 temporary-path alias while `PACKAGE_ROOT` resolves its long
+path. Dependency installation and bootstrap succeeded. Canonicalize `sys.prefix`
+as well before checking installed-package containment; retain the containment
+check so an editable checkout cannot substitute for the installed wheel.
+Follow-up validation created a real Windows 8.3 alias with `GetShortPathNameW`,
+set only the smoke process's TEMP/TMP to that alias, and reran the complete
+packaged smoke in fast dependency mode: **13 tests passed in 37.312 s**;
+resources, all CLI aliases and exports passed. The four archive fault tests
+also passed again. Evidence is in `alias-smoke.log` and `alias-dist/` under the
+same local audit directory.
+
 No runtime/public API, schema, root, host configuration, model, frontend source
 or saved-workspace changes were needed. Browser acceptance was not rerun locally;
 the passing baseline CI rendering run is recorded above. Serving assets and MCP
