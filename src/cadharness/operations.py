@@ -409,6 +409,19 @@ def export_project(
 ) -> dict[str, Any]:
     """Explicitly export selected components or the whole built document."""
     loaded = load_project(path, variant=variant)
+    return _export_loaded_project(loaded, output_dir=output_dir, file_format=file_format,
+                                  component_ids=component_ids, overwrite=overwrite)
+
+
+def _export_loaded_project(
+    loaded: LoadedProject,
+    *,
+    output_dir: str | Path,
+    file_format: str,
+    component_ids: Iterable[str] | None = None,
+    overwrite: bool = False,
+) -> dict[str, Any]:
+    """Export an already built project without executing its factory again."""
     normalized_format = file_format.lower()
     if normalized_format not in {"step", "stl"}:
         raise ValueError("file_format must be 'step' or 'stl'")
@@ -434,14 +447,15 @@ def export_project(
             )
         ]
 
+    # Capture every input before any exporter can populate shared OCCT caches.
+    export_items = [(item_id, shape, shape_metrics(shape)) for item_id, shape in export_items]
     outputs = []
     exporter = export_step if normalized_format == "step" else export_stl
-    for item_id, shape in export_items:
+    for item_id, shape, source_geometry in export_items:
         # Exporters may add triangulation or update OCCT serialization state.
         # Preserve the source geometry identity before invoking them as well as
         # the existing post-export metrics, so callers can link evaluated shapes
         # to an export without mistaking exporter mutation for design drift.
-        source_geometry = shape_metrics(shape)
         artifact_id = f"{item_id}-{loaded.variant}" if loaded.variant else item_id
         filename = _SAFE_NAME.sub("-", artifact_id).strip("-.")
         output_path = target_dir / f"{filename}.{normalized_format}"

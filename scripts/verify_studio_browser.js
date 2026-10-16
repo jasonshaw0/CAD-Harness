@@ -51,8 +51,8 @@ else if (step === 'source-ready') {
   await shot('source-light');
 } else if (step === 'export-menu') await button('Export design').click();
 else if (step === 'export-step') await button('STEP geometry .step').click();
-else if (step === 'export-finished') await state.page.getByRole('status').waitFor({ state: 'hidden', timeout: 30000 });
-else if (step === 'download-menu') await button('Export design').click();
+else if (step === 'export-finished') await state.page.getByRole('link', { name: /plate-standard\.step/ }).waitFor({ timeout: 30000 });
+else if (step === 'download-menu') await state.page.getByRole('link', { name: /plate-standard\.step/ }).waitFor();
 else if (step === 'download') {
   const [download] = await Promise.all([state.page.waitForEvent('download'), state.page.getByRole('link', { name: /plate-standard\.step/ }).click()]);
   const failure = await download.failure();

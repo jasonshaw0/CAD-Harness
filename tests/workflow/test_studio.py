@@ -122,6 +122,42 @@ class StudioTests(unittest.TestCase):
         self.assertEqual(saved["latest_revision"], "r003")
         self.assertEqual(report["outcome"], "error")
 
+    def test_export_rejects_stale_evaluator_and_rebuild_recovers_step_and_stl(self):
+        jobs = Jobs(self.store)
+        design = self.store.create("export recovery")
+        build = jobs.submit(design["id"], example="square-mount", session_id="test")
+        self.assertEqual(self.wait(jobs, build)["status"], "ready")
+        root = self.store.design_root(design["id"])
+        original = root / "revisions/r001/run.json"
+        report = read_json(original)
+        report["repository"]["workflow_files_sha256"] = "older-evaluator"
+        save(original, report)
+        retained = original.read_bytes()
+
+        export = jobs.submit(design["id"], export_format="step", session_id="test")
+        failed = self.wait(jobs, export)
+        self.assertEqual(failed["status"], "failed")
+        self.assertIn("workflow evaluator changed", failed["error"])
+        self.assertFalse((root / "revisions/r001/project/exports/step.json").exists())
+
+        rebuild = jobs.submit(design["id"], rebuild=True, session_id="test")
+        self.assertEqual(self.wait(jobs, rebuild)["status"], "ready")
+        current = root / "revisions/r002"
+        fresh = read_json(current / "run.json")
+        self.assertEqual(fresh["brief_sha256"], report["brief_sha256"])
+        self.assertEqual(fresh["files"], report["files"])
+        for file_format in ("step", "stl"):
+            export = jobs.submit(design["id"], export_format=file_format, session_id="test")
+            result = self.wait(jobs, export)
+            self.assertEqual(result["status"], "ready", result)
+            receipt = read_json(current / f"project/exports/{file_format}.json")
+            self.assertEqual([item["component_id"] for item in receipt["outputs"]], ["plate"])
+            artifact = Path(receipt["outputs"][0]["path"])
+            self.assertGreater(artifact.stat().st_size, 84)
+            if file_format == "step":
+                self.assertTrue(artifact.read_bytes().startswith(b"ISO-10303-21;"))
+        self.assertEqual(original.read_bytes(), retained, "recovery overwrote the old evidence")
+
     def test_repair_freezes_requirements_but_next_turn_can_change_intent(self):
         calls = []
         def generator(prompt, **kwargs):

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import datetime, timezone
 from hashlib import sha256
 from html import escape
@@ -401,17 +402,24 @@ def worker(action, revision: Path, extra):
     project = revision / "project"
     expected = review_hashes(revision)
     if action == "export":
-        from cadharness.operations import export_project
+        from cadharness.operations import _export_loaded_project
         report = load_report(revision / "run.json")
         assert_current(revision, report)
-        # Verify the fresh build before calling the existing exporter, which rebuilds.
+        # Replay evaluation before comparing BREP identities: boolean measurement
+        # checks can populate OCCT serialization state on their operand shapes.
+        # Export these exact verified shapes, without another factory execution.
         loaded = load_project(project, variant=spec.get("variant"))
-        fresh = loaded.document.inspect()
+        document, coverage = bind_requirements(loaded.document, brief)
+        verification = verify_document(document, variant=loaded.variant)
+        rows = update_coverage(coverage, verification["validation"])
+        if not verification["verification"]["passed"] or any(row["mandatory"] and row["status"] != "pass" for row in rows):
+            raise ValueError("rebuilt geometry no longer passes evaluated requirements")
+        fresh = document.inspect()
         fingerprints = {key: item["geometry"]["fingerprint"] for key, item in fresh["components"].items()}
         if fingerprints != report["fingerprints"]:
             raise ValueError("rebuilt geometry differs from evaluated geometry")
-        output = export_project(project, file_format=extra[0], component_ids=extra[1:],
-                                variant=spec.get("variant"), output_dir=f"exports/{extra[0]}")
+        output = _export_loaded_project(replace(loaded, document=document), file_format=extra[0],
+                                       component_ids=extra[1:], output_dir=f"exports/{extra[0]}")
         if any(item["source_geometry"]["fingerprint"] != report["fingerprints"][item["component_id"]] for item in output["outputs"]):
             raise ValueError("exported geometry differs from evaluated geometry; files withheld from delivery")
         if review_hashes(revision) != expected:

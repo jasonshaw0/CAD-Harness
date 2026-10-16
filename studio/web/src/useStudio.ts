@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Design, Job, RevisionData } from './types';
 import { connectRenderClient } from './renderClient';
+import { jobErrorMessage } from './jobErrors';
 
 export type Session = { designer: 'mcp' | 'codex'; token: string; authorized: boolean; codex_available: boolean; model: string; workspace: string; active_job: string | null; render_protocol?: string };
 const activeStates = new Set(['queued', 'generating', 'building', 'checking', 'repairing', 'exporting']);
@@ -72,7 +73,8 @@ export function useStudio() {
     setSelected(null); setHidden(new Set()); setIsolated(null); setOverlay(false);
     setData(null); setLatestData(null); setPrevious(null); setRevision(null);
   }
-  function watch(next: Job) {
+  function watch(next: Job, onReady?: () => void) {
+    const generation = navigation.current;
     stream.current?.close(); setJob(next);
     const events = new EventSource(`/api/jobs/${next.id}/events`);
     stream.current = events;
@@ -87,7 +89,11 @@ export function useStudio() {
     events.addEventListener('complete', () => {
       events.close();
       void run(async () => {
-        setJob(await api(`/api/jobs/${next.id}`)); setProgress(''); await refresh(next.design_id);
+        const completed: Job = await api(`/api/jobs/${next.id}`);
+        setJob(completed); setProgress(''); await refresh(next.design_id);
+        if (generation !== navigation.current || current.current.design?.id !== next.design_id) return;
+        if (completed.status === 'failed') throw new Error(jobErrorMessage(completed.error || 'The job failed. Open Agent activity for details.'));
+        if (completed.status === 'ready') onReady?.();
       });
     });
     events.onerror = () => { if (events.readyState === EventSource.CLOSED) events.close(); };
@@ -170,8 +176,8 @@ export function useStudio() {
   async function rebuild() {
     if (design) watch((await api(`/api/designs/${design.id}/rebuild`, {})).job);
   }
-  async function exportModel(format: string) {
-    if (design) watch((await api(`/api/designs/${design.id}/export`, { format })).job);
+  async function exportModel(format: string, onReady?: () => void) {
+    if (design) watch((await api(`/api/designs/${design.id}/export`, { format })).job, onReady);
   }
   async function cancel() { if (job) { await api(`/api/jobs/${job.id}/cancel`, {}); setProgress('Cancelling…'); } }
   async function authorize(enabled: boolean) { setSession(await api('/api/session', { authorize: enabled })); }

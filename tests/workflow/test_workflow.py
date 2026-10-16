@@ -67,6 +67,33 @@ class WorkflowTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "reference geometry"):
             export_revision(repair, file_format="stl", component_ids=["motor-envelope"])
 
+    def test_exports_use_post_verification_shapes_after_boolean_measurements(self):
+        revision = self.create()
+        source = revision / "project/project.py"
+        source.write_text(source.read_text(encoding="utf-8") + '''
+from cadharness import equals_check
+from math import pi
+original_factory = create_project
+def create_project(params=PlateParameters()):
+    document = original_factory(params)
+    tool = Pos(15.5, 15.5, 0) * Box(4, 4, 4, align=Z_MIN)
+    document.checks = (equals_check("section.volume", "Measured edge section",
+        lambda d: (d.components["plate"].shape & tool).volume, 64 - pi * 1.75**2 * 4,
+        absolute_tolerance=0.001),)
+    return document
+''', encoding="utf-8")
+        before = load_project(revision / "project", variant="standard").document.inspect()
+        passed = self.check(revision)
+        self.assertTrue(passed["ready_for_review"], passed)
+        fingerprint = passed["fingerprints"]["plate"]
+        self.assertNotEqual(before["components"]["plate"]["geometry"]["fingerprint"], fingerprint,
+                            "fixture must exercise OCCT operand serialization changes")
+        for file_format in ("step", "stl"):
+            receipt = export_revision(revision, file_format=file_format)
+            output, = receipt["outputs"]
+            self.assertEqual(output["source_geometry"]["fingerprint"], fingerprint)
+            self.assertGreater(Path(output["path"]).stat().st_size, 84)
+
     def test_existing_mount_adversaries_and_rotation_are_measured(self):
         revision = self.create()
         for variant, failing_id in (("missing-hole", "holes.count"), ("shifted-hole", "holes.h2.diameter"),

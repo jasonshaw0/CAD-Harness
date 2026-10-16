@@ -5,6 +5,14 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
+- Export the exact freshly verified shapes, without rebuilding the factory a
+  second time. Replay boolean measurement checks before comparing BREP identity,
+  preserving strict stale-evidence and geometry checks for STEP/STL delivery.
+
+- Show asynchronous Studio job failures, including actionable stale-evidence
+  export errors with a rebuild button. Reopen the download list after successful
+  STEP/STL generation and keep error actions readable on narrow screens.
+
 - Rename the product and Python distribution to CAD-Harness across Studio,
   MCP identity, CLI help, and documentation. Add `cad-harness` and
   `cad-harness-mcp` entrypoints while preserving Python imports, legacy commands,
