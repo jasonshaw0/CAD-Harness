@@ -108,6 +108,8 @@ From the repository root:
 .venv\Scripts\python.exe models\pocket-cycloid\verify.py
 ```
 
+Or on Linux/macOS: `./.venv/bin/python models/pocket-cycloid/verify.py`.
+
 The saved [verification report](../evidence/verification.json) includes:
 
 - 51 passing geometry/source checks, with valid single-solid components.

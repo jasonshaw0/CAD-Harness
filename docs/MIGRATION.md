@@ -22,7 +22,10 @@ same legacy command scripts. From the checkout in Windows PowerShell:
 python bootstrap.py
 ```
 
-On macOS/Linux, use `./.venv/bin/python` and `python3 bootstrap.py`.
+Or on Linux/macOS, run `./.venv/bin/python -m pip uninstall cadharness`, then
+`python3 bootstrap.py`. Replace the Windows interpreter path with
+`./.venv/bin/python` in later commands; workspace paths such as
+`./designworkflow/runs/studio` are unchanged.
 
 ## Commands and source paths
 

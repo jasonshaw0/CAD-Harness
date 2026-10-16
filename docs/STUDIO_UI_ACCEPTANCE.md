@@ -15,6 +15,9 @@ npm --prefix studio/web run build
 .\.venv\Scripts\python.exe -m cadharness studio --workspace runs/studio-browser --port 8743
 ```
 
+Or on Linux/macOS, keep the npm build command and start the server with
+`./.venv/bin/python -m cadharness studio --workspace runs/studio-browser --port 8743`.
+
 Read the Playwriter skill and create a task session. In another terminal, from
 the repository root:
 
@@ -22,6 +25,8 @@ the repository root:
 cmd /d /s /c npx -y playwriter@latest session new --tab-group cadharness
 cmd /d /s /c npx -y playwriter@latest -s SESSION_ID --timeout 30000 -f scripts/verify_studio_browser.js
 ```
+
+Or on Linux/macOS, omit `cmd /d /s /c` and run `npx` directly in both commands.
 
 Repeat the file invocation until it reports `done`. Each call performs one
 action, prints a snapshot and browser logs, and advances state. Inspect results

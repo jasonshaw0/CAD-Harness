@@ -14,11 +14,16 @@ From the repository root on Windows:
 python bootstrap.py
 ```
 
-On macOS or Linux:
+Or on Linux/macOS:
 
 ```bash
 python3 bootstrap.py
 ```
+
+For later commands, replace `.\.venv\Scripts\python.exe` with
+`./.venv/bin/python`; npm commands are unchanged. If your Linux Python lacks
+the `venv` module, install your distribution's Python venv package first
+(Debian/Ubuntu: `sudo apt install python3-venv`).
 
 Setup creates or reuses `.venv`, installs the Python extras and frontend
 dependencies, builds the canvas, verifies the example CAD project, and writes
@@ -36,6 +41,8 @@ Select trust roots, workspace, and port in the same setup command:
 python bootstrap.py --root D:/CAD/my-project --workspace D:/CAD/my-project/workspace --port 8742
 ```
 
+Or on Linux/macOS: `python3 bootstrap.py --root ~/CAD/my-project --workspace ~/CAD/my-project/workspace --port 8742`.
+
 Roots default to this checkout; `--root` can be repeated. A workspace cannot
 expand those roots. Existing differing config files are preserved; select a new
 `--config PATH` or explicitly use `--overwrite-config` to regenerate one.
@@ -50,6 +57,9 @@ npm --prefix studio/web ci
 npm --prefix studio/web run build
 .\.venv\Scripts\python.exe -m cadharness mcp-config . --studio
 ```
+
+Or on Linux/macOS, start with `python3 -m venv .venv`, use
+`./.venv/bin/python` for the other Python commands, and keep both npm commands.
 
 The canvas builds into `src/cadharness/studio/web/`, where Python serves it.
 Node.js is needed to build it; the running application serves static files.
@@ -79,6 +89,8 @@ Use a dedicated trusted root for real projects. Studio's default workspace is
 ```powershell
 .\.venv\Scripts\python.exe -m cadharness mcp-config D:/CAD/my-project --studio --studio-workspace D:/CAD/my-project/workspace --studio-port 8742
 ```
+
+Or on Linux/macOS: `./.venv/bin/python -m cadharness mcp-config ~/CAD/my-project --studio --studio-workspace ~/CAD/my-project/workspace --studio-port 8742`.
 
 The workspace must stay inside a configured root; configuration never adds
 roots implicitly. With multiple roots, specify the workspace if the first root
@@ -228,6 +240,8 @@ The earlier separate Codex CLI designer remains opt-in:
 ```powershell
 .\.venv\Scripts\python.exe -m cadharness studio --designer codex
 ```
+
+Or on Linux/macOS: `./.venv/bin/python -m cadharness studio --designer codex`.
 
 Only that mode requires a signed-in `codex` executable and supports `--model NAME`.
 For frontend development, run the backend on port 8741 and

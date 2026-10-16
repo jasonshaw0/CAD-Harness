@@ -65,6 +65,10 @@ produce errors. Underlying status, diagnostics, and evidence remain visible.
 Run from the checkout. Commands emit `cadharness.measurement` v1 JSON and write
 no artifacts.
 
+Or on Linux/macOS, use `./.venv/bin/python` in place of `python` in these
+commands, or activate the environment first with `source .venv/bin/activate`
+in Bash/Zsh. All measurement flags and project paths stay the same.
+
 ```powershell
 python -m cadharness measure examples/nema17-mount --type hole-pattern --component mounting-plate --radius-min 1 --radius-max 3 --axis-direction 0 0 1
 python -m cadharness measure examples/nema17-mount --type cylindrical-feature --component mounting-plate --axis-location 15.5 15.5 0

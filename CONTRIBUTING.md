@@ -36,9 +36,17 @@ python bootstrap.py
 .\.venv\Scripts\python.exe scripts/smoke_mcp.py
 ```
 
-On macOS/Linux, use `python3 bootstrap.py` for setup and
-`./.venv/bin/python` for subsequent commands. One discovery command includes all
-workflow and Studio tests. The real stdio integration exercises a failed
+Or on Linux/macOS:
+
+```bash
+python3 bootstrap.py
+./.venv/bin/python -m unittest discover -s tests -v
+./.venv/bin/python scripts/smoke_mcp.py
+```
+
+CI runs the Python/CLI/MCP checks on Windows, Linux, and macOS, and checks full
+Studio setup and wheel installation on Linux and macOS. One discovery command
+includes all workflow and Studio tests. The real stdio integration exercises a failed
 measurement, repair under a frozen brief, follow-up turn, and STL export.
 
 Use `cadharness --help` for shared commands. Manual design commands live under
@@ -69,6 +77,9 @@ cmd /d /s /c npx -y playwriter@latest browser install
 .\.venv\Scripts\python.exe scripts/verify_studio_rendering.py
 ```
 
+Or on Linux/macOS, run `npx -y playwriter@latest browser install` directly, then
+`./.venv/bin/python scripts/verify_studio_rendering.py`.
+
 Broker tests separately cover timeouts, duplicate/mismatched results, invalid
 selections, authentication, and image content through an attached MCP client.
 
@@ -83,6 +94,9 @@ import-path injection.
 npm --prefix studio/web run build
 .\.venv\Scripts\python.exe -m pip wheel . --no-deps --wheel-dir dist
 ```
+
+Or on Linux/macOS, keep the npm command and use
+`./.venv/bin/python -m pip wheel . --no-deps --wheel-dir dist`.
 
 `python scripts/smoke_distribution.py` builds a wheel, installs it in a
 temporary environment, verifies its canvas/assets, and runs the real Studio

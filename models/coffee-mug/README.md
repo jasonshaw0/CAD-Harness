@@ -31,6 +31,9 @@ the flat bottom contact disk has radius 43 mm. No foot ring is added.
 .\.venv\Scripts\python.exe -m cadharness verify models/coffee-mug --summary
 ```
 
+Or on Linux/macOS, from the repository root:
+`./.venv/bin/python -m cadharness verify models/coffee-mug --summary`.
+
 The 15 source checks cover validity, one solid, bounds, cavity volume, handle
 opening spans and grip chords. Studio's retained brief additionally checks
 actual wall and bottom chords. The bore was independently measured through MCP

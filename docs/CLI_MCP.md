@@ -15,17 +15,30 @@ Use `python bootstrap.py --framework-only` for the core without Node.js or MCP.
 See [Studio onboarding](STUDIO.md#one-command-setup). The manual steps below
 remain available for framework-only MCP and custom development environments.
 
-The [README](../README.md#use-the-framework-directly) covers a first report.
+The [README](../README.md#try-the-evidence-loop) covers a first report.
 Install `[mcp]` for framework-only MCP, or `[mcp,studio]` for the integrated
 design workbench. See [Studio setup](STUDIO.md) for its canvas build.
 
 ```powershell
-git clone https://github.com/jasonshaw0/cadHarness.git CAD-Harness
+git clone https://github.com/jasonshaw0/CAD-Harness.git
 cd CAD-Harness
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e ".[mcp]"
 .\.venv\Scripts\python.exe -m cadharness doctor .
 ```
+
+Or on Linux/macOS, use the same clone and `cd` commands, then:
+
+```bash
+python3 -m venv .venv
+./.venv/bin/python -m pip install -e ".[mcp]"
+./.venv/bin/python -m cadharness doctor .
+```
+
+For full Studio setup, the shorter equivalent is `python3 bootstrap.py`.
+Use `./.venv/bin/python` instead of the Windows interpreter path throughout
+this guide. After `source .venv/bin/activate` in Bash/Zsh, `python` and the
+short CLI entrypoints work directly; activation is optional.
 
 `doctor` reports the active package version and path, Python interpreter, MCP
 SDK, console scripts, scan root, and discovered projects. Its `checkout` value
@@ -51,6 +64,9 @@ $cad = ".\.venv\Scripts\python.exe"
 & $cad -m cadharness snapshot examples/project-box --variant standard
 & $cad -m cadharness compare examples/project-box --variant standard
 ```
+
+Or in Bash/Zsh, set `cad=./.venv/bin/python` and replace `& $cad` with
+`"$cad"`, for example `"$cad" -m cadharness verify examples/project-box --summary`.
 
 Commands emit JSON by default. Add `--compact` anywhere in the command for
 one-line JSON. `verify` and `inspector` accept `--summary` for readable terminal
@@ -131,6 +147,10 @@ machine:
 }
 ```
 
+On Linux/macOS the generated `command` points to `/absolute/path/.venv/bin/python`
+and roots use ordinary `/absolute/path` directories. Generate the config locally
+instead of copying the Windows paths in this illustrative JSON.
+
 Copy the `cadharness` entry into the MCP client's `mcpServers` object, then
 restart or reload that client. The absolute interpreter ensures the client uses
 this checkout's environment. The explicit `--root` makes discovery independent
@@ -141,6 +161,8 @@ Pass multiple trusted roots when required:
 ```powershell
 .\.venv\Scripts\python.exe -m cadharness mcp-config C:\CAD\project-a D:\CAD\project-b
 ```
+
+Or on Linux/macOS: `./.venv/bin/python -m cadharness mcp-config ~/CAD/project-a ~/CAD/project-b`.
 
 The server exposes discovery, schema, inspection, measurement, validation, verification,
 inspector, snapshot, comparison, preview, and export tools. Call
@@ -175,8 +197,11 @@ the following only to inspect its command-line interface:
 .\.venv\Scripts\cadharness-mcp.exe --version
 ```
 
+Or on Linux/macOS, use `./.venv/bin/cad-harness-mcp --help` or `--version`.
+
 For compatibility with an existing configuration, roots can instead be set in
-`CADHARNESS_PROJECT_ROOTS`; separate multiple Windows paths with `;`. Explicit
+`CADHARNESS_PROJECT_ROOTS`; separate multiple Windows paths with `;`, or
+Linux/macOS paths with `:`. Explicit
 `--root` arguments take precedence, so generated configs are preferred.
 
 ## Trust boundary
@@ -193,7 +218,7 @@ If commands appear stale or projects are missing, verify the active checkout:
 
 ```powershell
 .\.venv\Scripts\python.exe -m cadharness doctor .
-.\.venv\Scripts\python.exe -m pip show cadharness
+.\.venv\Scripts\python.exe -m pip show CAD-Harness
 .\.venv\Scripts\python.exe -c "import cadharness; print(cadharness.__file__)"
 ```
 

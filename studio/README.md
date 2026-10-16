@@ -8,11 +8,14 @@ Start with [Studio setup and controls](../docs/STUDIO.md). The Python applicatio
 lives in [`src/cadharness/studio/`](../src/cadharness/studio/); this directory
 contains the editable frontend.
 
-From the repository root:
+From the repository root on Windows:
 
-```sh
+```powershell
 python bootstrap.py
 ```
+
+Or on Linux/macOS, run `python3 bootstrap.py`; use `./.venv/bin/python`
+for later Python commands. The npm commands below are the same on all platforms.
 
 Setup installs dependencies, builds the canvas, checks the example, and writes
 `.cadharness/mcp.json` for your MCP host. For frontend-only rebuilds, use

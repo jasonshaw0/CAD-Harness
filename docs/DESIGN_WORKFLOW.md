@@ -20,6 +20,12 @@ $python = ".\.venv\Scripts\python.exe"
 & $python -m cadharness design check runs/my-mount/revisions/r001 --review-hashes
 ```
 
+Or in Linux/macOS Bash/Zsh, set `python=./.venv/bin/python` and replace
+`& $python` with `"$python"` throughout this guide. For example:
+`"$python" -m cadharness design check runs/my-mount/revisions/r001 --review-hashes`.
+Replace `Invoke-Item PATH` with `open PATH` on macOS or `xdg-open PATH` on a
+Linux desktop to view the same generated HTML reports.
+
 Read `prompt.txt`, `brief-v001.json`, the manifest, and **every candidate input**
 listed in the hash output. Inspect imports and top-level actions before executing
 Python. The template dimensions and hardware envelopes are illustrative.

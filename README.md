@@ -38,10 +38,14 @@ Requires **Python 3.11–3.14**. Studio setup also needs **Node.js 22.12+** and 
 From Windows PowerShell:
 
 ```powershell
-git clone https://github.com/jasonshaw0/cadHarness.git CAD-Harness
+git clone https://github.com/jasonshaw0/CAD-Harness.git
 cd CAD-Harness
 python bootstrap.py
 ```
+
+Or on Linux/macOS, use the same clone and `cd` commands, then run
+`python3 bootstrap.py`. After setup, replace `.\.venv\Scripts\python.exe`
+with `./.venv/bin/python` in the examples below; activation is optional.
 
 Setup creates `.venv`, installs dependencies, builds Studio, verifies an example,
 and writes `.cadharness/mcp.json`. Add its `cadharness` entry to your MCP host and
@@ -49,7 +53,7 @@ reload the host. Call `studio_status` for the viewer URL, normally
 `http://127.0.0.1:8741`. See [Studio setup](docs/STUDIO.md) for configuration.
 
 For framework-only setup, use `python bootstrap.py --framework-only` without
-Node.js. On macOS/Linux, use `python3` and `./.venv/bin/python` below.
+Node.js (Linux/macOS: `python3 bootstrap.py --framework-only`).
 
 ## Try the evidence loop
 

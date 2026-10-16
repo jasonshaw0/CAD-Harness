@@ -5,6 +5,10 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
+- Keep Windows instructions primary and add short Linux/macOS equivalents to
+  setup, CLI/MCP, Studio, testing, migration, and model verification guides.
+  Extend Python/CLI/MCP and Studio installation CI coverage to macOS.
+
 - Export the exact freshly verified shapes, without rebuilding the factory a
   second time. Replay boolean measurement checks before comparing BREP identity,
   preserving strict stale-evidence and geometry checks for STEP/STL delivery.

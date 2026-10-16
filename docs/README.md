@@ -4,6 +4,11 @@ CAD-Harness includes a reusable CAD framework and Studio, the application that
 uses it with your IDE assistant. Both connect Python source and built geometry
 to explicit engineering evidence.
 
+Command guides show Windows/PowerShell first. Or on Linux/macOS, start with
+`python3 bootstrap.py`, use `./.venv/bin/python` for the checkout environment,
+and run `npm`/`npx` directly. The CLI arguments and Studio browser URL are the
+same; platform-specific shell and path differences are noted in each guide.
+
 | I want to… | Start here |
 | --- | --- |
 | Design with an assistant and live 3D canvas | [Studio](STUDIO.md) |

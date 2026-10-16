@@ -73,7 +73,10 @@ It is not a general wall-thickness method; see the
 Invoke-Item .\my-plate\.cadharness\inspector\index.html
 ```
 
-On macOS/Linux, use `./.venv/bin/python` and open the HTML file in your browser.
+Or on Linux/macOS, use `./.venv/bin/python -m cadharness verify my-plate --summary`
+and the same interpreter for `inspector` and later commands. Open the generated
+HTML with `open my-plate/.cadharness/inspector/index.html` on macOS or
+`xdg-open my-plate/.cadharness/inspector/index.html` on a Linux desktop.
 Expect verification to pass with two checks: built-in geometry validity and
 `plate.thickness`. The report shows the model, its measured dimensions, and the
 check's actual/expected values.

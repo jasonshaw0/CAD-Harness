@@ -4,6 +4,9 @@
 candidate parameters. Prompt files are provided for CLI use. Templates are
 ordinary editable projects, adapted from existing repository examples.
 
+Or on Linux/macOS, use `./.venv/bin/python` instead of `python` in the benchmark
+command below. Use a new output directory on every platform.
+
 Run `python -m cadharness.workflow.benchmarks --output <new-directory>`. The scripted
 suite preserves every failed and repaired revision, plus `benchmark.json`:
 
@@ -47,6 +50,9 @@ cmd /d /s /c npx -y playwriter@latest session new --tab-group cadharness
 # with a Playwriter -e snippet or an initialization .js file.
 cmd /d /s /c npx -y playwriter@latest -s SESSION_ID --timeout 30000 -f scripts/verify_workflow_browser.js
 ```
+
+Or on Linux/macOS, omit `cmd /d /s /c` from both commands and run `npx` directly.
+The same session initialization and repeated JavaScript-file invocations apply.
 
 Repeat the file invocation until it reports `done`; each invocation performs one
 action and prints the resulting snapshot and logs. The script uses only Playwriter for
