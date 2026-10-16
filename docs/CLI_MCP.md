@@ -98,6 +98,7 @@ records the errors. A gate exception never rewrites the underlying evidence.
 | Command | Purpose | Writes files |
 | --- | --- | --- |
 | `doctor [root]` | Diagnose the active install and discover projects | No |
+| `demo` | Build and view a measured failure/repair without an assistant | New workspace only; geometry export is explicit |
 | `list [root]` | Find `cadharness.toml` manifests | No |
 | `schemas` | List public JSON document contracts | No |
 | `inspect <project>` | Build and return measured geometry evidence | No |

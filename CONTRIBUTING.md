@@ -66,6 +66,13 @@ Use `./.venv/bin/python` on Linux/macOS. It retains a new isolated `CODEX_HOME`,
 config backup, host stderr and catalog evidence; it does not edit personal host
 settings or start model turns. See [host setup and validation limits](docs/MCP_HOSTS.md).
 
+The [packaged demo](docs/DEMO.md) also has real-browser acceptance:
+`python scripts/verify_demo.py --output runs/demo-acceptance`. Use the installed
+environment's interpreter and add `--require-installed` when checking a wheel.
+The distribution runner includes it with `--render-browser`; screenshots, logs,
+source/evidence preservation and actual STEP/STL downloads are checked through
+Playwriter. Run it against a new output directory, never a personal workspace.
+
 Use Playwriter exclusively for browser control and testing. Read its skill,
 create a stateful task session, exercise interactions, inspect screenshots,
 and check console errors. Unit tests and a build do not establish browser acceptance.

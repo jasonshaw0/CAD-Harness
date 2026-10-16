@@ -56,6 +56,11 @@ def _parser() -> argparse.ArgumentParser:
     studio.add_argument("--port", type=int, default=8741)
     studio.add_argument("--designer", choices=("mcp", "codex"), default="mcp")
     studio.add_argument("--model", help="model override for the opt-in Codex CLI designer")
+    demo = subparsers.add_parser("demo", help="build and view a real missing-hole demonstration without an assistant")
+    demo.add_argument("--workspace", type=Path, help="new directory only (default: runs/demo-<unique-id> under the current directory)")
+    demo.add_argument("--port", type=int, default=0, help="loopback viewer port; 0 chooses an available port")
+    demo.add_argument("--no-browser", action="store_true", help="print the viewer URL without opening a browser")
+    demo.add_argument("--prepare-only", action="store_true", help="build the two revisions, print JSON and exit without serving or exporting")
     from .workflow.cli import add_arguments
     add_arguments(subparsers.add_parser("design", help="scaffold, review, revise, and export a design"))
 
@@ -319,6 +324,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.command == "studio":
             from .studio.server import serve
             serve(workspace=args.workspace, port=args.port, model=args.model, designer=args.designer)
+            return 0
+        if args.command == "demo":
+            from .studio.demo import prepare_demo, serve_demo
+            if args.prepare_only:
+                result = prepare_demo(args.workspace)
+                json.dump(result, sys.stdout, indent=None if args.compact else 2, sort_keys=True)
+                sys.stdout.write("\n")
+            else:
+                serve_demo(workspace=args.workspace, port=args.port, open_browser=not args.no_browser)
             return 0
         if args.command == "design":
             from .workflow.cli import run

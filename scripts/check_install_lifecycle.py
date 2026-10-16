@@ -40,6 +40,11 @@ def core(root):
             method="analytic-concave-cylinder-inventory"),)
         assert verify_document(document)["verification"]["passed"] == expected_pass
     print("Core-only install: real geometry passes; missing-hole defect fails.", flush=True)
+    from cadharness.studio.demo import prepare_demo
+    demo = prepare_demo(root / "core-demo")
+    assert demo["failed_revision"] == "r001" and demo["repaired_revision"] == "r002"
+    assert importlib.util.find_spec("mcp") is None and importlib.util.find_spec("starlette") is None
+    print("Core-only demo preparation passed without MCP, server extras or a browser.", flush=True)
 
 
 def seed(root):

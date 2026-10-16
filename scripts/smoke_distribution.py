@@ -181,6 +181,7 @@ def main(*, render_browser=False, fresh_install=False, output=None):
         shutil.copyfile(ROOT / "tests/workflow/test_studio_mcp.py", work / "test_studio_mcp.py")
         shutil.copyfile(ROOT / "tests/workflow/test_studio_rendering.py", work / "test_studio_rendering.py")
         shutil.copyfile(ROOT / "tests/test_host_setup.py", work / "test_host_setup.py")
+        shutil.copyfile(ROOT / "tests/test_demo.py", work / "test_demo.py")
         smoke = work / "check_install.py"
         smoke.write_text('''from pathlib import Path
 import re
@@ -219,7 +220,8 @@ print("Installed wheel resources and canvas passed:", PACKAGE_ROOT)
         extension = ".exe" if sys.platform == "win32" else ""
         for command in ("cad-harness", "cad-harness-mcp", "cadharness", "cadharness-mcp"):
             run(scripts / (command + extension), "--help", cwd=work)
-        run(python, "-m", "unittest", "test_studio_mcp", "test_studio_rendering", "test_host_setup", "-v", cwd=work)
+        run(python, "-m", "cadharness", "demo", "--prepare-only", "--workspace", work / "demo-cli", cwd=work)
+        run(python, "-m", "unittest", "test_studio_mcp", "test_studio_rendering", "test_host_setup", "test_demo", "-v", cwd=work)
         if fresh_install:
             check_lifecycle(python, wheel, work)
         if render_browser:
@@ -227,6 +229,7 @@ print("Installed wheel resources and canvas passed:", PACKAGE_ROOT)
             # interpreter; its server and CAD workspace are outside the checkout.
             run(python, ROOT / 'scripts/verify_studio_rendering.py',
                 '--output', work / 'rendering-acceptance', cwd=work)
+            run(python, ROOT / 'scripts/verify_demo.py', '--require-installed', '--output', work / 'demo-acceptance', cwd=work)
         if output is not None:
             output.mkdir(parents=True)
             for artifact in (wheel, sdist):
@@ -234,6 +237,9 @@ print("Installed wheel resources and canvas passed:", PACKAGE_ROOT)
             (output / "SHA256SUMS").write_text("".join(
                 f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}\n"
                 for path in (wheel, sdist)), encoding="utf-8")
+            if render_browser:
+                for name in ('rendering-acceptance', 'demo-acceptance'):
+                    shutil.copytree(work / name, output / name)
             print(f"Validated artifacts: {output}")
     print("Distribution smoke passed outside the checkout.")
 

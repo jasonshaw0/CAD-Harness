@@ -4,9 +4,10 @@ import { Activity, ArrowDownToLine, ArrowUp, Box, Boxes, Check, CheckCircle2, Ch
 import Viewer, { type ViewerControl } from './Viewer';
 import { Empty, IconButton, Modal, Note, Pane, Section } from './components';
 import { useStudio } from './useStudio';
+import { DemoGuide } from './DemoGuide';
 import './style.css';
 
-type Panel = 'properties' | 'review' | 'history' | 'compare' | 'activity' | 'source' | 'settings' | 'session';
+type Panel = 'properties' | 'review' | 'history' | 'compare' | 'activity' | 'source' | 'settings' | 'session' | 'demo';
 type Theme = 'light' | 'dark' | 'system';
 type Preferences = { theme: Theme; grid: boolean; axes: boolean; edges: boolean; ghost: boolean };
 const defaults: Preferences = { theme: 'light', grid: false, axes: true, edges: true, ghost: true };
@@ -42,6 +43,8 @@ function App() {
   const [prompt, setPrompt] = useState('');
   const controls = useRef<ViewerControl | null>(null);
   const bottom = useRef<HTMLDivElement>(null);
+  const demoOpened = useRef(false);
+  const demo = s.session?.demo && s.design?.id === s.session.demo.design_id ? s.session.demo : null;
   const theme = preferences.theme === 'system' ? systemDark ? 'dark' : 'light' : preferences.theme;
   const scene = s.data?.scene || null;
   const component = scene?.components.find(item => item.id === s.selected);
@@ -55,6 +58,10 @@ function App() {
   const exports = s.data?.files.filter(file => /exports\/(step|stl)\/.*\.(step|stl)$/.test(file)) || [];
   const sourceBundle = `/api/designs/${s.design?.id}/revisions/${s.revision}/source`;
   const needsAttention = !!s.design && !s.busy && (['failed', 'cancelled', 'interrupted', 'needs-revision'].includes(s.design.status) || s.design.latest_revision !== s.design.display_revision);
+
+  useEffect(() => {
+    if (demo && s.revision && !demoOpened.current) { setPanel('demo'); demoOpened.current = true; }
+  }, [demo?.design_id, s.revision]);
 
   useEffect(() => {
     const media = matchMedia('(prefers-color-scheme: dark)');
@@ -90,6 +97,13 @@ function App() {
   function openLibrary() { void s.run(async () => { setSaved((await s.api('/api/library')).saved); setModal('library'); }); }
   function startExample(example: string) { void s.run(async () => { await s.create(example); setModal(null); setPanel(null); }); }
   function resetCamera() { controls.current?.fit(); setView('iso'); setMenu(null); }
+  function demoRevision(id: string, next?: Panel, exportOptions = false) {
+    void s.run(async () => {
+      await s.showRevision(id);
+      if (next) openPanel(next);
+      if (exportOptions) setMenu('export');
+    });
+  }
   const commands = [
     { name: 'Toggle project explorer', key: 'E', icon: <PanelLeft size={16}/>, action: () => setExplorer(old => !old) },
     { name: 'Component properties', key: 'I', icon: <SlidersHorizontal size={16}/>, action: () => openPanel('properties') },
@@ -120,11 +134,19 @@ function App() {
   const panelInfo: Record<Panel, [string, string]> = {
     properties: ['Component inspector', 'Properties'], review: ['Engineering evidence', 'Design review'],
     history: ['Design lineage', 'Revision history'], compare: ['Changes over time', 'Compare revisions'],
-    activity: [s.mcpMode ? 'IDE assistant · MCP' : 'Codex CLI designer', 'Agent activity'],
+    activity: [demo ? 'Locally prepared source' : s.mcpMode ? 'IDE assistant · MCP' : 'Codex CLI designer', demo ? 'Recorded activity' : 'Agent activity'],
     source: ['Editable design authority', 'Source files'], settings: ['Make space for your work', 'Workspace preferences'],
     session: ['Local execution', 'Session status'],
+    demo: ['Source → measured evidence', 'Demo walkthrough'],
   };
   function panelContent() {
+    if (panel === 'demo') return demo ? <DemoGuide demo={demo} revision={s.revision} busy={s.busy}
+      onFailure={() => demoRevision(demo.failed_revision)} onRepair={() => demoRevision(demo.repaired_revision)}
+      onChecks={() => { setFilter('attention'); openPanel('review'); }}
+      onCompare={() => demoRevision(demo.repaired_revision, 'compare')}
+      onSource={() => { setSourceFile('project/cadharness.toml'); openPanel('source'); }}
+      onExport={() => demoRevision(demo.repaired_revision, undefined, true)}/>
+      : <Note>Open the packaged demonstration design to view its walkthrough.</Note>;
     if (panel === 'properties') return component ? <>
       <span className="eyebrow">Selected component</span><h3 className="hero-name">{component.id}</h3>
       <div className="tag-row"><span className="tag blue"><Box size={12}/>{component.role}</span><span className="tag">{s.hidden.has(component.id) ? 'Hidden' : 'Visible'}</span></div>
@@ -163,9 +185,9 @@ function App() {
       <Note>Retained revisions are read-only. Ask your assistant to make changes in a new revision.</Note>
     </> : <Empty icon={<FileCode2 size={24}/>} title="Source stays yours">Build a design to inspect its Python source and manifest here.</Empty>;
     if (panel === 'activity') return <>
-      <div className="tag-row"><span className="tag blue"><Sparkles size={12}/>{s.mcpMode ? 'IDE assistant · MCP' : 'Codex CLI'}</span>{s.selected && <button className="tag" onClick={() => pick(null)} title="Clear selection"><Box size={12}/>{s.selected}<X size={12}/></button>}</div>
+      <div className="tag-row"><span className="tag blue"><Sparkles size={12}/>{demo ? 'Packaged demo' : s.mcpMode ? 'IDE assistant · MCP' : 'Codex CLI'}</span>{s.selected && <button className="tag" onClick={() => pick(null)} title="Clear selection"><Box size={12}/>{s.selected}<X size={12}/></button>}</div>
       {!s.design?.messages.length && <Empty icon={<Sparkles size={24}/>} title={s.mcpMode ? 'Design from your IDE' : 'What are we making?'}>{s.mcpMode ? 'Describe a part to your IDE assistant. Designs, explanations, and measured feedback appear here through MCP.' : 'Describe the geometry, dimensions, and what the part needs to fit.'}</Empty>}
-      <div className="conversation">{s.design?.messages.map((message, index) => <article className={`message ${message.role}`} key={index}><header><span>{message.role === 'assistant' ? <Sparkles size={12}/> : <MousePointer2 size={12}/>}{message.role === 'assistant' ? 'Designer' : 'You'}{message.revision && <code>{message.revision}</code>}</span><time>{new Date(message.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time></header><p>{message.text}</p>{message.questions?.map(question => <p key={question} className="question">{question}</p>)}</article>)}{s.busy && <div className="working"><LoaderCircle size={14} className="spin"/>{s.progress || 'Working…'}</div>}<div ref={bottom}/></div>
+      <div className="conversation">{s.design?.messages.map((message, index) => <article className={`message ${message.role}`} key={index}><header><span>{message.role === 'demo' ? <Box size={12}/> : message.role === 'assistant' ? <Sparkles size={12}/> : <MousePointer2 size={12}/>}{message.role === 'demo' ? 'Packaged demo' : message.role === 'assistant' ? 'Designer' : 'You'}{message.revision && <code>{message.revision}</code>}</span><time>{new Date(message.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time></header><p>{message.text}</p>{message.questions?.map(question => <p key={question} className="question">{question}</p>)}</article>)}{s.busy && <div className="working"><LoaderCircle size={14} className="spin"/>{s.progress || 'Working…'}</div>}<div ref={bottom}/></div>
     </>;
     if (panel === 'settings') return <>
       <p className="description">Display preferences stay in this browser. Your source and engineering evidence stay unchanged.</p><h4>Appearance <Sun size={14}/></h4><div className="theme-options" aria-label="Color theme">{(['light', 'dark', 'system'] as Theme[]).map(value => <button key={value} className={preferences.theme === value ? 'active' : ''} aria-pressed={preferences.theme === value} onClick={() => setPreference('theme', value)}>{titleCase(value)}</button>)}</div>
@@ -175,8 +197,8 @@ function App() {
       <h4>Keyboard shortcuts</h4><dl className="properties">{commands.filter(command => command.key).map(command => <div key={command.name}><dt>{command.name}</dt><dd><kbd>{command.key}</kbd></dd></div>)}<div><dt>Command palette</dt><dd><kbd>Ctrl / ⌘ K</kbd></dd></div></dl>
     </>;
     if (panel === 'session') return <>
-      <span className={`tag ${s.session?.authorized ? 'green' : ''}`}><span className={`dot ${s.session?.authorized ? '' : 'off'}`}/>{s.session?.authorized ? 'Trusted local session' : 'Session locked'}</span><h4>Connection <ShieldCheck size={14}/></h4><dl className="properties"><div><dt>Designer</dt><dd>{s.mcpMode ? 'IDE assistant via MCP' : 'Codex CLI'}</dd></div><div><dt>Workspace</dt><dd className="workspace-path">{s.session?.workspace || 'Connecting…'}</dd></div><div><dt>Active job</dt><dd>{s.busy ? titleCase(s.job!.status) : 'None'}</dd></div></dl>
-      <Note>Python executes locally under your account, without sandboxing. Enable a session only for source and dependencies you trust.</Note><p className="description">{s.mcpMode ? 'Continue your conversation in the IDE. Studio makes no separate model calls.' : 'This optional mode uses your signed-in Codex CLI.'}</p>
+      <span className={`tag ${s.session?.authorized ? 'green' : ''}`}><span className={`dot ${s.session?.authorized ? '' : 'off'}`}/>{s.session?.authorized ? 'Trusted local session' : 'Session locked'}</span><h4>Connection <ShieldCheck size={14}/></h4><dl className="properties"><div><dt>{demo ? 'Source' : 'Designer'}</dt><dd>{demo ? 'Bundled mounting-plate template' : s.mcpMode ? 'IDE assistant via MCP' : 'Codex CLI'}</dd></div><div><dt>Workspace</dt><dd className="workspace-path">{s.session?.workspace || 'Connecting…'}</dd></div><div><dt>Active job</dt><dd>{s.busy ? titleCase(s.job!.status) : 'None'}</dd></div></dl>
+      <Note>Python executes locally under your account, without sandboxing. Enable a session only for source and dependencies you trust.</Note><p className="description">{demo ? 'The demo was built locally without an assistant. Connect an assistant through MCP to author your own designs.' : s.mcpMode ? 'Continue your conversation in the IDE. Studio makes no separate model calls.' : 'This optional mode uses your signed-in Codex CLI.'}</p>
       <button className="primary-action full" disabled={!s.session} onClick={() => void s.run(() => s.authorize(!s.session?.authorized))}>{s.session?.authorized ? 'Lock session' : 'Enable session'}</button>
     </>;
   }
@@ -191,7 +213,8 @@ function App() {
 
   return <div className={`app ${focusMode ? 'focus-mode' : ''}`}>
     <header className="topbar"><nav className="breadcrumb" aria-label="Design location"><span>Workspace</span><i>/</i><strong>{s.design?.title || 'Untitled design'}</strong><i>/</i><code>{s.revision || 'Draft'}</code></nav><div className="top-right">
-      <button className="session-chip" aria-label="Session status" onClick={() => openPanel('session')}><span className={`dot ${s.session?.authorized ? '' : 'off'}`}/>{s.session ? s.session.authorized ? `Local · ${s.mcpMode ? 'MCP' : 'Codex'}` : 'Session locked' : 'Connecting…'}</button><span className="divider"/>
+      <button className="session-chip" aria-label="Session status" onClick={() => openPanel('session')}><span className={`dot ${s.session?.authorized ? '' : 'off'}`}/>{s.session ? s.session.authorized ? `Local · ${demo ? 'Demo' : s.mcpMode ? 'MCP' : 'Codex'}` : 'Session locked' : 'Connecting…'}</button><span className="divider"/>
+      {demo && <IconButton label="Demo walkthrough" active={panel === 'demo'} onClick={() => openPanel('demo')}><Boxes size={17}/></IconButton>}
       <IconButton label="Command palette" onClick={() => { setCommandQuery(''); setModal('commands'); }}><Search size={17}/></IconButton><IconButton label="Agent activity" active={panel === 'activity'} onClick={() => openPanel('activity')}><Activity size={17}/></IconButton><IconButton label="Toggle light and dark theme" onClick={() => setPreference('theme', theme === 'dark' ? 'light' : 'dark')}>{theme === 'dark' ? <Sun size={17}/> : <Moon size={17}/>}</IconButton><IconButton label="Settings" active={panel === 'settings'} onClick={() => openPanel('settings')}><Settings2 size={17}/></IconButton>
       <button className="export-button" aria-label="Export design" aria-expanded={menu === 'export'} onClick={() => toggleMenu('export')}><Download size={15}/><span>Export</span><ChevronDown size={12}/></button>
     </div></header>
@@ -205,7 +228,7 @@ function App() {
           <Section title="Components" count={scene?.components.length || 0}>{scene?.components.filter(item => item.id.toLowerCase().includes(query.toLowerCase())).map(item => <div className={`component-row ${s.hidden.has(item.id) || (s.isolated && s.isolated !== item.id) ? 'muted-row' : ''}`} key={item.id}><button className={`tree-row ${s.selected === item.id ? 'selected' : ''}`} onClick={() => pick(s.selected === item.id ? null : item.id)}>{item.role === 'reference-envelope' ? <Boxes size={14}/> : <Box size={14}/>}<span>{item.id}</span></button><IconButton label={`${s.hidden.has(item.id) ? 'Show' : 'Hide'} ${item.id}`} onClick={() => s.toggleHidden(item.id)}>{s.hidden.has(item.id) ? <EyeOff size={14}/> : <Eye size={14}/>}</IconButton></div>)}{!scene && <p className="no-rows">No built geometry yet.</p>}</Section>
           <Section title="Source files" count={sourceFiles.length} open={false}>{sourceFiles.filter(file => file.toLowerCase().includes(query.toLowerCase())).map(file => <button className={`tree-row ${sourceFile === file && panel === 'source' ? 'selected' : ''}`} key={file} onClick={() => { setSourceFile(file); openPanel('source'); }}><FileCode2 size={14}/><span className="mono">{file.replace(/^project\//, '')}</span></button>)}{!sourceFiles.length && <p className="no-rows">Source appears after a build.</p>}</Section>
           <Section title="Revisions" count={s.design?.revisions.length || 0} open={false}>{s.design?.revisions.map(row => <button key={row.id} className={`tree-row ${row.id === s.revision ? 'selected' : ''}`} disabled={!row.scene || s.busy} onClick={() => void s.run(() => s.showRevision(row.id))}><History size={14}/><span className="mono">{row.id}{row.id === s.design?.latest_revision ? ' · Current' : ''}</span><i className={`row-state ${row.status}`}/></button>)}{!s.design?.revisions.length && <p className="no-rows">Every attempt, preserved.</p>}</Section>
-        </div><footer className="explorer-foot"><span><span className="dot"/>Local workspace</span><span>{s.mcpMode ? 'MCP WORKFLOW' : 'CODEX CLI'}</span></footer>
+        </div><footer className="explorer-foot"><span><span className="dot"/>Local workspace</span><span>{demo ? 'PACKAGED DEMO' : s.mcpMode ? 'MCP WORKFLOW' : 'CODEX CLI'}</span></footer>
       </aside> : <button className="explorer-toggle floating" aria-label="Show explorer" onClick={() => setExplorer(true)}><PanelLeft size={18}/></button>)}
       {!focusMode && <button className="review-trigger floating" aria-label="Open engineering checks" onClick={() => openPanel('review')}>{s.report?.ready_for_review ? <CheckCircle2 className="positive" size={15}/> : <Info className={failed ? 'negative' : ''} size={15}/>}<strong>{s.report ? `${passed} / ${rows.length} checks` : 'No checks yet'}</strong><span>{s.report ? s.report.ready_for_review ? unknown ? `${unknown} unverified` : 'Ready for review' : 'Needs attention' : 'Not evaluated'}</span><ChevronRight size={13}/></button>}
       {!scene && !s.busy && <div className="empty-stage"><span className="empty-stage-icon"><Box size={30} strokeWidth={1}/></span><span className="eyebrow">From intent to geometry</span><h1>{s.design ? 'Your design is taking shape.' : 'A place for your next part.'}</h1><p>{s.design ? 'Continue with your assistant, or inspect the latest build evidence.' : s.mcpMode ? 'Design in your IDE. See it, measure it, and refine it here.' : 'Describe a part, then build, measure, and refine it here.'}</p><button className="soft-action" onClick={s.design ? () => openPanel('review') : newDesign}>{s.design ? <CheckCircle2 size={14}/> : <Plus size={14}/>} {s.design ? 'Review evidence' : 'Start a design'}<ChevronRight size={13}/></button></div>}

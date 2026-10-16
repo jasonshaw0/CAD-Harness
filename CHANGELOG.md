@@ -5,6 +5,12 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
+- Add `cad-harness demo`: evaluate a missing-hole plate and its repair against
+  one frozen brief in a new workspace, then open the included Studio walkthrough.
+  Preserve editable source/history, make STEP/STL export explicit, and verify
+  packaged preparation plus real Playwriter desktop/mobile interaction without
+  an assistant account. Keep existing workspaces and host settings unchanged.
+
 - Add host-specific MCP setup previews for Codex and Claude Desktop, explicit
   additive `--apply`, preserved settings/backups, collision checks and optional
   real stdio/Studio preflight. Document each host's format and reload lifecycle;

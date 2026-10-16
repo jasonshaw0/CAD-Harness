@@ -99,9 +99,16 @@ jobs:
         run: |
           npx -y playwriter@latest browser install
           .venv/bin/python scripts/verify_studio_rendering.py
+      - name: Check packaged demo through isolated Playwriter
+        if: runner.os == 'Linux'
+        run: |
+          .venv/bin/python -m pip install --no-deps --force-reinstall dist/validated/*.whl
+          .venv/bin/python scripts/verify_demo.py --require-installed --output runs/demo-acceptance
       - name: Retain rendering acceptance images
         if: always() && runner.os == 'Linux'
         uses: actions/upload-artifact@v4
         with:
           name: studio-rendering
-          path: runs/rendering-acceptance-*/
+          path: |
+            runs/rendering-acceptance-*/
+            runs/demo-acceptance/

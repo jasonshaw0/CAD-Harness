@@ -12,6 +12,7 @@ same; platform-specific shell and path differences are noted in each guide.
 | I want to… | Start here |
 | --- | --- |
 | Install, update or remove CAD-Harness | [Installation and compatibility](INSTALLATION.md) |
+| Try real geometry, a failed check and its repair | [Packaged demonstration](DEMO.md) |
 | Design with an assistant and live 3D canvas | [Studio](STUDIO.md) |
 | Connect Codex or Claude Desktop | [MCP host setup](MCP_HOSTS.md) |
 | Wrap my build123d model and add checks | [Project authoring](GETTING_STARTED.md) |

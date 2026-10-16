@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
+import type { DemoInfo } from './DemoGuide';
 import type { Design, Job, RevisionData } from './types';
 import { connectRenderClient } from './renderClient';
 import { jobErrorMessage } from './jobErrors';
 import { prepareExportDownload, saveExportDownload, type ExportFormat } from './exportDownload';
 
-export type Session = { designer: 'mcp' | 'codex'; token: string; authorized: boolean; codex_available: boolean; model: string; workspace: string; active_job: string | null; render_protocol?: string };
+export type Session = { designer: 'mcp' | 'codex'; token: string; authorized: boolean; codex_available: boolean; model: string; workspace: string; active_job: string | null; render_protocol?: string; demo?: DemoInfo | null };
 const activeStates = new Set(['queued', 'generating', 'building', 'checking', 'repairing', 'exporting']);
 
 export function useStudio() {

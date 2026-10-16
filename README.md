@@ -59,6 +59,16 @@ Node.js (Linux/macOS: `python3 bootstrap.py --framework-only`).
 
 ## Try the evidence loop
 
+Open a real failure-and-repair walkthrough without an assistant or model account:
+
+```powershell
+.\.venv\Scripts\python.exe -m cadharness demo
+```
+
+It builds two measured revisions in a fresh workspace and opens Studio on an
+available local port. [Demo guide and saved-workspace details](docs/DEMO.md).
+For the independent CLI verification and report:
+
 ```powershell
 .\.venv\Scripts\python.exe -m cadharness verify examples/nema17-mount --summary
 .\.venv\Scripts\python.exe -m cadharness inspector examples/nema17-mount --summary

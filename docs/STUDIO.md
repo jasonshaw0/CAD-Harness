@@ -66,6 +66,11 @@ Node.js is needed to build it; the running application serves static files.
 
 ## Connect your assistant
 
+To try Studio before configuring an assistant, run
+`python -m cadharness demo` with your installed environment's interpreter.
+The [packaged walkthrough](DEMO.md) builds a real failed and repaired plate in a
+new workspace and requires no MCP connection or model account.
+
 Use the [host-specific setup guide](MCP_HOSTS.md): Codex uses its CLI/TOML;
 Claude Desktop uses desktop JSON and a full app restart. Preview the entry with
 this environment's interpreter and an existing trusted project directory:

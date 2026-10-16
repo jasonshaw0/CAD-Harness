@@ -29,6 +29,8 @@ def create_app(workspace=None, *, model=None, generator=None, designer="mcp", li
     if designer not in {"mcp", "codex"}:
         raise ValueError("designer must be mcp or codex")
     store = Store(workspace or RUNS_ROOT / "studio")
+    from .demo import demo_info
+    demo = demo_info(store)
     jobs = Jobs(store, model=model, **({"generator": generator} if generator else {}))
     from .assistant import IDEAssistant
     assistant = IDEAssistant(store, jobs)
@@ -85,6 +87,7 @@ def create_app(workspace=None, *, model=None, generator=None, designer="mcp", li
         return JSONResponse({"token": token, "authorized": authorization["id"] is not None,
                              "render_protocol": RENDER_PROTOCOL,
                              "designer": designer, "codex_available": available,
+                             "demo": demo,
                              "model": "IDE assistant · MCP" if designer == "mcp" else model or "Codex CLI default",
                              "workspace": str(store.root), "active_job": jobs.active_id})
 

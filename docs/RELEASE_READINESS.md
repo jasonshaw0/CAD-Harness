@@ -90,8 +90,8 @@ for a green demo, unnecessary providers/hosted services, and blanket UI rewrites
 | **M1: Distribution validation foundation** (completed; B2/B4/E2 subset) | Essential; no owner decision; small tooling-only change, low runtime risk. Extend the existing smoke script and CI. | Build sdist then wheel from that sdist; compare source/resource bytes and version metadata; reject missing/stale assets; install extras with fresh dependencies; serve installed assets and run real stdio defect/repair/export tests outside checkout; retain validated artifacts with hashes. Existing fast smoke mode remains available. |
 | **M2: Compatibility and install lifecycle** (completed; B3/E1/E2) | Essential; depends on M1; medium CI/dependency work. | Test 3.13/3.14 dependency availability and practical CI coverage before widening claims; record exact supported combinations. Exercise core-only/full installs, reinstallation and upgrade with a retained saved workspace; document update/uninstall steps. Decide and document sdist source/third-party notice contents. No unsupported platform claims. |
 | **M3: Supported MCP host setup** (completed with host UI limits below; C) | High value; depends on stable install; medium configuration risk. | Research actual Codex and Claude host formats/lifecycle; document and verify each supported path. Reuse `mcp-config`/doctor; preview and approve any host changes, preserve unrelated entries, handle escaping/collisions, and test restart/connection. No root widening. |
-| **M4: Packaged first-use demonstration** (next; D plus focused F tutorials) | High value; depends on M1/M2; medium Studio integration risk. | Reuse templates, Studio and evidence formats for assistant-free real geometry, failure, repair, history/comparison, source and explicit export in a fresh dedicated workspace. No credentials. Verify packaged resources and inspect real Playwriter desktop/mobile output and logs. Preserve existing workspaces. |
-| **M5: Public beta preparation** (A, remaining B4/E/F/G readiness) | Essential license/release controls; other presentation work high value/nice to have. Depends on M2–M4 and license decision. Split into small sessions. | Apply approved license and notices; align metadata/version/changelog; add practical issue forms and beta feedback checklist; refine links/install guide around validated paths; prepare tag/artifact/release-note checks and owner-controlled trusted publishing. Create tailored launch drafts only after a real demo. Review release candidate artifacts before requesting publication authorization. |
+| **M4: Packaged first-use demonstration** (completed; D plus focused F tutorials) | High value; depends on M1/M2; medium Studio integration risk. | Reuse templates, Studio and evidence formats for assistant-free real geometry, failure, repair, history/comparison, source and explicit export in a fresh dedicated workspace. No credentials. Verify packaged resources and inspect real Playwriter desktop/mobile output and logs. Preserve existing workspaces. |
+| **M5: Public beta preparation** (next; A, remaining B4/E/F/G readiness) | Essential license/release controls; other presentation work high value/nice to have. Depends on M2–M4 and license decision. Split into small sessions. | Apply approved license and notices; align metadata/version/changelog; add practical issue forms and beta feedback checklist; refine links/install guide around validated paths; prepare tag/artifact/release-note checks and owner-controlled trusted publishing. Create tailored launch drafts only after a real demo. Review release candidate artifacts before requesting publication authorization. |
 
 M5 prepares publication. Actual public release, PyPI upload and community posts
 remain separate owner-authorized actions; do not infer approval from this plan.
@@ -313,3 +313,92 @@ To resume after M3: read this file and `AGENTS.md`, inspect Git/user changes and
 the latest CI, then implement **M4 only**. Use a fresh dedicated demo workspace
 and Playwriter for actual browser acceptance. Do not begin publication, licensing
 changes, repository metadata changes or promotional posts in that session.
+
+### M4 — completed 2026-10-16
+
+- [x] Confirm M3 CI [38949744738](https://github.com/jasonshaw0/CAD-Harness/actions/runs/38949744738)
+  passed all 16 jobs before continuing.
+- [x] Add `cad-harness demo` using the packaged mounting-plate template and
+  existing Studio revision/evaluation path. No new model/client framework.
+- [x] Build two actual OCCT revisions against one frozen brief: `r001` has
+  three measured holes and fails; `r002` has four and passes all 37 checks.
+  Both are prepared at startup. Walkthrough buttons inspect recorded revisions;
+  they do not simulate an assistant repairing source.
+- [x] Keep editable Python identical and change only the manifest's selected
+  parameter variant. Retain source, the locked brief, reports, geometry scenes,
+  revision history and comparisons; do not auto-export geometry.
+- [x] Require a new workspace, choose an available loopback port by default,
+  support `--no-browser` and `--prepare-only`, and preserve partial evidence on
+  failure. Core-only preparation works without MCP or Studio server extras.
+- [x] Add an included Studio walkthrough using existing checks, source, component
+  isolation, comparison and export controls. Label recorded demo activity
+  explicitly. Keep physical-fit/manufacturing limits visible.
+- [x] Check desktop and 390 × 844 layouts through isolated Playwriter, including
+  failed-count details, disabled failed exports, repaired evidence, comparison,
+  source, isolation and explicit STEP/STL downloads. Inspect saved screenshots
+  and logs; verify source/report bytes remain unchanged.
+- [x] Extend installed-wheel and core-only acceptance, add the guide and retain
+  browser artifacts. Linux CI installs the validated wheel before running its
+  demo browser check; runtime import-path checks refuse an editable checkout.
+
+The initial demo test counted `brief-v001.lock.json` as another brief version.
+The corrected assertion requires exactly one numbered brief and its lock.
+Seven demo tests then passed. The first Windows browser harness run failed while
+printing Unicode snapshots to redirected CP1252 stdout; the harness now uses
+UTF-8 and preserves cleanup. No application checks or acceptance criteria were
+weakened. A later mobile screenshot caught the opening animation; captures now
+finish CSS animations before recording the visual result.
+
+The initial full suite ran 188 tests and exposed an existing MCP polling race:
+`studio_get_job` could parse the immutable report during its first write.
+Focused commit `52e0c0c` defers report reads until terminal job status. Its new
+deterministic regression covers partial active output, complete terminal output,
+and terminal corruption (which still raises). All seven MCP tests passed before
+that commit was pushed. Its [CI run 38953765472](https://github.com/jasonshaw0/CAD-Harness/actions/runs/38953765472)
+then passed all 16 jobs. Immutable evidence writing and JSON error handling were
+not relaxed.
+
+The first fresh distribution passed 38 installed tests, core-only preparation,
+the complete install lifecycle, existing real rendering acceptance, and the
+37-action demo browser flow against the installed wheel outside the checkout.
+It retained valid plate-only STEP/STL downloads and byte-identical source,
+briefs, reports and scenes.
+
+Final local discovery passed **189 tests in 174.527 s**. The final fresh wheel
+passed **39 installed tests in 54.802 s**, the public `demo --prepare-only` CLI,
+core-only preparation without MCP/server extras, aliases/resources, `pip check`,
+and the full synthetic version-upgrade/reinstall/uninstall/reinstall lifecycle.
+All saved lifecycle fixture bytes were retained and the design reopened after
+each replacement. Wheel/sdist checks matched 58 package source/resource files
+and 78 build/test/documentation inputs. Existing real rendering acceptance and
+the final **37-action Playwriter demo flow** both passed against the wheel
+outside the checkout. The demo browser result records its `site-packages`
+import path, valid plate-only STEP/STL downloads, no browser errors, and
+unchanged source, brief, report and scene bytes. Desktop and mobile screenshots
+were inspected, including the stabilized guide, repaired geometry and hole-count
+evidence. All **86 local documentation links** resolved and `git diff --check`
+passed. The milestone commit also runs the existing 16-job cross-platform CI
+gate; check its Actions run for final remote outcomes.
+
+Local evidence: ignored `runs/demo-20261016/`, including initial/corrected demo
+test logs, `tests-all.log` (polling race), `mcp-poll-fix.log`, `tests-final.log`,
+initial Unicode harness failure, successful `browser-acceptance-utf8/`,
+`distribution.log`, `distribution-final.log`, and `validated-final/` with installed-package screenshots,
+browser snapshots/logs, retained demo workspace, exports, wheel/sdist and hashes.
+Frontend typecheck/build and all 19 frontend tests passed. The existing Vite
+large-chunk advisory remains; no new runtime dependency was added.
+
+Remaining limits: this is one illustrative mounting-plate walkthrough, not a
+general automatic design/repair service. Headless Chrome checks desktop/mobile
+viewports, not native touch hardware. Physical fit, material/process suitability,
+mechanical performance, historical-release migration, Claude Desktop UI and
+unverified host/platform paths remain outside the evidence. Existing personal
+workspaces, host settings, MCP roots, project license and publication credentials
+were not changed. No release/package or promotional post was published.
+
+To resume after M4: read this file and `AGENTS.md`, inspect Git/user changes and
+the latest CI, then take a small **M5 public-beta preparation** slice. The project
+license choice and third-party notice/provenance review remain owner decisions.
+Do not select legal terms, change host permissions, apply repository metadata,
+tag/publish a release, upload to PyPI or send promotional messages without the
+authorization recorded for that specific action. Prepare reviewable changes first.
