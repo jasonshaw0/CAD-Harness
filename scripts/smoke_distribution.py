@@ -31,11 +31,19 @@ REQUIRED_RESOURCES = (
     "studio/web/THIRD_PARTY_LICENSES.md",
 )
 SDIST_INPUTS = (
-    "bootstrap.py", "CONTRIBUTING.md", "CHANGELOG.md", "MANIFEST.in",
+    "pyproject.toml", "README.md", "bootstrap.py", "CONTRIBUTING.md", "CHANGELOG.md", "MANIFEST.in",
     "studio/web/package.json", "studio/web/package-lock.json", "studio/web/index.html",
     "studio/web/tsconfig.json", "studio/web/vite.config.ts",
     "studio/web/src/main.tsx",
 )
+
+
+def license_inputs(root, config):
+    paths = {path for pattern in config["project"]["license-files"]
+             for path in root.glob(pattern) if path.is_file()}
+    if not paths or any(not list(root.glob(pattern)) for pattern in config["project"]["license-files"]):
+        raise ValueError("Missing declared license input.")
+    return {path.relative_to(root).as_posix(): path for path in paths}
 
 
 def check_archives(wheel, sdist, *, root=ROOT):
@@ -51,6 +59,8 @@ def check_archives(wheel, sdist, *, root=ROOT):
                 if path.is_file():
                     expected[path.relative_to(root / "src").as_posix()] = path
     web = package / "studio/web"
+    if (root / "licenses/FRONTEND.txt").read_bytes() != (web / "THIRD_PARTY_LICENSES.md").read_bytes():
+        raise ValueError("Frontend license copy is stale; refresh licenses/FRONTEND.txt from the Vite output.")
     if not list((web / "assets").glob("renderView-*.js")):
         raise ValueError("Missing Studio render chunk; rebuild the frontend before packaging.")
     # Include every generated asset, including future nested Vite output.
@@ -63,6 +73,8 @@ def check_archives(wheel, sdist, *, root=ROOT):
             raise ValueError("Source distribution must have one top-level directory.")
         prefix, = roots
         source_inputs = {root / name for name in SDIST_INPUTS}
+        licenses = license_inputs(root, config)
+        source_inputs.update(licenses.values())
         for directory in ("studio/web/src", "studio/web/tests", "scripts", "tests", "docs"):
             source_inputs.update(path for path in (root / directory).rglob("*")
                                  if path.is_file() and "__pycache__" not in path.parts
@@ -93,10 +105,26 @@ def check_archives(wheel, sdist, *, root=ROOT):
         if actual_web != expected_web:
             raise ValueError("Wheel contains stale Studio assets; rebuild from clean inputs.")
         metadata, = [name for name in whl.namelist() if name.endswith(".dist-info/METADATA")]
+        dist_info = metadata.rsplit("/", 1)[0]
+        for name, path in licenses.items():
+            try:
+                if whl.read(f"{dist_info}/licenses/{name}") != path.read_bytes():
+                    raise ValueError(f"Distribution license differs from checkout: {name}")
+            except KeyError as exc:
+                raise ValueError(f"Missing distribution license: {name}") from exc
+        if any(Path(name).suffix.lower() in {".dll", ".pyd", ".so", ".dylib"}
+               or ".so." in name.lower() for name in (*whl.namelist(), *source.getnames())):
+            raise ValueError("Package-only distribution contains a native library.")
         for raw in (whl.read(metadata), source.extractfile(f"{prefix}/PKG-INFO").read()):
             headers = BytesParser().parsebytes(raw)
             if (headers["Name"], headers["Version"]) != (config["project"]["name"], config["project"]["version"]):
                 raise ValueError("Distribution name/version differs from pyproject.toml.")
+            if headers["License-Expression"] != config["project"]["license"]:
+                raise ValueError("Distribution license expression differs from pyproject.toml.")
+            if set(headers.get_all("License-File", [])) != set(licenses):
+                raise ValueError("Distribution License-File metadata differs from declared inputs.")
+            if headers["Author"] != ", ".join(author["name"] for author in config["project"]["authors"]):
+                raise ValueError("Distribution author differs from pyproject.toml.")
     print(f"Wheel and sdist match {len(expected)} source/resource files; "
           f"sdist matches {len(source_inputs)} build/test/documentation inputs.", flush=True)
 
@@ -111,6 +139,10 @@ def check_lifecycle(python, wheel, work):
     config = config.replace(f'version = "{version}"', f'version = "{fixture_version}"', 1)
     (fixture / "pyproject.toml").write_text(config, encoding="utf-8")
     shutil.copyfile(ROOT / "README.md", fixture / "README.md")
+    for name in license_inputs(ROOT, tomllib.loads(config)):
+        destination = fixture / name
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(ROOT / name, destination)
     shutil.copytree(ROOT / "src/cadharness", fixture / "src/cadharness",
                     ignore=shutil.ignore_patterns("__pycache__"))
     run(sys.executable, "-m", "build", fixture, "--wheel", "--outdir", fixture / "dist", cwd=work)
@@ -221,6 +253,7 @@ print("Installed wheel resources and canvas passed:", PACKAGE_ROOT)
         for command in ("cad-harness", "cad-harness-mcp", "cadharness", "cadharness-mcp"):
             run(scripts / (command + extension), "--help", cwd=work)
         run(python, "-m", "cadharness", "demo", "--prepare-only", "--workspace", work / "demo-cli", cwd=work)
+        run(python, ROOT / "scripts/dependency_inventory.py", "--output", work / "DEPENDENCIES.json", cwd=work)
         run(python, "-m", "unittest", "test_studio_mcp", "test_studio_rendering", "test_host_setup", "test_demo", "-v", cwd=work)
         if fresh_install:
             check_lifecycle(python, wheel, work)
@@ -234,6 +267,7 @@ print("Installed wheel resources and canvas passed:", PACKAGE_ROOT)
             output.mkdir(parents=True)
             for artifact in (wheel, sdist):
                 shutil.copyfile(artifact, output / artifact.name)
+            shutil.copyfile(work / "DEPENDENCIES.json", output / "DEPENDENCIES.json")
             (output / "SHA256SUMS").write_text("".join(
                 f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}\n"
                 for path in (wheel, sdist)), encoding="utf-8")

@@ -96,6 +96,9 @@ entrypoints. Python imports, manifests, MCP configuration keys, and the legacy
 [Design workflow](docs/DESIGN_WORKFLOW.md) · [Migration](docs/MIGRATION.md) ·
 [Changelog](CHANGELOG.md)
 
+Apache-2.0 · Copyright 2026 Jason Shaw · [License](LICENSE) ·
+[Third-party notices](THIRD_PARTY_NOTICES.md)
+
 ---
 
 **Experimental.** Interfaces and workflows may change. Project factories execute

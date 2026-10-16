@@ -112,3 +112,14 @@ jobs:
           path: |
             runs/rendering-acceptance-*/
             runs/demo-acceptance/
+      - name: Prepare GitHub beta candidate after acceptance
+        if: runner.os == 'Linux'
+        run: |
+          .venv/bin/python scripts/prepare_release.py --validated dist/validated --output dist/release --tag "v$(.venv/bin/python -c 'import importlib.metadata; print(importlib.metadata.version("CAD-Harness"))')" --ci-run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+      - name: Retain GitHub beta candidate
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: github-beta-candidate
+          path: dist/release/
+          if-no-files-found: error

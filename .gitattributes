@@ -1,0 +1,6 @@
+# Preserve upstream license bytes and the generated frontend notice on Windows.
+LICENSE text eol=lf
+NOTICE text eol=lf
+licenses/*.txt text eol=lf
+# Keep the upstream LGPL text verbatim, including its whitespace-only line.
+licenses/OCCT-LGPL-2.1.txt whitespace=-blank-at-eol

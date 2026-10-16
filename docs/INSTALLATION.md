@@ -1,7 +1,9 @@
 # Installation, updates and removal
 
-CAD-Harness currently installs from a checkout or a locally validated wheel.
-No public PyPI package or downloadable release is established by this guide.
+CAD-Harness installs from a checkout or a validated wheel. The selected beta
+channel is [GitHub release downloads](https://github.com/jasonshaw0/CAD-Harness/releases),
+with `0.10.0b1` prepared for publication. Until that release is published, use
+the checkout or a locally validated wheel. No public PyPI path is established.
 Use an isolated virtual environment and keep designs outside its directory.
 
 ## Compatibility and prerequisites
@@ -56,7 +58,7 @@ to produce a validated wheel and sdist first. In a separate environment:
 
 ```powershell
 python -m venv .cad-venv
-.\.cad-venv\Scripts\python.exe -m pip install "C:/Downloads/cad_harness-0.9.0-py3-none-any.whl[mcp,studio]"
+.\.cad-venv\Scripts\python.exe -m pip install "C:/Downloads/cad_harness-0.10.0b1-py3-none-any.whl[mcp,studio]"
 .\.cad-venv\Scripts\python.exe -m cadharness --help
 .\.cad-venv\Scripts\python.exe -m cadharness setup --host codex --root D:/CAD/projects --studio --summary
 ```
@@ -141,14 +143,15 @@ and license text. It is included in both wheel and sdist and served at
 updates; do not replace upstream notices with a project license declaration.
 See [Vite's license option](https://vite.dev/config/build-options#build-license).
 
-Python/native dependencies are installed separately, not copied into the
-CAD-Harness wheel. Their own license/notice obligations still need review before
-public distribution or standalone bundling. The inspected build123d 0.13 wheel
-has LICENSE and NOTICE files; the installed cadquery-ocp-novtk/proxy 8.0.1.1.0
-metadata lists Apache-2.0 but contains no license/notice files in its file records.
-That inventory is not a conclusion about the native kernel's terms. Track the
-native dependency provenance and [OCCT licensing](https://dev.opencascade.org/resources/licensing)
-in the owner publication review. The project's license choice remains unresolved.
+CAD-Harness is Apache-2.0, Copyright 2026 Jason Shaw. Its complete license,
+NOTICE, third-party review and OCCT license/exception texts are included in the
+wheel's `.dist-info/licenses/` directory and in the source archive. Python/native
+dependencies are installed separately. The wrapper's Apache declaration does
+not replace OCCT's LGPL 2.1 and Open CASCADE exception. See
+[third-party notices and native provenance](../THIRD_PARTY_NOTICES.md) for the
+reviewed versions, source/recipe links and package-only distribution boundary.
+Release evidence includes an installed dependency inventory for each CI runner.
+Standalone native bundling needs its own review.
 
 Lifecycle acceptance uses a `.dev0` package fixture containing the same Python
 code as the candidate. It builds a real Studio design/export, upgrades the

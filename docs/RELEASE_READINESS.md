@@ -61,27 +61,22 @@ for a green demo, unnecessary providers/hosted services, and blanket UI rewrites
 
 ### Owner decisions and external controls
 
-- **License:** recommend considering Apache-2.0 for its explicit contributor
-  patent grant and patent-litigation termination clause; it also requires
-  redistribution/change notices and applicable NOTICE handling. MIT is shorter,
-  requires preservation of copyright/license notices, and has no equivalent
-  explicit patent clause. Both are permissive; the owner must choose terms and
-  confirm copyright ownership and third-party obligations. Sources:
-  [MIT](https://choosealicense.com/licenses/mit/) and
-  [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0).
-  Prepared change checklist: add the chosen complete official text as root
-  `LICENSE`, confirm copyright attribution, set matching SPDX project metadata,
-  include required notices in artifacts, and test wheel/sdist metadata. No
-  license text or license metadata has been applied pending that decision.
+- **License — decided 2026-10-16:** owner selected Apache-2.0 and attribution
+  to Jason Shaw. Applied complete official text, `Copyright 2026 Jason Shaw`,
+  SPDX metadata and archive notice checks. The package-only native-dependency
+  review and upstream sources are in [third-party notices](../THIRD_PARTY_NOTICES.md).
 - **Repository settings:** proposed description: “Editable build123d CAD with
   geometry-derived checks, revision evidence, a local 3D Studio, and MCP.”
   Topics: `build123d`, `parametric-cad`, `cad`, `engineering`, `python`, `mcp`,
   `cad-automation`, `opencascade`, `3d-printing`. Keep homepage empty until a
   maintained documentation/demo destination exists. Use a real Studio capture
   for a later social preview. These settings are proposals, not applied changes.
-- **Publishing:** tags, public GitHub releases, PyPI/TestPyPI uploads, trusted
-  publisher/account setup, and promotional posts require explicit authorization.
-  CI artifact retention alone is not a public release or publication approval.
+- **Distribution — decided 2026-10-16:** owner selected GitHub release downloads
+  and delegated version/prerelease selection. First candidate: `0.10.0b1`,
+  corresponding tag `v0.10.0b1`, marked beta/pre-release. Current instruction is
+  to finish engineering and commit; no tag/release is published by preparation.
+  PyPI/TestPyPI, trusted publishing, standalone bundling and promotional posts
+  are outside this scope. See [release procedure](RELEASING.md).
 
 ## Milestones and acceptance criteria
 
@@ -91,7 +86,7 @@ for a green demo, unnecessary providers/hosted services, and blanket UI rewrites
 | **M2: Compatibility and install lifecycle** (completed; B3/E1/E2) | Essential; depends on M1; medium CI/dependency work. | Test 3.13/3.14 dependency availability and practical CI coverage before widening claims; record exact supported combinations. Exercise core-only/full installs, reinstallation and upgrade with a retained saved workspace; document update/uninstall steps. Decide and document sdist source/third-party notice contents. No unsupported platform claims. |
 | **M3: Supported MCP host setup** (completed with host UI limits below; C) | High value; depends on stable install; medium configuration risk. | Research actual Codex and Claude host formats/lifecycle; document and verify each supported path. Reuse `mcp-config`/doctor; preview and approve any host changes, preserve unrelated entries, handle escaping/collisions, and test restart/connection. No root widening. |
 | **M4: Packaged first-use demonstration** (completed; D plus focused F tutorials) | High value; depends on M1/M2; medium Studio integration risk. | Reuse templates, Studio and evidence formats for assistant-free real geometry, failure, repair, history/comparison, source and explicit export in a fresh dedicated workspace. No credentials. Verify packaged resources and inspect real Playwriter desktop/mobile output and logs. Preserve existing workspaces. |
-| **M5: Public beta preparation** (next; A, remaining B4/E/F/G readiness) | Essential license/release controls; other presentation work high value/nice to have. Depends on M2–M4 and license decision. Split into small sessions. | Apply approved license and notices; align metadata/version/changelog; add practical issue forms and beta feedback checklist; refine links/install guide around validated paths; prepare tag/artifact/release-note checks and owner-controlled trusted publishing. Create tailored launch drafts only after a real demo. Review release candidate artifacts before requesting publication authorization. |
+| **M5: Public beta preparation** (engineering slice implemented; A, remaining B4/E/F/G readiness) | Essential license/release controls; other presentation work high value/nice to have. Depends on M2–M4 and license decision. | Apply approved license/notices, beta metadata/version/changelog, beta feedback form, install/release notes and checksummed CI artifacts. Owner selected GitHub downloads; PyPI/trusted publishing and launch drafts are deferred. Review candidate artifacts and green CI before publication. |
 
 M5 prepares publication. Actual public release, PyPI upload and community posts
 remain separate owner-authorized actions; do not infer approval from this plan.
@@ -402,3 +397,80 @@ license choice and third-party notice/provenance review remain owner decisions.
 Do not select legal terms, change host permissions, apply repository metadata,
 tag/publish a release, upload to PyPI or send promotional messages without the
 authorization recorded for that specific action. Prepare reviewable changes first.
+
+### M5 — licensing and GitHub beta engineering, 2026-10-16
+
+The owner selected Apache-2.0, Jason Shaw attribution and GitHub release
+downloads, delegated version selection, and requested engineering completion
+and a commit. This supersedes the unresolved license/channel decisions above.
+The candidate is **0.10.0b1**, tag **v0.10.0b1**: a beta reflecting experimental
+interfaces, ordered after the existing 0.9.0 changelog entry. No historical
+version entry was renamed.
+
+- [x] Confirm M4 CI [38954892555](https://github.com/jasonshaw0/CAD-Harness/actions/runs/38954892555)
+  passed all 16 jobs before proceeding.
+- [x] Add complete official Apache text, `Copyright 2026 Jason Shaw`, NOTICE,
+  authorship/URLs and PEP 639 metadata with a compatible build backend.
+- [x] Retain bundled frontend MIT/ISC terms in a versioned license copy and
+  require byte equality with Vite's generated notices. Use
+  `Apache-2.0 AND MIT AND ISC` for the distribution's aggregate expression;
+  CAD-Harness's own code is Apache-2.0. Preserve legal text line endings on Windows.
+- [x] Trace build123d 0.13 → OCP 8.0.1.1 → OCCT 8.0.1 through upstream source
+  and the pinned public build recipe. Distinguish OCP's wrapper license from
+  OCCT's LGPL 2.1 plus exception; include their unmodified full texts and source
+  links. Record the upstream wheels' missing notice files without treating
+  their Apache metadata as kernel licensing proof.
+- [x] Enforce the reviewed package-only scope: reject native libraries in our
+  wheel/sdist; retain Python/native dependencies as separate pip installations.
+  Record per-runner installed versions, requirements, license metadata/file
+  hashes and native filenames without claiming a full upstream binary attestation.
+- [x] Check complete license/NOTICE bytes and metadata in both archives; compare
+  README/pyproject bytes as well as existing source/resources and editable inputs.
+  Preserve the real same-code beta `.dev0` replacement/lifecycle fixture.
+- [x] Prepare beta release notes, install/update instructions, a feedback form
+  and owner-operated release procedure. Add a nonpublishing candidate helper
+  that verifies version/tag, archived inputs, checksums and full-extras inventory,
+  then retains notes, commit/run provenance and hashes for all six attachments.
+  CI prepares the bundle only after Linux distribution/browser acceptance;
+  publication still requires all jobs on the exact commit to pass.
+
+Local validation: **193 Python tests passed in 174.099 s**. Final focused
+packaging/release tests passed (10), plus a new inventory regression (1).
+Frontend typecheck/build and all **19 frontend tests** passed. All three
+downloaded official Apache/OCCT legal texts matched their upstream SHA-256
+bytes. YAML parsed in an isolated tooling environment. Local guide links
+resolved and `git diff --check` passed.
+
+The first fresh distribution passed **39 installed tests in 51.754 s**, core-only
+real geometry/defect verification, full extras, all aliases, resources, `pip check`
+and beta-version upgrade/reinstall/uninstall/reinstall. Saved source, frozen
+briefs, geometry evidence, meshes, exports and client configuration remained
+byte-identical and the retained design reopened. Archive checks matched 58
+package source/resources and 90 build/test/documentation inputs.
+
+Inspecting its 86-package inventory exposed an inventory-only omission:
+legal files such as `TERMS.txt` inside a license directory did not match the
+filename heuristic. The corrected collector includes every file in such
+directories; its regression passes. Final artifacts are regenerated after that
+fix and this record. Evidence is under ignored `runs/licensing-beta-20261016/`:
+`tests-all.log`, frontend logs, the first `distribution.log`, final
+`distribution-final.log`/`validated-final/`, and candidate preparation evidence.
+Local preparation records tracked source changes; use the final commit's green
+CI `github-beta-candidate` for publication, not an uncommitted local bundle.
+
+This slice completes package-only licensing/release engineering. Existing Vite
+chunk-size and setuptools package-data advisories remain. Runtime geometry/UI,
+verification policies, trust roots, personal host settings and saved projects
+were unchanged. Local browser acceptance was not repeated for licensing/tooling
+changes; the existing real Playwriter CI checks rerun before candidate preparation.
+Physical validation, historical migration and the recorded host/platform limits
+remain. Standalone native redistribution requires a separate corresponding-source,
+patch, notice and library-replacement review; PyPI and trusted publishing are
+deferred by the selected channel. No tag, release, account setting, repository
+presentation setting or promotional message was published/changed.
+
+To resume: inspect the exact commit's complete CI result and retained candidate
+checksums/provenance. Follow [the release procedure](RELEASING.md) when publication
+is requested. License, attribution, channel and beta-version decisions are
+resolved; do not reopen them. Repository presentation and tailored launch drafts
+remain optional later work and are not prerequisites for this engineering commit.

@@ -1,0 +1,29 @@
+name: Beta feedback
+description: Report an installation, demo or update result for the packaged beta.
+title: "[Beta] "
+body:
+  - type: input
+    id: version
+    attributes:
+      label: CAD-Harness version and installation route
+      placeholder: 0.10.0b1, GitHub wheel with mcp and studio extras
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: OS, architecture and Python version
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Steps and result
+      description: Include expected/observed behavior, whether the demo passed, and update/data preservation results if tested.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Redacted evidence
+      description: Include relevant error output or screenshots. Remove tokens, private source, usernames and personal host settings.

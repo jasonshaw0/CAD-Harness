@@ -124,6 +124,14 @@ name/version in both artifacts, including the lazy renderer chunk, templates and
 authoring guidance. It also checks editable frontend source, the lockfile, guides,
 tests and scripts in the sdist, and rejects dependency environments in that archive.
 Vite generates bundled dependency notices; they are required in both artifacts.
+After frontend dependency changes, copy the generated
+`src/cadharness/studio/web/THIRD_PARTY_LICENSES.md` to `licenses/FRONTEND.txt`;
+the gate requires identical bytes so the versioned notice cannot silently drift.
+The gate also checks complete project/upstream license files, SPDX and author
+metadata and rejects native libraries in these package-only downloads. It records
+the installed dependency inventory for each runner. See [release preparation](docs/RELEASING.md)
+and [third-party provenance](THIRD_PARTY_NOTICES.md) before publishing or changing
+the distribution scope.
 `--fresh-install` first verifies a core-only install, then adds `[mcp,studio]` in
 a clean temporary environment, runs `pip check`, serves installed assets, and
 runs the real Studio stdio integration outside the checkout. CI runs this path

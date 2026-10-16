@@ -22,6 +22,7 @@ same; platform-specific shell and path differences are noted in each guide.
 | Understand the shared design and evidence pipeline | [Architecture](ARCHITECTURE.md) |
 | Find moved code or reuse an older workspace | [Migration](MIGRATION.md) |
 | Develop, test, or package CAD-Harness | [Contributing](../CONTRIBUTING.md) |
+| Prepare GitHub beta downloads | [Release procedure](RELEASING.md) |
 | Resume release and adoption work | [Release readiness and roadmap](RELEASE_READINESS.md) |
 | Evaluate defect detection and design trials | [Evaluation](EVALUATION.md) |
 

@@ -1,0 +1,15 @@
+CAD-Harness
+Copyright 2026 Jason Shaw
+
+Licensed under the Apache License, Version 2.0. See LICENSE.
+
+CAD-Harness makes use of facilities provided by Open CASCADE Technology
+(OCCT), through separately installed build123d and OCP dependencies.
+OCCT is licensed under GNU LGPL version 2.1 with the Open CASCADE exception;
+the OCP wrapper's Apache license does not replace OCCT's license.
+See THIRD_PARTY_NOTICES.md and licenses/ for upstream terms and source links.
+
+Bundled frontend dependencies retain their upstream copyright and license
+notices in cadharness/studio/web/THIRD_PARTY_LICENSES.md in the wheel,
+src/cadharness/studio/web/THIRD_PARTY_LICENSES.md in the source archive,
+and /THIRD_PARTY_LICENSES.md when Studio is running.

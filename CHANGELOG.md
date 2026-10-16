@@ -5,6 +5,15 @@ versioning while its public schemas remain experimental.
 
 ## Unreleased
 
+## 0.10.0b1 — beta candidate
+
+- Adopt Apache-2.0, Copyright 2026 Jason Shaw, with matching SPDX package
+  metadata and complete license/NOTICE files in wheel and source archives.
+  Document the separate OCP/OCCT terms and native source/build provenance.
+- Prepare GitHub beta downloads with release notes, dependency inventories,
+  source/run provenance, checksums and CI artifact checks. Publication is a
+  separate owner-controlled step; no PyPI upload is configured.
+
 - Add `cad-harness demo`: evaluate a missing-hole plate and its repair against
   one frozen brief in a new workspace, then open the included Studio walkthrough.
   Preserve editable source/history, make STEP/STL export explicit, and verify
@@ -23,7 +32,7 @@ versioning while its public schemas remain experimental.
   reinstall, uninstall and reinstall. Document updates and removal.
 - Include editable frontend source/build inputs and validation resources in
   source distributions. Generate and package Vite's bundled dependency license
-  notices; retain the project-license and native-dependency publication review.
+  notices, completed by this beta's project-license/native-dependency review.
 
 - Validate full Studio distributions by building an sdist and its wheel,
   checking bundled source/resources and version metadata, and testing fresh
