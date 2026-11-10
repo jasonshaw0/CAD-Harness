@@ -262,13 +262,18 @@ def _load_document(
     for name, loaded_module in list(sys.modules.items()):
         if name.partition(".")[0] not in local_names:
             continue
-        source = getattr(loaded_module, "__file__", None)
-        if not source:
-            continue
         cached_path = root.joinpath(*name.split("."))
-        if Path(source).resolve() in (
-            cached_path.with_suffix(".py"), cached_path / "__init__.py"
-        ):
+        source = getattr(loaded_module, "__file__", None)
+        if source:
+            local = Path(source).resolve() in (
+                cached_path.with_suffix(".py"), cached_path / "__init__.py"
+            )
+        else:
+            # Namespace packages have no __file__; match their search path so
+            # importing a fresh submodule cannot rebind the host's package.
+            search = getattr(loaded_module, "__path__", None) or ()
+            local = cached_path in {Path(entry).resolve() for entry in search}
+        if local:
             saved_modules[name] = loaded_module
             sys.modules.pop(name)
     modules_before = set(sys.modules)
@@ -306,7 +311,13 @@ def _load_document(
         for name in set(sys.modules) - modules_before:
             loaded_module = sys.modules.get(name)
             source = getattr(loaded_module, "__file__", None)
-            if source and _inside(Path(source), root):
+            if source:
+                local = _inside(Path(source), root)
+            else:
+                # A namespace package created for the project has no __file__.
+                search = getattr(loaded_module, "__path__", None) or ()
+                local = any(_inside(Path(entry), root) for entry in search)
+            if local:
                 sys.modules.pop(name, None)
         sys.modules.update(saved_modules)
     return document, selected_variant, values

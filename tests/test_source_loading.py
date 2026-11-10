@@ -77,6 +77,50 @@ class SourceLoadingTests(unittest.TestCase):
                     for name in original_modules:
                         sys.modules.pop(name, None)
 
+    def test_namespace_package_helpers_restore_host_package(self):
+        for preloaded in (True, False):
+            with self.subTest(preloaded=preloaded), TemporaryDirectory() as directory:
+                root = Path(directory)
+                fixture(root)
+                package = root / "loading_namespace"
+                package.mkdir()  # no __init__.py: a namespace package
+                helper = package / "dimensions.py"
+                helper.write_text("thickness = 4\n", encoding="utf-8")
+                (root / "project.py").write_text(
+                    "from loading_namespace.dimensions import thickness\n"
+                    + SOURCE.replace("Box(40, 20, 4)", "Box(40, 20, thickness)"),
+                    encoding="utf-8",
+                )
+                names = ("loading_namespace", "loading_namespace.dimensions")
+                sys.path.insert(0, str(root))
+                try:
+                    if preloaded:
+                        importlib.import_module("loading_namespace.dimensions")
+                    original_modules = {
+                        name: sys.modules[name] for name in names if name in sys.modules
+                    }
+                    timestamp = helper.stat().st_mtime_ns
+                    helper.write_text("thickness = 2\n", encoding="utf-8")
+                    os.utime(helper, ns=(timestamp, timestamp))
+                    shape = load_project(root).document.components["plate"].shape
+                    self.assertEqual(shape.bounding_box().size.Z, 2)
+                    if preloaded:
+                        host_package = sys.modules["loading_namespace"]
+                        host_helper = sys.modules["loading_namespace.dimensions"]
+                        self.assertIs(host_package, original_modules["loading_namespace"])
+                        self.assertIs(
+                            host_helper, original_modules["loading_namespace.dimensions"]
+                        )
+                        self.assertIs(host_package.dimensions, host_helper)
+                        self.assertEqual(host_helper.thickness, 4)
+                    else:
+                        for name in names:
+                            self.assertFalse(name in sys.modules, name)
+                finally:
+                    sys.path.remove(str(root))
+                    for name in names:
+                        sys.modules.pop(name, None)
+
     def test_entrypoint_edits_bypass_timestamp_bytecode(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)
