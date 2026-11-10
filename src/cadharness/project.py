@@ -248,6 +248,34 @@ def _load_document(
         )
     values = dict(manifest.variants.get(selected_variant, {}))
 
+    # sys.modules is consulted before any finder. Temporarily remove cached
+    # imports that resolve directly from this project's import root, otherwise
+    # even the source loader below can return a host's stale helper values.
+    # Match the import name as well as the source path: dependencies installed
+    # elsewhere under root (e.g. an editable src/ tree) are not project helpers.
+    local_names = {
+        path.stem if path.suffix == ".py" else path.name
+        for path in root.iterdir()
+        if path.suffix == ".py" or path.is_dir()
+    }
+    saved_modules = {}
+    for name, loaded_module in list(sys.modules.items()):
+        if name.partition(".")[0] not in local_names:
+            continue
+        cached_path = root.joinpath(*name.split("."))
+        source = getattr(loaded_module, "__file__", None)
+        if source:
+            local = Path(source).resolve() in (
+                cached_path.with_suffix(".py"), cached_path / "__init__.py"
+            )
+        else:
+            # Namespace packages have no __file__; match their search path so
+            # importing a fresh submodule cannot rebind the host's package.
+            search = getattr(loaded_module, "__path__", None) or ()
+            local = cached_path in {Path(entry).resolve() for entry in search}
+        if local:
+            saved_modules[name] = loaded_module
+            sys.modules.pop(name)
     modules_before = set(sys.modules)
     finder = _ProjectSourceFinder(root)
     importlib.invalidate_caches()
@@ -283,8 +311,15 @@ def _load_document(
         for name in set(sys.modules) - modules_before:
             loaded_module = sys.modules.get(name)
             source = getattr(loaded_module, "__file__", None)
-            if source and _inside(Path(source), root):
+            if source:
+                local = _inside(Path(source), root)
+            else:
+                # A namespace package created for the project has no __file__.
+                search = getattr(loaded_module, "__path__", None) or ()
+                local = any(_inside(Path(entry), root) for entry in search)
+            if local:
                 sys.modules.pop(name, None)
+        sys.modules.update(saved_modules)
     return document, selected_variant, values
 
 
